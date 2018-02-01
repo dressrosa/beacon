@@ -14,22 +14,24 @@ import java.util.ServiceLoader;
  */
 public class DefaultSerialize {
 
-	private static Serializer serializer() {
-		Serializer serializer = null;
-		ServiceLoader<Serializer> loader = ServiceLoader.load(Serializer.class);
-		Iterator<Serializer> iter = loader.iterator();
-		while (serializer == null && iter.hasNext())
-			serializer = iter.next();
-		if (serializer == null)
-			serializer = new ProtostuffSerialize();
-		return serializer;
-	}
+    private static Serializer serializer() {
+        Serializer serializer = null;
+        ServiceLoader<Serializer> loader = ServiceLoader.load(Serializer.class);
+        Iterator<Serializer> iter = loader.iterator();
+        while (serializer == null && iter.hasNext()) {
+            serializer = iter.next();
+        }
+        if (serializer == null) {
+            serializer = new ProtostuffSerialize();
+        }
+        return serializer;
+    }
 
-	public static <T> byte[] serialize(T obj) {
-		return serializer().serialize(obj);
-	}
+    public static <T> byte[] serialize(T obj) {
+        return DefaultSerialize.serializer().serialize(obj);
+    }
 
-	public static <T> T deserialize(byte[] data, Class<T> cls) {
-		return serializer().deserialize(data, cls);
-	}
+    public static <T> T deserialize(byte[] data, Class<T> cls) {
+        return DefaultSerialize.serializer().deserialize(data, cls);
+    }
 }

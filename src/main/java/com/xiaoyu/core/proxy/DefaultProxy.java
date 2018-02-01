@@ -13,16 +13,18 @@ import java.util.ServiceLoader;
  */
 public class DefaultProxy {
 
-	private static IProxy proxy;
+    private static IProxy proxy;
 
-	public static Object getProxy(Object target) {
-		ServiceLoader<IProxy> loader = ServiceLoader.load(IProxy.class);
-		Iterator<IProxy> iter = loader.iterator();
-		while (proxy == null && iter.hasNext())
-			proxy = iter.next();
-		if (proxy == null)
-			proxy = new JdkProxy();
-		return proxy.getProxy(target);
-	}
+    public static Object getProxy(Object target) {
+        ServiceLoader<IProxy> loader = ServiceLoader.load(IProxy.class);
+        Iterator<IProxy> iter = loader.iterator();
+        while (proxy == null && iter.hasNext()) {
+            proxy = iter.next();
+        }
+        if (proxy == null) {
+            proxy = new JdkProxy();
+        }
+        return proxy.getProxy(target);
+    }
 
 }

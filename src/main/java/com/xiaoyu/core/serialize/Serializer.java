@@ -11,7 +11,7 @@ package com.xiaoyu.core.serialize;
  */
 public interface Serializer {
 
-	public <T> byte[] serialize(T obj);
+    public <T> byte[] serialize(T obj);
 
-	public <T> T deserialize(byte[] data, Class<T> cls);
+    public <T> T deserialize(byte[] data, Class<T> cls);
 }

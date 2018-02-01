@@ -15,15 +15,29 @@ import java.lang.reflect.Proxy;
  */
 public class JdkProxy implements IProxy {
 
-	@Override
-	public Object getProxy(final Object target) {
-		return Proxy.newProxyInstance(target.getClass().getClassLoader(), target.getClass().getInterfaces(),
-				new InvocationHandler() {
-					@Override
-					public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
-						return method.invoke(target, args);
-					}
-				});
-	}
+    private InvocationHandler invocationHandler;
+
+    @Override
+    public Object getProxy(final Object target) {
+        Class<?> cls = null;
+        // 接口提供给client
+        if (target instanceof Class && (cls = (Class<?>) target).isInterface()) {
+            invocationHandler = new DefaultInvocationHandler();
+            return Proxy.newProxyInstance(cls.getClassLoader(), new Class<?>[] { cls },
+                    invocationHandler);
+        } else {
+            // server直接调用实现类
+            cls = target.getClass();
+            invocationHandler = new InvocationHandler() {
+                @Override
+                public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+                    return method.invoke(target, args);
+                }
+            };
+            return Proxy.newProxyInstance(cls.getClassLoader(), cls.getInterfaces(),
+                    invocationHandler);
+        }
+
+    }
 
 }

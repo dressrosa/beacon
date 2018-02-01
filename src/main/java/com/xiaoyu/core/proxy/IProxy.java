@@ -8,9 +8,9 @@ package com.xiaoyu.core.proxy;
  * 
  * @author xiaoyu
  * @description
- */	
+ */
 public interface IProxy {
 
-	public Object getProxy(final Object target);
+    public Object getProxy(final Object target);
 
 }
