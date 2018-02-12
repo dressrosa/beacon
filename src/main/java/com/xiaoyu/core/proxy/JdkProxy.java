@@ -22,7 +22,7 @@ public class JdkProxy implements IProxy {
         Class<?> cls = null;
         // 接口提供给client
         if (target instanceof Class && (cls = (Class<?>) target).isInterface()) {
-            invocationHandler = new DefaultInvocationHandler();
+            invocationHandler = new DefaultInvocationHandler(cls);
             return Proxy.newProxyInstance(cls.getClassLoader(), new Class<?>[] { cls },
                     invocationHandler);
         } else {

@@ -1,10 +1,12 @@
 package com.xiaoyu.test.api;
 
-import com.xiaoyu.core.rpc.BeaconRef;
+import com.xiaoyu.core.rpc.config.RpcRefer;
 
-@BeaconRef(HelloServiceImpl.class)
-public interface IHelloService {
+@RpcRefer(HelloServiceImpl.class)
+public interface IHelloService extends IBaseService{
 
     public String hello(String name);
+    
+    public void sing(String song);
 
 }

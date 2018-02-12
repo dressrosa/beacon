@@ -4,18 +4,20 @@ import com.xiaoyu.core.rpc.context.BeaconContext;
 import com.xiaoyu.test.api.IHelloService;
 
 public class RpcTest {
+
     public static void main(String[] args) throws Exception {
         try {
-            BeaconContext.start();
-            for(int i =0;i< 50; i++) {
-                IHelloService service = (IHelloService) BeaconContext
-                        .getProxyMap()
-                        .get(IHelloService.class);
-                System.out.println("答案:" + service.hello("tom"+i));
-            }
-        } finally {
+            BeaconContext.startClient();
+            IHelloService service = (IHelloService) BeaconContext.getBean(IHelloService.class);
+            Object result = service.hello("好的");
+            System.out.println("结果:" + result);
+        } 
+        catch(Exception e ) {
+            e.printStackTrace();
+        }
+        finally {
+            // System.out.println("结束2!");
             BeaconContext.stop();
         }
-
     }
 }

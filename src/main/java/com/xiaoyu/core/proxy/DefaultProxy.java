@@ -11,6 +11,7 @@ import java.util.ServiceLoader;
  *
  * @description:默认的代理实现
  */
+@Deprecated
 public class DefaultProxy {
 
     private static IProxy proxy;

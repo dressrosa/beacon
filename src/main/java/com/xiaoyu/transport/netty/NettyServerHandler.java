@@ -3,9 +3,6 @@
  **/
 package com.xiaoyu.transport.netty;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.xiaoyu.transport.BaseChannel;
 import com.xiaoyu.transport.BeaconHandler;
 import com.xiaoyu.transport.BeaconServerChannel;
@@ -24,8 +21,6 @@ import io.netty.channel.ChannelPromise;
 @Sharable
 public class NettyServerHandler extends ChannelDuplexHandler {
 
-    private static final Logger LOG = LoggerFactory.getLogger(NettyServerHandler.class);
-
     private BeaconHandler beaconHandler;
 
     public NettyServerHandler(BeaconHandler beaconHandler) {
@@ -35,7 +30,6 @@ public class NettyServerHandler extends ChannelDuplexHandler {
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
-        LOG.info("server channel初始化:{}", ctx.channel().id().asLongText());
     }
 
     @Override
@@ -45,7 +39,7 @@ public class NettyServerHandler extends ChannelDuplexHandler {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        BaseChannel beaconChannel = BeaconServerChannel.getChannel(ctx.channel());
+        BaseChannel beaconChannel = BeaconServerChannel.getChannel(ctx.channel(), beaconHandler);
         try {
             this.beaconHandler.received(msg, beaconChannel);
         } finally {
@@ -63,15 +57,6 @@ public class NettyServerHandler extends ChannelDuplexHandler {
 
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
-        // super.write(ctx, msg, promise);
-        BaseChannel beaconChannel = BeaconServerChannel.getChannel(ctx.channel());
-        try {
-            this.beaconHandler.send(msg, beaconChannel);
-        } finally {
-            if (!ctx.channel().isActive()) {
-                ((BeaconServerChannel) beaconChannel).removeChannel(ctx.channel());
-            }
-        }
-
+        super.write(ctx, msg, promise);
     }
 }

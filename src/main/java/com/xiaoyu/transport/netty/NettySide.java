@@ -1,4 +1,4 @@
-package com.xiaoyu.transport;
+package com.xiaoyu.transport.netty;
 
 import java.util.concurrent.Future;
 
@@ -7,18 +7,12 @@ import java.util.concurrent.Future;
  * @date 2018-02
  * @description
  */
-public interface BaseChannel {
-    
+public interface NettySide {
+
     /**
      * @param message
      * @return
      * @throws Exception
      */
     public Future<Object> send(Object message) throws Exception;
-
-    /**
-     * @param msg
-     * @throws Exception
-     */
-    public void receive(Object msg) throws Exception;
 }

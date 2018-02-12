@@ -3,6 +3,8 @@
  **/
 package com.xiaoyu.transport.netty;
 
+import java.util.concurrent.TimeUnit;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,17 +31,19 @@ import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 public class NettyClient extends BeaconClientHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger("NettyClient");
-
+    private static final Integer RETRY_TIMES = 10;
     private final String host;
     private final int port;
     private Bootstrap boot;
-    private final EventLoopGroup worker = new NioEventLoopGroup();
+    private EventLoopGroup worker = new NioEventLoopGroup();
     private final NettyClientHandler handler = new NettyClientHandler(this);
     private final ChannelInitializer<SocketChannel> initialChannel = new ChannelInitializer<SocketChannel>() {
         @Override
         protected void initChannel(SocketChannel ch) throws Exception {
             final ChannelPipeline pipe = ch.pipeline();
-            pipe.addLast("lengthDecoder", new LengthFieldBasedFrameDecoder(BeaconConstants.MAX_LEN,BeaconConstants.LEN_OFFSET, BeaconConstants.INT_LEN))
+            pipe.addLast("lengthDecoder",
+                    new LengthFieldBasedFrameDecoder(BeaconConstants.MAX_LEN, BeaconConstants.LEN_OFFSET,
+                            BeaconConstants.INT_LEN))
                     .addLast("beaconDecoder", new NettyDecoder())
                     .addLast("beconEncoder", new NettyEncoder())
                     .addLast("beaconClientHandler", handler);
@@ -56,24 +60,47 @@ public class NettyClient extends BeaconClientHandler {
         boot = new Bootstrap();
         boot.group(worker)
                 .channel(NioSocketChannel.class)
-                .option(ChannelOption.SO_BACKLOG, 128)
                 .option(ChannelOption.TCP_NODELAY, true)
                 .handler(initialChannel);
     }
 
-    public void connect() {
+    public void connect() throws Exception {
+        ChannelFuture f = null;
         try {
-            ChannelFuture f = boot.connect(host, port).syncUninterruptibly();
-            LOG.info("客户端" + host + ":" + port + "->channel:{}",f.channel().id().asLongText());
-            f.channel().closeFuture().syncUninterruptibly();
+            f = boot.connect(host, port).syncUninterruptibly();
+            channel = f.channel();
+            // channel.closeFuture().syncUninterruptibly();
         } catch (Exception e) {
-            e.printStackTrace();
+            int num = 0;
+            // 重连
+            while (++num < RETRY_TIMES) {
+                try {
+                    TimeUnit.MILLISECONDS.sleep(1000);
+                    LOG.warn("connect to server {} failed,retry {} times.", (host + ":" + port), num);
+                    f = boot.clone(worker = new NioEventLoopGroup())
+                            .connect(host, port)
+                            .syncUninterruptibly();
+                    channel = f.channel();
+                    break;
+                } catch (Exception e1) {
+                    //
+                }
+            }
+            if (f == null) {
+                throw new Exception("connect to server failed,please check.");
+            }
+            LOG.warn("客户端" + host + ":" + port + "->channel:{}", f.channel().id().asLongText());
         } finally {
-            this.stop();
+            if (f != null && f.cause() != null) {
+                this.stop();
+            }
         }
     }
 
+    @Override
     public void stop() {
+        // 通知线程池关闭
+        super.stop();
         worker.shutdownGracefully();
     }
 

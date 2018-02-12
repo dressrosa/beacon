@@ -9,7 +9,15 @@ import io.netty.channel.ChannelHandler;
  */
 public interface BeaconHandler extends ChannelHandler {
 
-    public void send(Object message, BaseChannel beaconChannel) throws Exception;
+    /**
+     * @param message
+     * @param beaconChannel
+     * @throws Exception
+     */
+    public void received(Object message, BaseChannel beaconChannel) throws Exception;
 
-    public void received(Object msg, BaseChannel beaconChannel) throws Exception;
+    /**
+     * 
+     */
+    public void stop();
 }

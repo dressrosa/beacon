@@ -17,6 +17,17 @@ public class RpcResponse extends RpcMessage {
 
     private Object result;
 
+    private Throwable exception;
+
+    public Throwable getException() {
+        return exception;
+    }
+
+    public RpcResponse setException(Throwable exception) {
+        this.exception = exception;
+        return this;
+    }
+
     public Object getResult() {
         return result;
     }

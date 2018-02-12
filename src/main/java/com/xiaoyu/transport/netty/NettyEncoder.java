@@ -4,9 +4,10 @@
 package com.xiaoyu.transport.netty;
 
 import com.xiaoyu.core.common.constant.From;
+import com.xiaoyu.core.common.extension.SpiManager;
 import com.xiaoyu.core.rpc.message.RpcMessage;
 import com.xiaoyu.core.rpc.message.RpcRequest;
-import com.xiaoyu.core.serialize.DefaultSerialize;
+import com.xiaoyu.core.serialize.Serializer;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -28,7 +29,8 @@ public class NettyEncoder extends MessageToByteEncoder<RpcMessage> {
         } else {
             msg.setFrom((byte) From.SERVER.ordinal());
         }
-        byte[] b = DefaultSerialize.serialize(msg);
+        byte[] b = SpiManager.defaultSpiExtender(Serializer.class)
+                .serialize(msg);
         // 写入请求端
         out.writeByte(msg.getFrom());
         // 写入长度

@@ -23,7 +23,7 @@ import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 
 /**
- * 2017年4月20日下午3:15:45
+ * 2017年4月
  * 
  * @author xiaoyu
  * @description
@@ -31,7 +31,7 @@ import io.netty.handler.logging.LoggingHandler;
 public class NettyServer extends BeaconServerHandler {
 
     private static final Logger LOG = LoggerFactory.getLogger("NettyServer");
-    
+
     private final int port;
 
     public NettyServer(int port) {
@@ -41,35 +41,44 @@ public class NettyServer extends BeaconServerHandler {
     final EventLoopGroup boss = new NioEventLoopGroup();
     final EventLoopGroup worker = new NioEventLoopGroup();
     final ServerBootstrap boot = new ServerBootstrap();
+    final NettyServerHandler serverHandler = new NettyServerHandler(this);
+    final ChannelInitializer<SocketChannel> initializer = new ChannelInitializer<SocketChannel>() {
+        @Override
+        protected void initChannel(SocketChannel ch) throws Exception {
+            final ChannelPipeline pipe = ch.pipeline();
+            pipe
+                    .addLast("lengthDecoder",
+                            new LengthFieldBasedFrameDecoder(BeaconConstants.MAX_LEN,
+                                    BeaconConstants.LEN_OFFSET, BeaconConstants.INT_LEN))
+                    .addLast("beaconDecoder", new NettyDecoder())
+                    .addLast("beaconEncoder", new NettyEncoder())
+                    .addLast("beaconServerHandler", serverHandler);
+        }
+    };
 
     public void bind() throws InterruptedException {
-        final NettyServerHandler serverHandler = new NettyServerHandler(this);
+        ChannelFuture f = null;
         try {
             boot.group(boss, worker)
                     .channel(NioServerSocketChannel.class)
-                    .handler(new LoggingHandler(LogLevel.DEBUG))
-                    .option(ChannelOption.SO_BACKLOG, 100)
+                    .handler(new LoggingHandler(LogLevel.WARN))
+                    .option(ChannelOption.SO_BACKLOG, 128)
                     .childOption(ChannelOption.TCP_NODELAY, true)
-                    .childHandler(new ChannelInitializer<SocketChannel>() {
-                        @Override
-                        protected void initChannel(SocketChannel ch) throws Exception {
-                            final ChannelPipeline pipe = ch.pipeline();
-                            pipe
-                                    .addLast("lengthDecoder", new LengthFieldBasedFrameDecoder(BeaconConstants.MAX_LEN,BeaconConstants.LEN_OFFSET, BeaconConstants.INT_LEN))
-                                    .addLast("beaconDecoder", new NettyDecoder())
-                                    .addLast("beaconEncoder", new NettyEncoder())
-                                    .addLast("beaconServerHandler", serverHandler);
-                        }
-                    });
-            final ChannelFuture f = boot.bind(port).syncUninterruptibly();
-            LOG.info("服务端端:" + port + "->channel:{}" , f.channel().id().asLongText());
-            f.channel().closeFuture().syncUninterruptibly();
+                    .childHandler(initializer);
+            LOG.info("启动server in port:{}", port);
+            f = boot.bind(port).syncUninterruptibly();
+            channel = f.channel();
         } finally {
-            this.stop();
+            if (f != null && f.cause() != null) {
+                this.stop();
+            }
         }
     }
 
+    @Override
     public void stop() {
+        // 通知线程池关闭
+        super.stop();
         worker.shutdownGracefully();
         boss.shutdownGracefully();
     }

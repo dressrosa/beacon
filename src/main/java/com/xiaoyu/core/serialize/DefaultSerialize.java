@@ -12,8 +12,10 @@ import java.util.ServiceLoader;
  * @author xiaoyu
  * @description 默认序列化
  */
+@Deprecated
 public class DefaultSerialize {
 
+    @SuppressWarnings("unused")
     private static Serializer serializer() {
         Serializer serializer = null;
         ServiceLoader<Serializer> loader = ServiceLoader.load(Serializer.class);
@@ -25,13 +27,5 @@ public class DefaultSerialize {
             serializer = new ProtostuffSerialize();
         }
         return serializer;
-    }
-
-    public static <T> byte[] serialize(T obj) {
-        return DefaultSerialize.serializer().serialize(obj);
-    }
-
-    public static <T> T deserialize(byte[] data, Class<T> cls) {
-        return DefaultSerialize.serializer().deserialize(data, cls);
     }
 }

@@ -3,83 +3,119 @@ package com.xiaoyu.core.rpc.context;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.xiaoyu.core.proxy.DefaultProxy;
+import com.xiaoyu.core.common.constant.From;
+import com.xiaoyu.core.common.extension.SpiManager;
+import com.xiaoyu.core.common.utils.IdUtil;
+import com.xiaoyu.core.proxy.IProxy;
+import com.xiaoyu.core.register.Registry;
 import com.xiaoyu.test.api.IHelloService;
 import com.xiaoyu.transport.netty.NettyClient;
 import com.xiaoyu.transport.netty.NettyServer;
 
-/**for test
+/**
+ * for test
+ * 
  * @author hongyu
  * @date 2018-02
  * @description
  */
 public class BeaconContext {
 
-    private static Map<Class<?>, Object> proxyMap = new HashMap<>();
+    private static Map<Class<?>, Object> proxyMap = new HashMap<>(16);
 
     private static NettyClient[] clients;
     private static NettyServer[] servers;
 
-    public static void start() {
+    private static final String ADDRESS = "127.0.0.1";
+    private static final int PORT1 = 9090;
+    private static final int PORT2 = 9091;
+
+    static {
+        Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+            @Override
+            public void run() {
+                BeaconContext.stop();
+            }
+        }));
+    }
+
+    public static NettyClient client() throws Exception {
+        if (clients == null) {
+            throw new Exception("no server start,please check.");
+        }
+        if (clients.length == 1) {
+            return clients[0];
+        } else {
+            return clients[IdUtil.randomNum(clients.length)];
+        }
+    }
+
+    public static void startClient() throws Exception {
+        initProxyMap();
+        initClient();
+        exportService(From.CLIENT);
+
+    }
+
+    public static void startServer() throws Exception {
         initProxyMap();
         initServer();
-        initClient();
+        exportService(From.SERVER);
     }
 
     public static void stop() {
-        for (NettyClient c : clients) {
-            c.stop();
+        if (clients != null && clients.length > 0) {
+            for (NettyClient c : clients) {
+                c.stop();
+            }
         }
-        for (NettyServer s : servers) {
-            s.stop();
+        if (servers != null && servers.length > 0) {
+            for (NettyServer s : servers) {
+                s.stop();
+            }
         }
     }
 
-    public static Map<Class<?>, Object> getProxyMap() {
-        return proxyMap;
+    public static Object getBean(Class<?> cls) {
+        return proxyMap.get(cls);
     }
 
+    /**
+     * 实际这里是由spring加载bean
+     */
     private static void initProxyMap() {
-        proxyMap.put(IHelloService.class, DefaultProxy.getProxy(IHelloService.class));
+        try {
+            proxyMap.put(IHelloService.class, SpiManager.defaultSpiExtender(IProxy.class)
+                    .getProxy(IHelloService.class));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        // 加载bean的同时,server:将service存入zoo, client:写入消费者信息
+        // 写入本地缓存,由监听器监听server和client的情况,然后更新本地缓存
     }
 
-    private static void initClient() {
-        clients = new NettyClient[] { new NettyClient("127.0.0.1", 9090), new NettyClient("127.0.0.1", 9091) };
+    private static void exportService(From side) {
+        Registry reg = null;
+        try {
+            reg = SpiManager.defaultSpiExtender(Registry.class);
+            reg.registerService("com.xiaoyu.test.api.IHelloService", side);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+    }
+
+    private static void initClient() throws Exception {
+        clients = new NettyClient[] { new NettyClient(ADDRESS, PORT1), new NettyClient(ADDRESS, PORT2) };
         for (NettyClient client : clients) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    client.connect();
-                }
-            }).start();
-        }
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            client.connect();
         }
     }
 
-    private static void initServer() {
-        servers = new NettyServer[] { new NettyServer(9090), new NettyServer(9091) };
-
+    private static void initServer() throws Exception {
+        servers = new NettyServer[] { new NettyServer(PORT1), new NettyServer(PORT2) };
         for (NettyServer server : servers) {
-            new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        server.bind();
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
-                    }
-                }
-            }).start();
-        }
-
-        try {
-            Thread.sleep(1000);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
+            server.bind();
         }
     }
 }

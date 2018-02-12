@@ -11,6 +11,10 @@ package com.xiaoyu.core.proxy;
  */
 public interface IProxy {
 
+    /**
+     * @param target
+     * @return
+     */
     public Object getProxy(final Object target);
 
 }

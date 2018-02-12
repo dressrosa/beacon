@@ -1,5 +1,9 @@
 package com.xiaoyu.transport;
 
+import java.util.concurrent.Future;
+
+import com.xiaoyu.transport.netty.NettySide;
+
 /**
  * client断对消息的业务处理
  * 
@@ -7,11 +11,7 @@ package com.xiaoyu.transport;
  * @date 2018-02
  * @description
  */
-public class BeaconClientHandler extends AbstractBeaconHandler {
-
-    public BeaconClientHandler() {
-        // TODO Auto-generated constructor stub
-    }
+public class BeaconClientHandler extends BeaconHandlerAdpater implements NettySide {
 
     @Override
     public void received(Object msg, BaseChannel beaconChannel) throws Exception {
@@ -19,4 +19,9 @@ public class BeaconClientHandler extends AbstractBeaconHandler {
         beaconChannel.receive(msg);
     }
 
+    @Override
+    public Future<Object> send(Object message) throws Exception {
+        BaseChannel channel = getBeaconChannel();
+        return channel.send(message);
+    }
 }

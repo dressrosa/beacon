@@ -7,10 +7,11 @@ import java.util.List;
 
 import com.xiaoyu.core.common.constant.BeaconConstants;
 import com.xiaoyu.core.common.constant.From;
+import com.xiaoyu.core.common.extension.SpiManager;
 import com.xiaoyu.core.rpc.message.RpcMessage;
 import com.xiaoyu.core.rpc.message.RpcRequest;
 import com.xiaoyu.core.rpc.message.RpcResponse;
-import com.xiaoyu.core.serialize.DefaultSerialize;
+import com.xiaoyu.core.serialize.Serializer;
 
 import io.netty.buffer.ByteBuf;
 import io.netty.channel.ChannelHandlerContext;
@@ -42,9 +43,11 @@ public class NettyDecoder extends ByteToMessageDecoder {
         // }
         RpcMessage msg = null;
         if (from == From.CLIENT.ordinal()) {
-            msg = DefaultSerialize.deserialize(bytes, RpcRequest.class);
+            msg = SpiManager.defaultSpiExtender(Serializer.class)
+                    .deserialize(bytes, RpcRequest.class);
         } else {
-            msg = DefaultSerialize.deserialize(bytes, RpcResponse.class);
+            msg = SpiManager.defaultSpiExtender(Serializer.class)
+                    .deserialize(bytes, RpcResponse.class);
         }
 
         out.add(msg);

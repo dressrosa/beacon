@@ -1,14 +1,17 @@
 package com.xiaoyu.transport;
 
-import java.util.Iterator;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.xiaoyu.core.common.utils.IdUtil;
+import com.xiaoyu.core.rpc.message.CallbackListener;
+import com.xiaoyu.core.rpc.message.RpcRequest;
+import com.xiaoyu.core.rpc.message.RpcResponse;
+
 import io.netty.channel.Channel;
-import io.netty.channel.ChannelFuture;
 
 /**
  * 客户端的channel
@@ -21,54 +24,49 @@ public class BeaconClientChannel extends AbstractBeaconChannel {
 
     private static final Logger LOG = LoggerFactory.getLogger("BeaconClientChannel");
 
-    public BeaconClientChannel(Channel ch) {
-        super(ch);
-    }
+    private static final int SLEEP_TIME = 200;
+    private static final int RETRY_NUM = 10;
 
-    public static BeaconClientChannel getChannel(Channel ch) {
-        BaseChannel beaconCh = CHANNEL_MAP.get(ch);
-        if (beaconCh == null) {
-            CHANNEL_MAP.putIfAbsent(ch, (beaconCh = new BeaconClientChannel(ch)));
-        }
-        LOG.info("map Size:{}", CHANNEL_MAP.size());
-        return (BeaconClientChannel) beaconCh;
-    }
-
-    /**
-     * 随机获取一个channel
-     * 
-     * @return
-     * @throws Exception
-     */
-    public static BeaconClientChannel getChannel() throws Exception {
-        if (!CHANNEL_MAP.isEmpty()) {
-            Iterator<BaseChannel> iter = CHANNEL_MAP.values().iterator();
-            while (iter.hasNext()) {
-                BaseChannel ch = iter.next();
-                if (ch instanceof BeaconClientChannel) {
-                    return (BeaconClientChannel) ch;
-                }
-            }
-            LOG.info("map Size:{}", CHANNEL_MAP.size());
-        }
-        throw new Exception("CHANNEL_MAP is null");
+    public BeaconClientChannel(Channel ch, BeaconHandler beaconHandler) {
+        super(ch, beaconHandler);
     }
 
     @Override
-    public Future<Object> send(Object message) throws Exception {
+    protected Future<Object> doSend(Object message) {
         try {
-            super.send(message);
             Future<Object> taskFuture = TASK_POOL.submit(new Callable<Object>() {
                 @Override
                 public Object call() throws Exception {
                     // 对同一次的请求channel加锁,当收到结果时释放
-                    synchronized (channel) {
-                        ChannelFuture future = channel.pipeline().context("beaconClientHandler").writeAndFlush(message);
-                        future.get();
-                        channel.wait();
+                    Object result = null;
+                    final CallbackListener listener = new CallbackListener();
+                    synchronized (listener) {
+                        // 唯一性id
+                        String id = IdUtil.requestId();
+                        addListener(id, listener);
+                        ((RpcRequest) message).setId(id);
+                        //刷新消息
+                        channel
+                                .writeAndFlush(message);
+                        // wait次数达到一定限制后(2s内),默认超时.TODO
+                        int retry = 0;
+                        do {
+                            /*
+                             * 防止发生意外,导致一直阻塞;
+                             * 再等待2s后,以超时结束
+                             */
+                            listener.wait(SLEEP_TIME);
+                            retry++;
+                        } while ((result = listener.result()) == null && retry <= RETRY_NUM);
+                        LOG.warn("等待次数:{};时间:{}", retry, SLEEP_TIME * retry);
+                        if (result == null) {
+                            result = new RpcResponse()
+                                    .setException(new Exception("request exceed limit time"))
+                                    .setId(id);
+                        }
                     }
                     // 已获取到结果
-                    return getResult();
+                    return result;
                 }
             });
             return taskFuture;
@@ -78,19 +76,10 @@ public class BeaconClientChannel extends AbstractBeaconChannel {
     }
 
     @Override
-    public void receive(Object message) throws Exception {
+    protected void doReceive(Object message) {
         // 对同一此的请求channel加锁,当收到结果时释放
-        synchronized (channel) {
-            super.receive(message);
-            // 触发下一个handler的读操作
-            this.channel.pipeline().context("beaconClientHandler").read();
-            // 通知阻塞的发送操作
-            channel.notifyAll();
-        }
+        setResult(((RpcResponse) message).getId(), message);
+        // 触发下一个handler的读操作
+        this.channel.pipeline().context("beaconClientHandler").read();
     }
-
-    public void removeChannel(Channel channel) {
-        CHANNEL_MAP.remove(channel);
-    }
-
 }
