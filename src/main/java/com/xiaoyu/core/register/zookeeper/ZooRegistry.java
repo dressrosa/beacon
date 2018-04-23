@@ -3,6 +3,7 @@
  */
 package com.xiaoyu.core.register.zookeeper;
 
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -25,7 +26,7 @@ import com.xiaoyu.core.register.Registry;
  */
 public class ZooRegistry implements Registry {
 
-    private static final Logger LOG = LoggerFactory.getLogger("ZooRegistry");
+    private static final Logger LOG = LoggerFactory.getLogger(ZooRegistry.class);
 
     private static final String ROOT = "/beacon";
 
@@ -35,9 +36,9 @@ public class ZooRegistry implements Registry {
 
     private static final ZooUtil ZOO = ZooUtil.zoo();
 
-    private static final ConcurrentMap<String, IZkChildListener> CHILD_LISTENER_MAP = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<String, IZkChildListener> CHILD_LISTENER_MAP = new ConcurrentHashMap<>(32);
 
-    private static final ConcurrentMap<String, String> SERVICE_MAP = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<String, String> SERVICE_MAP = new ConcurrentHashMap<>(32);
 
     public ZooRegistry() {
         ZOO.createPersistent(ROOT);
@@ -65,13 +66,13 @@ public class ZooRegistry implements Registry {
             ZOO.createEphemeral(path + detailInfo);
         }
 
-        LOG.warn("register to zoo:{}", (path + detailInfo));
-        SERVICE_MAP.putIfAbsent(service, service);
+        LOG.warn("register to zoo->{}", (path + detailInfo));
+        SERVICE_MAP.putIfAbsent(service, path + detailInfo);
         IZkChildListener listener = null;
         ZOO.subscribeChildChanges(path, listener = new IZkChildListener() {
             @Override
             public void handleChildChange(String parentPath, List<String> currentChilds) throws Exception {
-                LOG.warn("service changed.");
+                LOG.warn("service changed.parentPath->{}",parentPath);
                 if (parentPath.endsWith(PROVIDERS)) {
                     notifyChildListenr(currentChilds);
                 }
@@ -86,7 +87,7 @@ public class ZooRegistry implements Registry {
      * @param currentChilds
      */
     protected void notifyChildListenr(List<String> currentChilds) {
-        // TODO
+        
 
     }
 
@@ -101,8 +102,21 @@ public class ZooRegistry implements Registry {
     }
 
     @Override
-    public void unregisterService() {
+    public void unregisterService(String service) {
         // 这里是主动取消注册.比如有个server挂了,那么从本地缓存中去除这个server
 
+    }
+
+    @Override
+    public void unregisterAllServices() {
+        Iterator<String> iter = SERVICE_MAP.values().iterator();
+        while (iter.hasNext()) {
+            String service = iter.next();
+            LOG.warn("unregister service->{}", service);
+            IZkChildListener dlistner = CHILD_LISTENER_MAP.remove(service);
+            ZOO.unsubscribeChildChanges(service, dlistner);
+            dlistner = null;
+            ZOO.remove(service);
+        }
     }
 }

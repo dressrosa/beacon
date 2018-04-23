@@ -3,9 +3,7 @@
  **/
 package com.xiaoyu.transport.netty;
 
-import com.xiaoyu.transport.BaseChannel;
-import com.xiaoyu.transport.BeaconHandler;
-import com.xiaoyu.transport.BeaconServerChannel;
+import com.xiaoyu.transport.api.BeaconHandler;
 
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler.Sharable;
@@ -21,12 +19,6 @@ import io.netty.channel.ChannelPromise;
 @Sharable
 public class NettyServerHandler extends ChannelDuplexHandler {
 
-    private BeaconHandler beaconHandler;
-
-    public NettyServerHandler(BeaconHandler beaconHandler) {
-        this.beaconHandler = beaconHandler;
-    }
-
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
@@ -35,16 +27,27 @@ public class NettyServerHandler extends ChannelDuplexHandler {
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         super.channelInactive(ctx);
+        if (!ctx.channel().isActive()) {
+            NettyChannel.removeChannel(ctx.channel());
+        }
+    }
+
+    @Override
+    public void disconnect(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
+        super.disconnect(ctx, promise);
+        if (!ctx.channel().isActive()) {
+            NettyChannel.removeChannel(ctx.channel());
+        }
     }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        BaseChannel beaconChannel = BeaconServerChannel.getChannel(ctx.channel(), beaconHandler);
+        BeaconHandler handler = NettyChannel.getChannel(ctx.channel(), "server");
         try {
-            this.beaconHandler.received(msg, beaconChannel);
+            handler.receive(msg);
         } finally {
             if (!ctx.channel().isActive()) {
-                ((BeaconServerChannel) beaconChannel).removeChannel(ctx.channel());
+                NettyChannel.removeChannel(ctx.channel());
             }
         }
     }

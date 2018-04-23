@@ -62,6 +62,10 @@ public class ZooUtil {
         return client.exists(path);
     }
 
+    public boolean remove(String path) {
+        return client.delete(path);
+    }
+
     public void createEphemeral(String path) {
         if (!exists(path)) {
             client.createEphemeral(path);
@@ -97,6 +101,10 @@ public class ZooUtil {
         client.writeData(path, data);
     }
 
+    public void unsubscribeDataChanges(final String path, IZkDataListener listener) {
+        client.unsubscribeDataChanges(path, listener);
+    }
+
     /**
      * @param path
      * @param listener
@@ -106,6 +114,10 @@ public class ZooUtil {
         // 检测是否已经创建
         createEphemeral(path);
         client.subscribeChildChanges(path, listener);
+    }
+
+    public void unsubscribeChildChanges(final String path, IZkChildListener listener) {
+        client.unsubscribeChildChanges(path, listener);
     }
 
     public Object readData(String path) {

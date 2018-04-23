@@ -1,4 +1,4 @@
-package com.xiaoyu.transport;
+package com.xiaoyu.transport.api;
 
 import java.util.concurrent.Future;
 
@@ -8,13 +8,15 @@ import java.util.concurrent.Future;
  * @description
  */
 public interface BaseChannel {
-    
+
     /**
      * @param message
      * @return
      * @throws Exception
      */
-    public Future<Object> send(Object message) throws Exception;
+    public Future<Object> sendFuture(Object message) throws Exception;
+
+    public Object send(Object message) throws Exception;
 
     /**
      * @param msg

@@ -8,6 +8,6 @@ public class NettyClientTest {
 
         NettyClient client = new NettyClient("127.0.0.1", 9090);
         System.out.println("client start");
-        client.connect();
+        client.start();
     }
 }

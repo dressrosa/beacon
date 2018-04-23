@@ -1,4 +1,4 @@
-package com.xiaoyu.transport;
+package com.xiaoyu.transport.support;
 
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -10,8 +10,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.xiaoyu.core.rpc.message.CallbackListener;
-
-import io.netty.channel.Channel;
+import com.xiaoyu.transport.api.BaseChannel;
 
 /**
  * 封装channel 提供基础的核心变量 用于消息的收发
@@ -25,19 +24,12 @@ public abstract class AbstractBeaconChannel implements BaseChannel {
     /**
      * 由下层提供,为netty的发送和接收
      */
-    protected Channel channel;
-
-    protected BeaconHandler beaconHandler;
+    // protected Channel channel;
 
     /**
      * 从server断获取的结果,用于异步获取 requestId->result
      */
-    private static final ConcurrentMap<String, CallbackListener> RESULT_MAP = new ConcurrentHashMap<>(8);
-
-    /**
-     * 每一个channel都会生成对应的BaseChannel,用于对channel的存储
-     */
-    private static final ConcurrentMap<Channel, BaseChannel> CHANNEL_MAP = new ConcurrentHashMap<>(16);
+    private static final ConcurrentMap<String, CallbackListener> RESULT_MAP = new ConcurrentHashMap<>(32);
 
     /**
      * 请求端 server or client
@@ -52,7 +44,7 @@ public abstract class AbstractBeaconChannel implements BaseChannel {
     /**
      * 线程池,每一个消费请求都会放入池中执行等待结果
      */
-    protected static final ThreadPoolExecutor TASK_POOL = new ThreadPoolExecutor(10, 10,
+    public static final ThreadPoolExecutor TASK_POOL = new ThreadPoolExecutor(16, 16,
             0L, TimeUnit.MILLISECONDS,
             new LinkedBlockingQueue<Runnable>(), new ThreadFactory() {
                 @Override
@@ -60,11 +52,6 @@ public abstract class AbstractBeaconChannel implements BaseChannel {
                     return new Thread(r, "BeaconTaskHandler-" + COUNT.getAndIncrement());
                 }
             });
-
-    public AbstractBeaconChannel(Channel ch, BeaconHandler beaconHandler) {
-        this.channel = ch;
-        this.beaconHandler = beaconHandler;
-    }
 
     public String getSide() {
         return side;
@@ -95,27 +82,21 @@ public abstract class AbstractBeaconChannel implements BaseChannel {
             listener.onSuccess(result);
             // 通知等待线程,这里只有一个线程在等待
             listener.notify();
+            listener = null;
             RESULT_MAP.remove(requestId);
         }
     }
 
-    public static BaseChannel getChannel(Channel ch, BeaconHandler beaconHandler) throws Exception {
-        BaseChannel beaconCh = CHANNEL_MAP.get(ch);
-        if (beaconHandler instanceof BeaconClientHandler) {
-            CHANNEL_MAP.putIfAbsent(ch, (beaconCh = new BeaconClientChannel(ch, beaconHandler).setSide("client")));
-        } else {
-            CHANNEL_MAP.putIfAbsent(ch, (beaconCh = new BeaconServerChannel(ch, beaconHandler).setSide("server")));
+    @Override
+    public Future<Object> sendFuture(Object message) throws Exception {
+        if (message == null) {
+            throw new Exception("message be sent is null.");
         }
-
-        return beaconCh;
-    }
-
-    public void removeChannel(Channel channel) {
-        CHANNEL_MAP.remove(channel);
+        return this.doSendFuture(message);
     }
 
     @Override
-    public Future<Object> send(Object message) throws Exception {
+    public Object send(Object message) throws Exception {
         if (message == null) {
             throw new Exception("message be sent is null.");
         }
@@ -137,7 +118,9 @@ public abstract class AbstractBeaconChannel implements BaseChannel {
      * @param message
      * @return
      */
-    protected abstract Future<Object> doSend(Object message);
+    protected abstract Object doSend(Object message);
+
+    protected abstract Future<Object> doSendFuture(Object message);
 
     /**
      * 由具体的client or server的channel处理具体的接受操作

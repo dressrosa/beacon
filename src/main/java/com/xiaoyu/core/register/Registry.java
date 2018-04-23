@@ -20,11 +20,13 @@ public interface Registry {
     /**
      * 取消注册服务
      */
-    public void unregisterService();
+    public void unregisterAllServices();
 
     /**
      * @param service
      * @param side
      */
     public void registerService(String service, From side);
+
+    public void unregisterService(String service);
 }

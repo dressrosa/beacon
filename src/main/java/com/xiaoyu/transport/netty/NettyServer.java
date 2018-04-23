@@ -7,9 +7,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.xiaoyu.core.common.constant.BeaconConstants;
-import com.xiaoyu.transport.BeaconServerHandler;
+import com.xiaoyu.transport.api.Server;
 
 import io.netty.bootstrap.ServerBootstrap;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
@@ -28,21 +29,23 @@ import io.netty.handler.logging.LoggingHandler;
  * @author xiaoyu
  * @description
  */
-public class NettyServer extends BeaconServerHandler {
+public class NettyServer implements Server {
 
-    private static final Logger LOG = LoggerFactory.getLogger("NettyServer");
+    private static final Logger LOG = LoggerFactory.getLogger(NettyServer.class);
 
     private final int port;
+
+    private Channel serverChannel;
 
     public NettyServer(int port) {
         this.port = port;
     }
 
-    final EventLoopGroup boss = new NioEventLoopGroup();
-    final EventLoopGroup worker = new NioEventLoopGroup();
-    final ServerBootstrap boot = new ServerBootstrap();
-    final NettyServerHandler serverHandler = new NettyServerHandler(this);
-    final ChannelInitializer<SocketChannel> initializer = new ChannelInitializer<SocketChannel>() {
+    private final EventLoopGroup boss = new NioEventLoopGroup();
+    private final EventLoopGroup worker = new NioEventLoopGroup();
+    private final ServerBootstrap boot = new ServerBootstrap();
+    private final NettyServerHandler serverHandler = new NettyServerHandler();
+    private final ChannelInitializer<SocketChannel> initializer = new ChannelInitializer<SocketChannel>() {
         @Override
         protected void initChannel(SocketChannel ch) throws Exception {
             final ChannelPipeline pipe = ch.pipeline();
@@ -56,7 +59,12 @@ public class NettyServer extends BeaconServerHandler {
         }
     };
 
-    public void bind() throws InterruptedException {
+    @Override
+    public void start() {
+        bind();
+    }
+
+    private void bind() {
         ChannelFuture f = null;
         try {
             boot.group(boss, worker)
@@ -65,9 +73,18 @@ public class NettyServer extends BeaconServerHandler {
                     .option(ChannelOption.SO_BACKLOG, 128)
                     .childOption(ChannelOption.TCP_NODELAY, true)
                     .childHandler(initializer);
-            LOG.info("启动server in port:{}", port);
+            LOG.info("start server in port->{}", port);
             f = boot.bind(port).syncUninterruptibly();
-            channel = f.channel();
+            Channel channel = f.channel();
+            if (this.serverChannel != null) {
+                if (!this.serverChannel.isActive()) {
+                    NettyChannel.removeChannel(this.serverChannel);
+                    this.serverChannel.close();
+                    this.serverChannel = channel;
+                }
+            } else {
+                this.serverChannel = channel;
+            }
         } finally {
             if (f != null && f.cause() != null) {
                 this.stop();
@@ -77,9 +94,11 @@ public class NettyServer extends BeaconServerHandler {
 
     @Override
     public void stop() {
-        // 通知线程池关闭
-        super.stop();
-        worker.shutdownGracefully();
-        boss.shutdownGracefully();
+        try {
+            worker.shutdownGracefully();
+            boss.shutdownGracefully();
+        } finally {
+            NettyChannel.removeChannel(this.serverChannel);
+        }
     }
 }

@@ -27,8 +27,8 @@ public class BeaconContext {
     private static NettyServer[] servers;
 
     private static final String ADDRESS = "127.0.0.1";
-    private static final int PORT1 = 9090;
-    private static final int PORT2 = 9091;
+    private static final int PORT1 = 9111;
+    private static final int PORT2 = 9112;
 
     static {
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
@@ -64,16 +64,18 @@ public class BeaconContext {
     }
 
     public static void stop() {
+        unregisterService();
         if (clients != null && clients.length > 0) {
             for (NettyClient c : clients) {
                 c.stop();
             }
         }
-        if (servers != null && servers.length > 0) {
-            for (NettyServer s : servers) {
-                s.stop();
-            }
-        }
+        // if (servers != null && servers.length > 0) {
+        // for (NettyServer s : servers) {
+        // s.stop();
+        // }
+        // }
+
     }
 
     public static Object getBean(Class<?> cls) {
@@ -102,20 +104,29 @@ public class BeaconContext {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
 
+    private static void unregisterService() {
+        Registry reg = null;
+        try {
+            reg = SpiManager.defaultSpiExtender(Registry.class);
+            reg.unregisterAllServices();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private static void initClient() throws Exception {
         clients = new NettyClient[] { new NettyClient(ADDRESS, PORT1), new NettyClient(ADDRESS, PORT2) };
         for (NettyClient client : clients) {
-            client.connect();
+            client.start();
         }
     }
 
     private static void initServer() throws Exception {
         servers = new NettyServer[] { new NettyServer(PORT1), new NettyServer(PORT2) };
         for (NettyServer server : servers) {
-            server.bind();
+            server.start();
         }
     }
 }

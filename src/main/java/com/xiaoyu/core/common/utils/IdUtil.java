@@ -12,7 +12,7 @@ public class IdUtil {
     private static final Random RAN = new Random();
 
     public static String requestId() {
-        return Math.abs(RAN.nextLong()) + System.currentTimeMillis() + "";
+        return Math.abs(RAN.nextLong()) + System.currentTimeMillis()/1000 + "";
     }
 
     public static int randomNum(int bound) {

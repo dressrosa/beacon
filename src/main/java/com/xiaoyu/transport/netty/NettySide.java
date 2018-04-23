@@ -1,7 +1,5 @@
 package com.xiaoyu.transport.netty;
 
-import java.util.concurrent.Future;
-
 /**
  * @author hongyu
  * @date 2018-02
@@ -9,10 +7,4 @@ import java.util.concurrent.Future;
  */
 public interface NettySide {
 
-    /**
-     * @param message
-     * @return
-     * @throws Exception
-     */
-    public Future<Object> send(Object message) throws Exception;
 }

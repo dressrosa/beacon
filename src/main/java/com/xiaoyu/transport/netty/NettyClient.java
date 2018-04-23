@@ -3,15 +3,17 @@
  **/
 package com.xiaoyu.transport.netty;
 
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.xiaoyu.core.common.constant.BeaconConstants;
-import com.xiaoyu.transport.BeaconClientHandler;
+import com.xiaoyu.transport.api.Client;
 
 import io.netty.bootstrap.Bootstrap;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;
@@ -28,15 +30,18 @@ import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
  * @author xiaoyu
  * @description
  */
-public class NettyClient extends BeaconClientHandler {
+public class NettyClient implements Client {
 
     private static final Logger LOG = LoggerFactory.getLogger("NettyClient");
+
+    private Channel clientChannel;
+
     private static final Integer RETRY_TIMES = 10;
     private final String host;
     private final int port;
     private Bootstrap boot;
     private EventLoopGroup worker = new NioEventLoopGroup();
-    private final NettyClientHandler handler = new NettyClientHandler(this);
+    private final NettyClientHandler handler = new NettyClientHandler();
     private final ChannelInitializer<SocketChannel> initialChannel = new ChannelInitializer<SocketChannel>() {
         @Override
         protected void initChannel(SocketChannel ch) throws Exception {
@@ -64,12 +69,28 @@ public class NettyClient extends BeaconClientHandler {
                 .handler(initialChannel);
     }
 
-    public void connect() throws Exception {
+    @Override
+    public void start() {
+        try {
+            connect();
+        } catch (Exception e) {
+        }
+    }
+
+    private void connect() throws Exception {
         ChannelFuture f = null;
         try {
             f = boot.connect(host, port).syncUninterruptibly();
-            channel = f.channel();
-            // channel.closeFuture().syncUninterruptibly();
+            Channel channel = f.channel();
+            if (this.clientChannel != null) {
+                if (!this.clientChannel.isActive()) {
+                    NettyChannel.removeChannel(this.clientChannel);
+                    this.clientChannel.close();
+                    this.clientChannel = channel;
+                }
+            } else {
+                this.clientChannel = channel;
+            }
         } catch (Exception e) {
             int num = 0;
             // 重连
@@ -80,16 +101,26 @@ public class NettyClient extends BeaconClientHandler {
                     f = boot.clone(worker = new NioEventLoopGroup())
                             .connect(host, port)
                             .syncUninterruptibly();
-                    channel = f.channel();
+                    Channel channel = f.channel();
+                    if (this.clientChannel != null) {
+                        if (!this.clientChannel.isActive()) {
+                            NettyChannel.removeChannel(this.clientChannel);
+                            this.clientChannel.close();
+                            this.clientChannel = channel;
+                        }
+                    } else {
+                        this.clientChannel = channel;
+                    }
                     break;
                 } catch (Exception e1) {
-                    //
+                    LOG.error("connect to server {} failed in end,retry {} times.", (host + ":" + port), num);
                 }
             }
             if (f == null) {
                 throw new Exception("connect to server failed,please check.");
             }
-            LOG.warn("客户端" + host + ":" + port + "->channel:{}", f.channel().id().asLongText());
+            // LOG.warn("客户端" + host + ":" + port + "->channel:{}",
+            // f.channel().id().asLongText());
         } finally {
             if (f != null && f.cause() != null) {
                 this.stop();
@@ -99,9 +130,20 @@ public class NettyClient extends BeaconClientHandler {
 
     @Override
     public void stop() {
-        // 通知线程池关闭
-        super.stop();
-        worker.shutdownGracefully();
+        try {
+            worker.shutdownGracefully();
+        } finally {
+            NettyChannel.checkUnActive();
+        }
     }
 
+    @Override
+    public Future<Object> send(Object message) {
+        try {
+            return NettyChannel.getChannel(clientChannel, "client").send(message);
+        } catch (Exception e) {
+            // do nothing
+        }
+        return null;
+    }
 }

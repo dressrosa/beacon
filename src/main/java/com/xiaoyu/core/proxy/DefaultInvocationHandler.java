@@ -4,7 +4,9 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.util.concurrent.Future;
 
+import com.alibaba.fastjson.JSON;
 import com.xiaoyu.core.common.extension.SpiManager;
+import com.xiaoyu.core.common.utils.IdUtil;
 import com.xiaoyu.core.register.Registry;
 import com.xiaoyu.core.rpc.context.BeaconContext;
 import com.xiaoyu.core.rpc.message.RpcMessage;
@@ -41,7 +43,8 @@ public class DefaultInvocationHandler implements InvocationHandler {
                 .setInterfaceName(ref.getName())
                 .setParams(args)
                 .setMethodName(methodName)
-                .setHeartbeat(false);
+                .setHeartbeat(false)
+                .setId(IdUtil.requestId());
         if ("equals".equals(methodName)) {
             if (args == null || args.length == 0) {
                 return false;
@@ -55,7 +58,9 @@ public class DefaultInvocationHandler implements InvocationHandler {
         return this.doInvoke(req);
     }
 
-    /**检测service是否存在;获取一个client;等待请求结果;
+    /**
+     * 检测service是否存在;获取一个client;等待请求结果;
+     * 
      * @param req
      * @return
      * @throws Throwable
@@ -65,11 +70,12 @@ public class DefaultInvocationHandler implements InvocationHandler {
         // 判断service是否存在
         boolean exist = reg.discoverService(((RpcRequest) req).getInterfaceName());
         if (!exist) {
-            throw new Exception("not find the service,please check it.");
+            throw new Exception("not find the service->" + ((RpcRequest) req).getInterfaceName() + "please check it.");
         }
         // 获取channel发送消息,返回future
         Future<Object> future = BeaconContext.client().send(req);
         RpcResponse result = (RpcResponse) future.get();
+        System.out.println("返回json:" + JSON.toJSONString(result));
         if (result.getException() != null) {
             throw result.getException();
         }

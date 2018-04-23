@@ -3,9 +3,7 @@
  **/
 package com.xiaoyu.transport.netty;
 
-import com.xiaoyu.transport.BaseChannel;
-import com.xiaoyu.transport.BeaconClientChannel;
-import com.xiaoyu.transport.BeaconHandler;
+import com.xiaoyu.transport.api.BeaconHandler;
 
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler.Sharable;
@@ -21,12 +19,6 @@ import io.netty.channel.ChannelPromise;
 @Sharable
 public class NettyClientHandler extends ChannelDuplexHandler {
 
-    private BeaconHandler beaconHandler;
-
-    public NettyClientHandler(BeaconHandler beaconHandler) {
-        this.beaconHandler = beaconHandler;
-    }
-
     @Override
     public void channelActive(ChannelHandlerContext ctx) throws Exception {
         super.channelActive(ctx);
@@ -35,18 +27,28 @@ public class NettyClientHandler extends ChannelDuplexHandler {
     @Override
     public void channelInactive(ChannelHandlerContext ctx) throws Exception {
         super.channelInactive(ctx);
+        if (!ctx.channel().isActive()) {
+            NettyChannel.removeChannel(ctx.channel());
+        }
+    }
 
+    @Override
+    public void disconnect(ChannelHandlerContext ctx, ChannelPromise promise) throws Exception {
+        super.disconnect(ctx, promise);
+        if (!ctx.channel().isActive()) {
+            NettyChannel.removeChannel(ctx.channel());
+        }
     }
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        BaseChannel beaconChannel = BeaconClientChannel.getChannel(ctx.channel(), beaconHandler);
+        BeaconHandler handler = NettyChannel.getChannel(ctx.channel(), "client");
         try {
             // 交给上层处理
-            this.beaconHandler.received(msg, beaconChannel);
+            handler.receive(msg);
         } finally {
             if (!ctx.channel().isActive()) {
-                ((BeaconClientChannel) beaconChannel).removeChannel(ctx.channel());
+                NettyChannel.removeChannel(ctx.channel());
             }
         }
     }
@@ -60,6 +62,17 @@ public class NettyClientHandler extends ChannelDuplexHandler {
     @Override
     public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
         super.write(ctx, msg, promise);
+        // 交给上层处理业务之外的事情
+//        BeaconHandler handler = NettyChannel.getChannel(ctx.channel(), "client");
+//        try {
+//            System.out.println("循环2......");
+//            handler.send(msg);
+//        } finally {
+//            if (!ctx.channel().isActive()) {
+//                NettyChannel.removeChannel(ctx.channel());
+//            }
+//        }
+
     }
 
 }
