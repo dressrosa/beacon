@@ -10,7 +10,8 @@ public class CallbackListener {
     private volatile Object result = null;
 
     public Object result() {
-        return result;
+        Object ret = result;
+        return ret;
     }
 
     public void onSuccess(Object result) {

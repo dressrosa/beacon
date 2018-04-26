@@ -3,6 +3,7 @@
  **/
 package com.xiaoyu.transport.netty;
 
+import com.xiaoyu.core.common.constant.From;
 import com.xiaoyu.transport.api.BeaconHandler;
 
 import io.netty.channel.ChannelDuplexHandler;
@@ -42,7 +43,7 @@ public class NettyServerHandler extends ChannelDuplexHandler {
 
     @Override
     public void channelRead(ChannelHandlerContext ctx, Object msg) throws Exception {
-        BeaconHandler handler = NettyChannel.getChannel(ctx.channel(), "server");
+        BeaconHandler handler = NettyChannel.getChannel(ctx.channel(), From.SERVER);
         try {
             handler.receive(msg);
         } finally {

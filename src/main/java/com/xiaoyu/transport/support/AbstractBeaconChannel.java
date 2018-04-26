@@ -22,11 +22,6 @@ import com.xiaoyu.transport.api.BaseChannel;
 public abstract class AbstractBeaconChannel implements BaseChannel {
 
     /**
-     * 由下层提供,为netty的发送和接收
-     */
-    // protected Channel channel;
-
-    /**
      * 从server断获取的结果,用于异步获取 requestId->result
      */
     private static final ConcurrentMap<String, CallbackListener> RESULT_MAP = new ConcurrentHashMap<>(32);
@@ -120,12 +115,17 @@ public abstract class AbstractBeaconChannel implements BaseChannel {
      */
     protected abstract Object doSend(Object message);
 
+    /** 异步
+     * @param message
+     * @return
+     */
     protected abstract Future<Object> doSendFuture(Object message);
 
     /**
      * 由具体的client or server的channel处理具体的接受操作
      * 
      * @param message
+     * @throws Exception
      */
-    protected abstract void doReceive(Object message);
+    protected abstract void doReceive(Object message) throws Exception;
 }

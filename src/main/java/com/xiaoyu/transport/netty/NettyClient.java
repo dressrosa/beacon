@@ -10,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.xiaoyu.core.common.constant.BeaconConstants;
+import com.xiaoyu.core.common.constant.From;
 import com.xiaoyu.transport.api.Client;
 
 import io.netty.bootstrap.Bootstrap;
@@ -140,7 +141,7 @@ public class NettyClient implements Client {
     @Override
     public Future<Object> send(Object message) {
         try {
-            return NettyChannel.getChannel(clientChannel, "client").send(message);
+            return NettyChannel.getChannel(clientChannel, From.CLIENT).send(message);
         } catch (Exception e) {
             // do nothing
         }

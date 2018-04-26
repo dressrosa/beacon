@@ -25,4 +25,18 @@ public class BeaconConstants {
      * 
      */
     public static final int MAX_LEN = 65526;
+
+    /**
+     * 
+     */
+    public static final String EQUALS = "equals";
+    /**
+     * 
+     */
+    public static final String TO_STRING = "toString";
+    /**
+     * 
+     */
+    public static final String HASHCODE = "hashCode";
+
 }

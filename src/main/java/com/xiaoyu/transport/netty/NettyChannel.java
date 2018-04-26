@@ -5,6 +5,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Future;
 
+import com.xiaoyu.core.common.constant.From;
 import com.xiaoyu.transport.BeaconClientChannel;
 import com.xiaoyu.transport.BeaconClientHandler;
 import com.xiaoyu.transport.BeaconServerChannel;
@@ -15,6 +16,11 @@ import com.xiaoyu.transport.support.AbstractBeaconChannel;
 
 import io.netty.channel.Channel;
 
+/**
+ * @author hongyu
+ * @date 2018-04
+ * @description
+ */
 public class NettyChannel implements BaseChannel {
 
     /**
@@ -29,11 +35,11 @@ public class NettyChannel implements BaseChannel {
 
     }
 
-    public static BeaconHandler getChannel(Channel ch, String side) throws Exception {
+    public static BeaconHandler getChannel(Channel ch, From client) throws Exception {
         BeaconHandler beacon = CHANNEL_MAP.get(ch);
         if (beacon == null) {
             NettyChannel nc = new NettyChannel(ch);
-            if ("client".equals(side)) {
+            if (From.CLIENT == client) {
                 BeaconHandler b = new BeaconClientHandler(new BeaconClientChannel(nc));
                 CHANNEL_MAP.putIfAbsent(ch, (beacon = b));
             } else {

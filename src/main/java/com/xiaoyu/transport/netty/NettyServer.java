@@ -73,9 +73,9 @@ public class NettyServer implements Server {
                     .option(ChannelOption.SO_BACKLOG, 128)
                     .childOption(ChannelOption.TCP_NODELAY, true)
                     .childHandler(initializer);
-            LOG.info("start server in port->{}", port);
             f = boot.bind(port).syncUninterruptibly();
             Channel channel = f.channel();
+            LOG.info("start server in port->{},address->{}", port,channel.remoteAddress());
             if (this.serverChannel != null) {
                 if (!this.serverChannel.isActive()) {
                     NettyChannel.removeChannel(this.serverChannel);

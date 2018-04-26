@@ -24,8 +24,8 @@ public class BeaconClientChannel extends AbstractBeaconChannel {
 
     private static final Logger LOG = LoggerFactory.getLogger("BeaconClientChannel");
 
-    private static final int SLEEP_TIME = 1000;
-    private static final int RETRY_NUM = 3;
+    private static final int SLEEP_TIME = 100;
+    private static final int RETRY_NUM = 10;
     protected BaseChannel baseChannel;
 
     public BeaconClientChannel(BaseChannel baseChannel) {
@@ -45,17 +45,15 @@ public class BeaconClientChannel extends AbstractBeaconChannel {
                     synchronized (listener) {
                         addListener(((RpcRequest) message).getId(), listener);
                         // wait次数达到一定限制后(2s内),默认超时.TODO
-                        int retry = 0;
+                        int retry = 1;
                         baseChannel.send(message);
-                        /*
-                         * 防止发生意外,导致一直阻塞;
-                         * 再等待3s后,以超时结束
-                         */
-                        do {
-                            listener.wait(SLEEP_TIME);
+                        long start = System.currentTimeMillis();
+                        // 防止发生意外,导致一直阻塞;再等待3s后,以超时结束
+                        while ((result = listener.result()) == null && retry <= RETRY_NUM) {
+                            listener.wait(SLEEP_TIME * retry);
                             retry++;
-                        } while ((result = listener.result()) == null && retry <= RETRY_NUM);
-                        LOG.warn("等待次数:{};时间:{}", retry, SLEEP_TIME * retry);
+                        }
+                        LOG.warn("尝试次数->{};耗时->{}", retry, (System.currentTimeMillis() - start));
                         if (result == null) {
                             result = new RpcResponse()
                                     .setException(new Exception("request exceed limit time"))
@@ -82,14 +80,6 @@ public class BeaconClientChannel extends AbstractBeaconChannel {
     protected void doReceive(Object message) {
         // 对同一此的请求channel加锁,当收到结果时释放
         setResult(((RpcResponse) message).getId(), message);
-        // 触发下一个handler的读操作
-        // this.channel.pipeline().context("beaconClientHandler").read();
-        // try {
-        // this.baseChannel.receive(message);
-        // } catch (Exception e) {
-        // // TODO Auto-generated catch block
-        // e.printStackTrace();
-        // }
     }
 
     @Override
@@ -105,17 +95,16 @@ public class BeaconClientChannel extends AbstractBeaconChannel {
                     synchronized (listener) {
                         addListener(((RpcRequest) message).getId(), listener);
                         // wait次数达到一定限制后(2s内),默认超时.TODO
-                        int retry = 0;
+                        int retry = 1;
                         baseChannel.send(message);
-                        /*
-                         * 防止发生意外,导致一直阻塞;
-                         * 再等待3s后,以超时结束
-                         */
-                        do {
-                            listener.wait(SLEEP_TIME);
+                        long start = System.currentTimeMillis();
+                        // 防止发生意外,导致一直阻塞;再等待3s后,以超时结束
+                        while ((result = listener.result()) == null && retry <= RETRY_NUM) {
+                            listener.wait(SLEEP_TIME * retry);
                             retry++;
-                        } while ((result = listener.result()) == null && retry <= RETRY_NUM);
-                        LOG.warn("等待次数:{};时间:{}", retry, SLEEP_TIME * retry);
+                        }
+                        long time = System.currentTimeMillis() - start;
+                        LOG.warn("尝试次数->{};耗时->{}", retry, time);
                         if (result == null) {
                             result = new RpcResponse()
                                     .setException(new Exception("request exceed limit time"))

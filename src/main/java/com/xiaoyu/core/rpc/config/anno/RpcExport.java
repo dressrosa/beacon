@@ -1,4 +1,4 @@
-package com.xiaoyu.core.rpc.config;
+package com.xiaoyu.core.rpc.config.anno;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -14,11 +14,9 @@ import java.lang.annotation.Target;
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.TYPE)
-public @interface RpcRefer {
+public @interface RpcExport {
 
-    /**实现类
-     * @return
-     */
     Class<?> value();
+    
 
 }

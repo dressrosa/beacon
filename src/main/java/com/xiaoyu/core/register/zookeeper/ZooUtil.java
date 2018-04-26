@@ -25,24 +25,24 @@ public class ZooUtil {
      */
     private static final Integer SESSION_TIMEOUT = 30_000;
     private static final Integer CONNECTION_TIMEOUT = 3000;
-    protected static final String HOST = "127.0.0.1";
+    // protected static final String host = "127.0.0.1";
     private ZkClient client;
 
-    private ZooUtil() {
-        client = new ZkClient(HOST, CONNECTION_TIMEOUT, SESSION_TIMEOUT, SERIALIZER);
-        LOG.info("connected zookeeper:{}", HOST);
+    private ZooUtil(String host) {
+        client = new ZkClient(host, CONNECTION_TIMEOUT, SESSION_TIMEOUT, SERIALIZER);
+        LOG.info("connected zookeeper->{}", host);
     }
 
-    public static ZooUtil zoo() {
+    public static ZooUtil zoo(String host) {
         ZooUtil zoo = null;
         int num = 0;
         try {
-            zoo = new ZooUtil();
+            zoo = new ZooUtil(host);
         } catch (Exception e) {
             e.printStackTrace();
             while (++num < RETRY_TIMES) {
                 try {
-                    zoo = new ZooUtil();
+                    zoo = new ZooUtil(host);
                     break;
                 } catch (Exception e1) {
                     e1.printStackTrace();

@@ -34,15 +34,13 @@ public class ZooRegistry implements Registry {
 
     private static final String CONSUMERS = "/consumers";
 
-    private static final ZooUtil ZOO = ZooUtil.zoo();
+    private ZooUtil zoo;
 
     private static final ConcurrentMap<String, IZkChildListener> CHILD_LISTENER_MAP = new ConcurrentHashMap<>(32);
 
     private static final ConcurrentMap<String, String> SERVICE_MAP = new ConcurrentHashMap<>(32);
 
     public ZooRegistry() {
-        ZOO.createPersistent(ROOT);
-        LOG.warn("开始注册服务.");
     }
 
     /**
@@ -53,26 +51,26 @@ public class ZooRegistry implements Registry {
         // 找到需要暴漏的service,然后写入providers信息,或者客户端启动写入consumers信息
         String zooService = "/" + service;
         String detailInfo = zooService;
-        ZOO.createPersistent(ROOT + zooService);
+        zoo.createPersistent(ROOT + zooService);
         String path = null;
         // 初始化service父节点
         if (side.equals(From.CLIENT)) {
             path = ROOT + zooService + CONSUMERS;
-            ZOO.createPersistent(path);
-            ZOO.createEphemeral(path + detailInfo);
+            zoo.createPersistent(path);
+            zoo.createEphemeral(path + detailInfo);
         } else {
             path = ROOT + zooService + PROVIDERS;
-            ZOO.createPersistent(path);
-            ZOO.createEphemeral(path + detailInfo);
+            zoo.createPersistent(path);
+            zoo.createEphemeral(path + detailInfo);
         }
 
         LOG.warn("register to zoo->{}", (path + detailInfo));
         SERVICE_MAP.putIfAbsent(service, path + detailInfo);
         IZkChildListener listener = null;
-        ZOO.subscribeChildChanges(path, listener = new IZkChildListener() {
+        zoo.subscribeChildChanges(path, listener = new IZkChildListener() {
             @Override
             public void handleChildChange(String parentPath, List<String> currentChilds) throws Exception {
-                LOG.warn("service changed.parentPath->{}",parentPath);
+                LOG.warn("service changed.parentPath->{}", parentPath);
                 if (parentPath.endsWith(PROVIDERS)) {
                     notifyChildListenr(currentChilds);
                 }
@@ -87,7 +85,6 @@ public class ZooRegistry implements Registry {
      * @param currentChilds
      */
     protected void notifyChildListenr(List<String> currentChilds) {
-        
 
     }
 
@@ -98,7 +95,7 @@ public class ZooRegistry implements Registry {
             return true;
         }
         String path = ROOT + "/" + service + PROVIDERS;
-        return ZOO.exists(path);
+        return zoo.exists(path);
     }
 
     @Override
@@ -114,9 +111,15 @@ public class ZooRegistry implements Registry {
             String service = iter.next();
             LOG.warn("unregister service->{}", service);
             IZkChildListener dlistner = CHILD_LISTENER_MAP.remove(service);
-            ZOO.unsubscribeChildChanges(service, dlistner);
+            zoo.unsubscribeChildChanges(service, dlistner);
             dlistner = null;
-            ZOO.remove(service);
+            zoo.remove(service);
         }
+    }
+
+    @Override
+    public void address(String addr) {
+        zoo = ZooUtil.zoo(addr);
+        zoo.createPersistent(ROOT);
     }
 }

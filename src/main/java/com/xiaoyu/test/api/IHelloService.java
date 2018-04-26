@@ -1,6 +1,6 @@
 package com.xiaoyu.test.api;
 
-import com.xiaoyu.core.rpc.config.RpcRefer;
+import com.xiaoyu.core.rpc.config.anno.RpcRefer;
 
 @RpcRefer(HelloServiceImpl.class)
 public interface IHelloService extends IBaseService{

@@ -10,13 +10,8 @@ package com.xiaoyu.core.rpc.message;
  */
 public class RpcRequest extends RpcMessage {
 
-    /**
-     * 方法名
-     */
     private String methodName;
-    /**
-     * 
-     */
+   
     private Object returnType;
 
     private String interfaceName;

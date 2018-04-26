@@ -14,6 +14,7 @@ import io.netty.channel.Channel;
  * @date 2018-02
  * @description
  */
+@Deprecated
 public class BeaconHandlerAdpater implements BeaconHandler {
 
     /**

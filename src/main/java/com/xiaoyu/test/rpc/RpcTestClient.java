@@ -6,7 +6,7 @@ import java.util.concurrent.BrokenBarrierException;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import com.xiaoyu.core.rpc.context.BeaconContext;
+import com.xiaoyu.core.rpc.context.BeaconTestContext;
 import com.xiaoyu.test.api.HelloServiceImpl;
 import com.xiaoyu.test.api.IHelloService;
 
@@ -20,7 +20,7 @@ public class RpcTestClient {
         long start = 0;
         try {
 
-            BeaconContext.startClient();
+            BeaconTestContext.startClient();
             start = System.currentTimeMillis();
             CyclicBarrier ba = new CyclicBarrier(300);
 
@@ -34,7 +34,7 @@ public class RpcTestClient {
                         } catch (InterruptedException | BrokenBarrierException e) {
                             e.printStackTrace();
                         }
-                        IHelloService service = (IHelloService) BeaconContext
+                        IHelloService service = (IHelloService) BeaconTestContext
                                 .getBean(IHelloService.class);
                         int num = in.getAndIncrement();
                         String result = service.hello("tom" + num);
@@ -57,7 +57,7 @@ public class RpcTestClient {
                 }
             }
             System.out.println("总的耗时:" + (System.currentTimeMillis() - start));
-            BeaconContext.stop();
+            BeaconTestContext.stop();
         }
     }
 }

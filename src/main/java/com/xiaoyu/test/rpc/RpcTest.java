@@ -1,14 +1,14 @@
 package com.xiaoyu.test.rpc;
 
-import com.xiaoyu.core.rpc.context.BeaconContext;
+import com.xiaoyu.core.rpc.context.BeaconTestContext;
 import com.xiaoyu.test.api.IHelloService;
 
 public class RpcTest {
 
     public static void main(String[] args) throws Exception {
         try {
-            BeaconContext.startClient();
-            IHelloService service = (IHelloService) BeaconContext.getBean(IHelloService.class);
+            BeaconTestContext.startClient();
+            IHelloService service = (IHelloService) BeaconTestContext.getBean(IHelloService.class);
             Object result = service.hello("好的");
             System.out.println("结果:" + result);
         } 
@@ -17,7 +17,7 @@ public class RpcTest {
         }
         finally {
             // System.out.println("结束2!");
-            BeaconContext.stop();
+            BeaconTestContext.stop();
         }
     }
 }
