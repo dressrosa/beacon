@@ -62,6 +62,7 @@ public class BeaconTestContext {
     public static void startServer() throws Exception {
         initProxyMap();
         initServer();
+
         exportService(From.SERVER);
     }
 
@@ -102,6 +103,7 @@ public class BeaconTestContext {
         Registry reg = null;
         try {
             reg = SpiManager.defaultSpiExtender(Registry.class);
+            reg.address("127.0.0.1");
             reg.registerService("com.xiaoyu.test.api.IHelloService", side);
         } catch (Exception e) {
             e.printStackTrace();

@@ -35,8 +35,8 @@ public class BeaconContext extends AbstractBeaconContext {
 
     @Override
     public void registry(Registry registry) {
-        // TODO Auto-generated method stub
-        
+        this.registry = registry;
+
     }
 
 }

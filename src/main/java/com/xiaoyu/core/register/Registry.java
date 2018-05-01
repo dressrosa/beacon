@@ -17,6 +17,14 @@ public interface Registry {
     public void address(String addr);
 
     /**
+     * 是否连接
+     * 
+     * @param addr
+     * @return
+     */
+    public boolean isInit();
+
+    /**
      * 发现服务
      * 
      * @param service
@@ -42,5 +50,5 @@ public interface Registry {
      * 
      * @param service
      */
-    public void unregisterService(String service);
+    public void unregisterService(String service, From side);
 }

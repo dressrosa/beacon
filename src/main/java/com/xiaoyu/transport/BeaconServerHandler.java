@@ -11,7 +11,6 @@ import com.xiaoyu.transport.support.AbstractBeaconHandler;
  */
 public class BeaconServerHandler extends AbstractBeaconHandler {
 
-
     private BeaconServerChannel serverChannel;
 
     public BeaconServerHandler(BeaconServerChannel serverChannel) {
@@ -21,6 +20,6 @@ public class BeaconServerHandler extends AbstractBeaconHandler {
     @Override
     public void receive(Object message) throws Exception {
         super.receive(message);
-        this.serverChannel.doReceive(message);
+        this.serverChannel.receive(message);
     }
 }

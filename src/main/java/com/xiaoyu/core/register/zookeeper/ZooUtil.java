@@ -1,5 +1,7 @@
 package com.xiaoyu.core.register.zookeeper;
 
+import java.util.concurrent.TimeUnit;
+
 import org.I0Itec.zkclient.IZkChildListener;
 import org.I0Itec.zkclient.IZkDataListener;
 import org.I0Itec.zkclient.ZkClient;
@@ -14,7 +16,7 @@ import org.slf4j.LoggerFactory;
  */
 public class ZooUtil {
 
-    private static final Logger LOG = LoggerFactory.getLogger("ZooUtil");
+    private static final Logger LOG = LoggerFactory.getLogger(ZooUtil.class);
 
     private static final ZkSerializer SERIALIZER = new JsonSerializer();
 
@@ -25,7 +27,6 @@ public class ZooUtil {
      */
     private static final Integer SESSION_TIMEOUT = 30_000;
     private static final Integer CONNECTION_TIMEOUT = 3000;
-    // protected static final String host = "127.0.0.1";
     private ZkClient client;
 
     private ZooUtil(String host) {
@@ -33,21 +34,27 @@ public class ZooUtil {
         LOG.info("connected zookeeper->{}", host);
     }
 
-    public static ZooUtil zoo(String host) {
+    public static ZooUtil zoo(String host) throws Exception {
         ZooUtil zoo = null;
         int num = 0;
         try {
             zoo = new ZooUtil(host);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOG.error("connect to zookeeper->{} failed,go into retry.", host, e);
             while (++num < RETRY_TIMES) {
                 try {
                     zoo = new ZooUtil(host);
-                    break;
+                    TimeUnit.MILLISECONDS.sleep(500);
+                    if (zoo != null) {
+                        break;
+                    }
                 } catch (Exception e1) {
                     e1.printStackTrace();
                 }
             }
+        }
+        if (zoo == null) {
+            throw new Exception("connect to zookeep->" + host + " failed");
         }
         return zoo;
     }

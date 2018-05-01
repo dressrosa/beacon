@@ -4,8 +4,10 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 
+import com.xiaoyu.core.common.constant.From;
 import com.xiaoyu.core.common.extension.SpiManager;
 import com.xiaoyu.core.proxy.IProxy;
+import com.xiaoyu.core.register.Registry;
 
 /**
  * 解决spring里面接口无法实例化的问题
@@ -18,13 +20,25 @@ public class BeaconFactoryBean implements FactoryBean<Object>, InitializingBean,
 
     private Class<?> cls;
 
-    public BeaconFactoryBean(Class<?> cls) {
+    private Registry registry;
+
+    private From side;
+
+    public BeaconFactoryBean(Class<?> cls, Registry registry, From side) {
         this.cls = cls;
+        this.registry = registry;
+        this.side = side;
     }
 
     @Override
     public void destroy() throws Exception {
+        String service = cls.getName();
+        // TODO 这里进行注销注册中心
+        if (side == From.CLIENT) {
 
+        } else {
+            registry.unregisterService(service, From.SERVER);
+        }
     }
 
     @Override

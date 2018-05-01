@@ -97,7 +97,7 @@ public class NettyClient implements Client {
             // 重连
             while (++num < RETRY_TIMES) {
                 try {
-                    TimeUnit.MILLISECONDS.sleep(1000);
+                    TimeUnit.MILLISECONDS.sleep(1500);
                     LOG.warn("connect to server {} failed,retry {} times.", (host + ":" + port), num);
                     f = boot.clone(worker = new NioEventLoopGroup())
                             .connect(host, port)
