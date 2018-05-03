@@ -6,8 +6,10 @@ import org.springframework.beans.factory.InitializingBean;
 
 import com.xiaoyu.core.common.constant.From;
 import com.xiaoyu.core.common.extension.SpiManager;
+import com.xiaoyu.core.common.utils.NetUtil;
 import com.xiaoyu.core.proxy.IProxy;
 import com.xiaoyu.core.register.Registry;
+import com.xiaoyu.core.rpc.config.bean.BeaconPath;
 
 /**
  * 解决spring里面接口无法实例化的问题
@@ -34,11 +36,11 @@ public class BeaconFactoryBean implements FactoryBean<Object>, InitializingBean,
     public void destroy() throws Exception {
         String service = cls.getName();
         // TODO 这里进行注销注册中心
-        if (side == From.CLIENT) {
-
-        } else {
-            registry.unregisterService(service, From.SERVER);
-        }
+        BeaconPath path = new BeaconPath();
+        path.setHost(NetUtil.localIP())
+                .setSide(side)
+                .setService(service);
+        registry.unregisterService(path);
     }
 
     @Override

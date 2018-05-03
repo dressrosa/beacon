@@ -28,14 +28,13 @@ public abstract class AbstractBeaconContext implements Context {
 
     public AbstractBeaconContext() {
         abstractContext = this;
-    }
-
-    static {
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override
             public void run() {
                 System.out.println("--------------->执行ShutdownHook<----------------");
                 // do something
+                // 关闭注册中心
+                registry.close();
             }
         }));
     }
@@ -57,6 +56,7 @@ public abstract class AbstractBeaconContext implements Context {
         initClient();
     }
 
+    @Override
     public void startServer() throws Exception {
         initServer();
     }

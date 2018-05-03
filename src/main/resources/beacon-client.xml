@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:beacon="http://www.iwouldbe.com/schema/beacon"
+    xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+    http://www.iwouldbe.com/schema/beacon http://www.iwouldbe.com/schema/beacon.xsd">
+
+
+    <beacon:registry address="127.0.0.1" protocol="zookeeper" />
+
+    <beacon:reference id="helloService"
+        interfaceName="com.xiaoyu.test.api.IHelloService" />
+
+</beans>

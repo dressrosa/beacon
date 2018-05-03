@@ -1,6 +1,6 @@
 package com.xiaoyu.core.register;
 
-import com.xiaoyu.core.common.constant.From;
+import com.xiaoyu.core.rpc.config.bean.BeaconPath;
 
 /**
  * @author hongyu
@@ -15,6 +15,8 @@ public interface Registry {
      * @param addr
      */
     public void address(String addr);
+
+    public void close();
 
     /**
      * 是否连接
@@ -33,22 +35,12 @@ public interface Registry {
     public boolean discoverService(String service);
 
     /**
-     * 取消注册服务
-     */
-    public void unregisterAllServices();
-
-    /**
      * 注册服务
-     * 
-     * @param service
-     * @param side
      */
-    public void registerService(String service, From side);
+    public void registerService(BeaconPath beaconPath);
 
     /**
      * 取消注册服务
-     * 
-     * @param service
      */
-    public void unregisterService(String service, From side);
+    public void unregisterService(BeaconPath beaconPath);
 }

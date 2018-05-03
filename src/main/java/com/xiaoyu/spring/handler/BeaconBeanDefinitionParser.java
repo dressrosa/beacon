@@ -18,9 +18,12 @@ import org.w3c.dom.Element;
 
 import com.xiaoyu.core.common.constant.From;
 import com.xiaoyu.core.common.extension.SpiManager;
+import com.xiaoyu.core.common.utils.NetUtil;
 import com.xiaoyu.core.common.utils.StringUtil;
 import com.xiaoyu.core.register.Registry;
+import com.xiaoyu.core.rpc.config.bean.BeaconPath;
 import com.xiaoyu.core.rpc.context.Context;
+import com.xiaoyu.spring.config.BeaconExporter;
 import com.xiaoyu.spring.config.BeaconFactoryBean;
 import com.xiaoyu.spring.config.BeaconReference;
 import com.xiaoyu.spring.config.BeaconRegistry;
@@ -39,6 +42,8 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
 
     private Class<?> cls;
 
+    private volatile static boolean hasExporter = false;
+
     public BeaconBeanDefinitionParser(Class<?> cls) {
         this.cls = cls;
     }
@@ -51,13 +56,73 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
     @Override
     protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
         try {
+
             if (cls == BeaconReference.class) {
                 doParseReference(element, parserContext);
             } else if (cls == BeaconRegistry.class) {
                 doParseRegistry(element, parserContext, builder);
+            } else if (cls == BeaconExporter.class) {
+                doParseExporter(element, parserContext, builder);
+                // TODO 感觉不应该放这里
+                boolean thasExporter = hasExporter;
+                if (!thasExporter) {
+                    // 启动nettyServer
+                    Context context = SpiManager.defaultSpiExtender(Context.class);
+                    context.startServer();
+                    hasExporter = true;
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();
+        }
+
+    }
+
+    private void doParseExporter(Element element, ParserContext parserContext, BeanDefinitionBuilder builder)
+            throws Exception {
+        String interfaceName = element.getAttribute("interfaceName");
+        String ref = element.getAttribute("ref");
+        String id = element.getAttribute("id");
+        if (StringUtil.isBlank(interfaceName)) {
+            throw new Exception(" interfaceName cannot be null in xml tag->" + element.getTagName());
+        }
+        if (StringUtil.isBlank(ref)) {
+            throw new Exception(" ref cannot be null in xml tag->" + element.getTagName());
+        }
+        // 检查接口的合法性
+        Class<?> interfaceCls = Class.forName(interfaceName);
+        Class<?> refCls = Class.forName(ref);
+        Class<?>[] interfaces = refCls.getInterfaces();
+        boolean isExist = false;
+        for (Class<?> inter : interfaces) {
+            if (interfaceCls.getName().equals(inter.getName())) {
+                isExist = true;
+                break;
+            }
+        }
+        if (!isExist) {
+            throw new Exception("ref->" + ref + " is not implement of interface->" + interfaceName + " in xml tag->"
+                    + element.getTagName());
+        }
+        try {
+            // 注册服务
+            BeaconPath beaconPath = new BeaconPath();
+            beaconPath
+                    .setSide(From.SERVER)
+                    .setService(interfaceName)
+                    .setHost(NetUtil.localIP());
+            Registry registry = SpiManager.defaultSpiExtender(Registry.class);
+            if (registry.isInit()) {
+                registry.registerService(beaconPath);
+            } else {
+                // registry还未解析到,导致这里没有registry
+                referenceSet.add(element);
+                return;
+            }
+        } catch (Exception e) {
+            LOG.error("cannot resolve exporter,please check in xml tag->{} with id->{},interface->{}",
+                    element.getTagName(), id, interfaceName, e);
+            return;
         }
     }
 
@@ -135,9 +200,14 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
             Class<?> target = Class.forName(interfaceName);
 
             // 注册服务
+            BeaconPath beaconPath = new BeaconPath();
+            beaconPath
+                    .setSide(From.CLIENT)
+                    .setService(interfaceName)
+                    .setHost(NetUtil.localIP());
             Registry registry = SpiManager.defaultSpiExtender(Registry.class);
             if (registry.isInit()) {
-                registry.registerService(interfaceName, From.CLIENT);
+                registry.registerService(beaconPath);
             } else {
                 // registry还未解析到,导致这里没有registry
                 referenceSet.add(element);

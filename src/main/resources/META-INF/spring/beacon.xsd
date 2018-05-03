@@ -5,7 +5,7 @@
     xmlns:tns="http://www.iwouldbe.com/schema/beacon" elementFormDefault="qualified">
 
     <xsd:import namespace="http://www.springframework.org/schema/beans" />
-    
+
     <!--注册中心 -->
     <xsd:element name="registry">
         <xsd:complexType>
@@ -23,4 +23,12 @@
         </xsd:complexType>
     </xsd:element>
 
+    <!--暴露接口 -->
+    <xsd:element name="exporter">
+        <xsd:complexType>
+            <xsd:attribute name="id" type="string" />
+            <xsd:attribute name="interfaceName" type="string" />
+            <xsd:attribute name="ref" type="string" />
+        </xsd:complexType>
+    </xsd:element>
 </xsd:schema>

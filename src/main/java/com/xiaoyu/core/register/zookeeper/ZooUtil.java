@@ -112,11 +112,14 @@ public class ZooUtil {
         client.unsubscribeDataChanges(path, listener);
     }
 
-    /**
-     * @param path
-     * @param listener
-     * @return
-     */
+    public int childrenNum(final String path) {
+        return client.countChildren(path);
+    }
+
+    public void close() {
+        client.close();
+    }
+
     public void subscribeChildChanges(final String path, IZkChildListener listener) {
         // 检测是否已经创建
         createEphemeral(path);

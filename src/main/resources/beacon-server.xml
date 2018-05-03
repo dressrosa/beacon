@@ -5,10 +5,13 @@
     xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
     http://www.iwouldbe.com/schema/beacon http://www.iwouldbe.com/schema/beacon.xsd">
 
-    <beacon:reference id="helloService"
-        interfaceName="com.xiaoyu.test.api.IHelloService" />
 
     <beacon:registry address="127.0.0.1" protocol="zookeeper" />
 
+    <beacon:exporter id="helloService"
+        interfaceName="com.xiaoyu.test.api.IHelloService" ref="com.xiaoyu.test.api.HelloServiceImpl" />
+
+    <beacon:exporter id="userService"
+        interfaceName="com.xiaoyu.test.api.IUserService" ref="com.xiaoyu.test.api.UserServiceImpl" />
 
 </beans>

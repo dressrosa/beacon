@@ -12,7 +12,10 @@ public interface Context {
 
     public Client client() throws Exception;
 
+    public void startServer() throws Exception;
+
     public void registry(Registry registry);
-    
+
     public void stop();
+
 }

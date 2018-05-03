@@ -97,7 +97,7 @@ public class InvocationHandlerAdapter {
         boolean exist = reg.discoverService(((RpcRequest) req).getInterfaceName());
         if (!exist) {
             throw new Exception(
-                    "cannot find the service->" + ((RpcRequest) req).getInterfaceName() + "please check it.");
+                    "cannot find the service->" + ((RpcRequest) req).getInterfaceName() + " please check it.");
         }
         //发送消息,返回future
         Future<Object> future = SpiManager.defaultSpiExtender(Context.class).client().send(req);

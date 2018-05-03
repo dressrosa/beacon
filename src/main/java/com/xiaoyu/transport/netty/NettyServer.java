@@ -7,6 +7,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.xiaoyu.core.common.constant.BeaconConstants;
+import com.xiaoyu.core.common.utils.NetUtil;
 import com.xiaoyu.transport.api.Server;
 
 import io.netty.bootstrap.ServerBootstrap;
@@ -75,7 +76,7 @@ public class NettyServer implements Server {
                     .childHandler(initializer);
             f = boot.bind(port).syncUninterruptibly();
             Channel channel = f.channel();
-            LOG.info("start server in port->{},address->{}", port,channel.remoteAddress());
+            LOG.info("start server in port->{},address->{}", port,NetUtil.localIP());
             if (this.serverChannel != null) {
                 if (!this.serverChannel.isActive()) {
                     NettyChannel.removeChannel(this.serverChannel);
