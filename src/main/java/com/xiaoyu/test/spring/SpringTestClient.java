@@ -11,14 +11,14 @@ public class SpringTestClient {
 
     public static void main(String[] args) throws Exception {
         ConfigurableApplicationContext context = new ClassPathXmlApplicationContext("classpath:beacon-client.xml");
-//        CountDownLatch latch = new CountDownLatch(1);
-//        latch.await();
         try {
-            for (int i = 0; i < 1; i++) {
+            for (int i = 0; i < 10; i++) {
                 IHelloService service = (IHelloService) context.getBean(IHelloService.class);
-                System.out.println(service.hello("xiaoming"));
+                System.out.println(service.hello("xiaoming")+i);
+//                 CountDownLatch latch = new CountDownLatch(1);
+//                 latch.await();
             }
-            
+
         } finally {
             context.stop();
             context.close();

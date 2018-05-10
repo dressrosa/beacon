@@ -27,15 +27,20 @@ public class BeaconConstants {
     public static final int MAX_LEN = 65526;
 
     /**
-     * 
+     * 读超时
+     */
+    public static final int IDLE_READ_TIMEOUT = 30_000;
+
+    /**
+     * equals
      */
     public static final String EQUALS = "equals";
     /**
-     * 
+     * toString
      */
     public static final String TO_STRING = "toString";
     /**
-     * 
+     * hashCode
      */
     public static final String HASHCODE = "hashCode";
 

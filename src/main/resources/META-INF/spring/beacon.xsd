@@ -6,10 +6,17 @@
 
     <xsd:import namespace="http://www.springframework.org/schema/beans" />
 
+    <!--协议 -->
+    <xsd:element name="protocol">
+        <xsd:complexType>
+            <xsd:attribute name="name" type="string" />
+            <xsd:attribute name="port" type="string" />
+        </xsd:complexType>
+    </xsd:element>
+
     <!--注册中心 -->
     <xsd:element name="registry">
         <xsd:complexType>
-            <!-- <xsd:attribute name="id" type="string" /> -->
             <xsd:attribute name="address" type="string" />
             <xsd:attribute name="protocol" type="string" />
         </xsd:complexType>

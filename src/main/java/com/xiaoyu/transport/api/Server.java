@@ -5,9 +5,6 @@ package com.xiaoyu.transport.api;
  * @date 2018-04
  * @description
  */
-public interface Server {
+public interface Server extends BeaconSide{
 
-    public void stop();
-
-    public void start();
 }

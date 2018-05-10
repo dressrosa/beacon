@@ -1,5 +1,7 @@
 package com.xiaoyu.core.register;
 
+import java.util.List;
+
 import com.xiaoyu.core.rpc.config.bean.BeaconPath;
 
 /**
@@ -43,4 +45,6 @@ public interface Registry {
      * 取消注册服务
      */
     public void unregisterService(BeaconPath beaconPath);
+
+    public List<BeaconPath> getProviders(String service);
 }

@@ -15,4 +15,14 @@ public enum From {
      * 1 server
      */
     SERVER;
+
+    public static From fromName(String name) {
+        From[] values = From.values();
+        for (From f : values) {
+            if (f.name().equals(name)) {
+                return f;
+            }
+        }
+        return null;
+    }
 }

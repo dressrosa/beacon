@@ -5,16 +5,15 @@ package com.xiaoyu.core.proxy;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
-import java.util.concurrent.Future;
+import java.util.List;
 
+import com.xiaoyu.core.cluster.FaultTolerant;
 import com.xiaoyu.core.common.constant.BeaconConstants;
 import com.xiaoyu.core.common.extension.SpiManager;
 import com.xiaoyu.core.common.utils.IdUtil;
 import com.xiaoyu.core.register.Registry;
-import com.xiaoyu.core.rpc.context.Context;
-import com.xiaoyu.core.rpc.message.RpcMessage;
+import com.xiaoyu.core.rpc.config.bean.BeaconPath;
 import com.xiaoyu.core.rpc.message.RpcRequest;
-import com.xiaoyu.core.rpc.message.RpcResponse;
 
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
@@ -56,7 +55,6 @@ public class InvocationHandlerAdapter {
             };
         }
         return null;
-
     }
 
     /**
@@ -64,12 +62,13 @@ public class InvocationHandlerAdapter {
      */
     private Object preInvoke(Method method, Object[] args) throws Throwable {
         String methodName = method.getName();
-        final RpcMessage req = new RpcRequest()
+        final RpcRequest req = new RpcRequest()
                 .setInterfaceName(ref.getName())
                 .setParams(args)
-                .setMethodName(methodName)
-                .setHeartbeat(false)
-                .setId(IdUtil.requestId());
+                .setMethodName(methodName);
+        req.setHeartbeat(false);
+        req.setId(IdUtil.requestId());
+        //TODO
         if (BeaconConstants.EQUALS.equals(methodName)) {
             if (args == null || args.length == 0) {
                 return false;
@@ -91,20 +90,18 @@ public class InvocationHandlerAdapter {
      * @return
      * @throws Throwable
      */
-    private Object doInvoke(RpcMessage req) throws Throwable {
+    private Object doInvoke(RpcRequest request) throws Throwable {
         Registry reg = SpiManager.defaultSpiExtender(Registry.class);
         // 判断service是否存在
-        boolean exist = reg.discoverService(((RpcRequest) req).getInterfaceName());
+        String service = request.getInterfaceName();
+        boolean exist = reg.discoverService(service);
         if (!exist) {
             throw new Exception(
-                    "cannot find the service->" + ((RpcRequest) req).getInterfaceName() + " please check it.");
+                    "cannot find the service->" + request.getInterfaceName() + ";please check it.");
         }
-        //发送消息,返回future
-        Future<Object> future = SpiManager.defaultSpiExtender(Context.class).client().send(req);
-        RpcResponse result = (RpcResponse) future.get();
-        if (result.getException() != null) {
-            throw result.getException();
-        }
-        return result.getResult();
+        List<BeaconPath> providers = reg.getProviders(service);
+        FaultTolerant tolerant = SpiManager.defaultSpiExtender(FaultTolerant.class);
+
+        return tolerant.invoke(request, providers);
     }
 }

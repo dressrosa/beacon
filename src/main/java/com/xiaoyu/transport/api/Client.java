@@ -7,11 +7,10 @@ import java.util.concurrent.Future;
  * @date 2018-04
  * @description
  */
-public interface Client {
+public interface Client extends BeaconSide {
 
-    public Future<Object> send(Object message);
+    public Future<Object> sendFuture(Object message) throws Exception;
 
-    public void stop();
+    public Object send(Object message) throws Exception;
 
-    public void start();
 }

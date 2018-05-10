@@ -16,6 +16,8 @@ public interface BeaconHandler {
      */
     public void receive(Object message) throws Exception;
 
-    public Future<Object> send(Object message) throws Exception;
+    public Future<Object> sendFuture(Object message) throws Exception;
+
+    public Object send(Object message) throws Exception;
 
 }

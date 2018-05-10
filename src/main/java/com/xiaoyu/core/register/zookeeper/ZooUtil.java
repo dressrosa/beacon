@@ -1,9 +1,12 @@
 package com.xiaoyu.core.register.zookeeper;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import org.I0Itec.zkclient.IZkChildListener;
 import org.I0Itec.zkclient.IZkDataListener;
+import org.I0Itec.zkclient.IZkStateListener;
 import org.I0Itec.zkclient.ZkClient;
 import org.I0Itec.zkclient.serialize.ZkSerializer;
 import org.slf4j.Logger;
@@ -23,14 +26,17 @@ public class ZooUtil {
     private static final Integer RETRY_TIMES = 10;
 
     /**
-     * 临时节点消失的时间
+     * 临时节点消失的时间 30s
      */
     private static final Integer SESSION_TIMEOUT = 30_000;
-    private static final Integer CONNECTION_TIMEOUT = 3000;
+    /**
+     * 连接超时 3s
+     */
+    private static final Integer CONNECTION_TIMEOUT = 3_000;
     private ZkClient client;
 
     private ZooUtil(String host) {
-        client = new ZkClient(host, CONNECTION_TIMEOUT, SESSION_TIMEOUT, SERIALIZER);
+        client = new ZkClient(host, SESSION_TIMEOUT, CONNECTION_TIMEOUT, SERIALIZER);
         LOG.info("connected zookeeper->{}", host);
     }
 
@@ -79,6 +85,14 @@ public class ZooUtil {
         }
     }
 
+    public List<String> children(String path) {
+        List<String> childList = client.getChildren(path);
+        if (childList == null) {
+            childList = new ArrayList<>(0);
+        }
+        return childList;
+    }
+
     /**
      * 当server端增加或掉线的时候,获取通知,更新缓存的server地址
      * 
@@ -101,6 +115,10 @@ public class ZooUtil {
             }
         });
         return listener;
+    }
+
+    public void subscribeStateChanges(IZkStateListener listener) {
+        client.subscribeStateChanges(listener);
     }
 
     public void writeData(String path, Object data) {

@@ -75,6 +75,7 @@ public class NettyClient implements Client {
         try {
             connect();
         } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
@@ -86,7 +87,6 @@ public class NettyClient implements Client {
             if (this.clientChannel != null) {
                 if (!this.clientChannel.isActive()) {
                     NettyChannel.removeChannel(this.clientChannel);
-                    this.clientChannel.close();
                     this.clientChannel = channel;
                 }
             } else {
@@ -106,7 +106,6 @@ public class NettyClient implements Client {
                     if (this.clientChannel != null) {
                         if (!this.clientChannel.isActive()) {
                             NettyChannel.removeChannel(this.clientChannel);
-                            this.clientChannel.close();
                             this.clientChannel = channel;
                         }
                     } else {
@@ -114,14 +113,12 @@ public class NettyClient implements Client {
                     }
                     break;
                 } catch (Exception e1) {
-                    LOG.error("connect to server {} failed in end,retry {} times.", (host + ":" + port), num);
+                    LOG.error("connect to server->{} failed in end,retry {} times.", (host + ":" + port), num);
                 }
             }
             if (f == null) {
-                throw new Exception("connect to server failed,please check.");
+                throw new Exception("connect to server->" + (host + ":" + port) + " failed,please check.");
             }
-            // LOG.warn("客户端" + host + ":" + port + "->channel:{}",
-            // f.channel().id().asLongText());
         } finally {
             if (f != null && f.cause() != null) {
                 this.stop();
@@ -132,19 +129,21 @@ public class NettyClient implements Client {
     @Override
     public void stop() {
         try {
-            worker.shutdownGracefully();
+            if (!worker.isShutdown()) {
+                worker.shutdownGracefully();
+            }
         } finally {
             NettyChannel.checkUnActive();
         }
     }
 
     @Override
-    public Future<Object> send(Object message) {
-        try {
-            return NettyChannel.getChannel(clientChannel, From.CLIENT).send(message);
-        } catch (Exception e) {
-            // do nothing
-        }
-        return null;
+    public Future<Object> sendFuture(Object message) throws Exception {
+        return NettyChannel.getChannel(clientChannel, From.CLIENT).sendFuture(message);
+    }
+
+    @Override
+    public Object send(Object message) throws Exception {
+        return NettyChannel.getChannel(clientChannel, From.CLIENT).send(message);
     }
 }

@@ -2,7 +2,6 @@ package com.xiaoyu.test.proxy;
 
 import com.xiaoyu.core.common.extension.SpiManager;
 import com.xiaoyu.core.proxy.IProxy;
-import com.xiaoyu.test.api.HelloServiceImpl;
 import com.xiaoyu.test.api.IHelloService;
 
 public class ProxyTest {

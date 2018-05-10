@@ -6,7 +6,6 @@ import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.xiaoyu.core.rpc.config.anno.RpcRefer;
 import com.xiaoyu.core.rpc.message.RpcRequest;
 import com.xiaoyu.core.rpc.message.RpcResponse;
 import com.xiaoyu.transport.api.BaseChannel;
@@ -41,8 +40,6 @@ public class BeaconServerChannel extends AbstractBeaconChannel {
             this.baseChannel.send(message);
         } catch (Exception e) {
 
-        } finally {
-
         }
         return null;
     }
@@ -59,13 +56,12 @@ public class BeaconServerChannel extends AbstractBeaconChannel {
                 return;
             }
             // 处理收到client信息
-            Class<?> target = Class.forName(req.getInterfaceName());
-            // 应该是根据信息,找到实现类.
-            RpcRefer ref = target.getAnnotation(RpcRefer.class);
+            Class<?> target = Class.forName(req.getInterfaceImpl());
+            // 应该是根据信息,找到实现类
 
-            for (Method d : ref.value().getDeclaredMethods()) {
+            for (Method d : target.getDeclaredMethods()) {
                 if (d.getName().equals(req.getMethodName())) {
-                    result = d.invoke(ref.value().newInstance(), req.getParams());
+                    result = d.invoke(target.newInstance(), req.getParams());
                 }
             }
         } catch (Exception e) {

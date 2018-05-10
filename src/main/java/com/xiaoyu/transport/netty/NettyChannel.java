@@ -63,11 +63,17 @@ public class NettyChannel implements BaseChannel {
         AbstractBeaconChannel.TASK_POOL.shutdown();
     }
 
+    /**
+     * 本地缓存删除,并close掉
+     * 
+     * @param channel
+     */
     public static void removeChannel(Channel channel) {
         BeaconHandler handler = CHANNEL_MAP.get(channel);
         if (handler != null) {
             CHANNEL_MAP.remove(channel);
         }
+        channel.close();
     }
 
     @Override

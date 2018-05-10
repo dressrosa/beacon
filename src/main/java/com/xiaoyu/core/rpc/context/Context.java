@@ -10,11 +10,13 @@ import com.xiaoyu.transport.api.Client;
  */
 public interface Context {
 
-    public Client client() throws Exception;
+    public Client client(String host, int port) throws Exception;
 
-    public void startServer() throws Exception;
+    public void server(int port) throws Exception;
 
     public void registry(Registry registry);
+
+    public Registry getRegistry();
 
     public void stop();
 

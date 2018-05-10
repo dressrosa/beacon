@@ -11,10 +11,12 @@ package com.xiaoyu.core.rpc.message;
 public class RpcRequest extends RpcMessage {
 
     private String methodName;
-   
+
     private Object returnType;
 
     private String interfaceName;
+
+    private String interfaceImpl;
 
     private Object[] params;
 
@@ -42,6 +44,15 @@ public class RpcRequest extends RpcMessage {
 
     public RpcRequest setInterfaceName(String interfaceName) {
         this.interfaceName = interfaceName;
+        return this;
+    }
+
+    public String getInterfaceImpl() {
+        return interfaceImpl;
+    }
+
+    public RpcRequest setInterfaceImpl(String interfaceImpl) {
+        this.interfaceImpl = interfaceImpl;
         return this;
     }
 

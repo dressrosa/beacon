@@ -4,7 +4,9 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import com.xiaoyu.core.common.utils.IdUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.xiaoyu.core.register.Registry;
 import com.xiaoyu.transport.api.Client;
 import com.xiaoyu.transport.api.Server;
@@ -16,62 +18,79 @@ import com.xiaoyu.transport.api.Server;
  */
 public abstract class AbstractBeaconContext implements Context {
 
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractBeaconContext.class);
+    // host->client
     protected static Map<String, Client> clientMap = new HashMap<>(16);
+    // port->server
     protected static Map<Integer, Server> serverMap = new HashMap<>(16);
 
     protected Registry registry;
 
     private static AbstractBeaconContext abstractContext;
-    protected static final String ADDRESS = "127.0.0.1";
-    protected static final int PORT1 = 9111;
-    protected static final int PORT2 = 9112;
 
     public AbstractBeaconContext() {
-        abstractContext = this;
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
             @Override
             public void run() {
-                System.out.println("--------------->执行ShutdownHook<----------------");
                 // do something
-                // 关闭注册中心
-                registry.close();
+                LOG.info("-do something with the shutdownhook-");
+                // 等service取消注册后才关闭注册中心
+                abstractContext.closeRegistry();
             }
         }));
+        abstractContext = this;
     }
 
     @Override
-    public Client client() throws Exception {
-        if (clientMap.isEmpty()) {
-            startClient();
+    public Client client(String host, int port) throws Exception {
+        if (clientMap.containsKey(host)) {
+            return clientMap.get(host);
         }
-        Client[] clients = clientMap.values().toArray(new Client[0]);
-        if (clientMap.size() == 1) {
-            return clients[0];
-        } else {
-            return clients[IdUtil.randomNum(clientMap.size())];
-        }
-    }
-
-    public void startClient() throws Exception {
-        initClient();
+        Client client = doInitClient(host, port);
+        clientMap.put(host, client);
+        return client;
     }
 
     @Override
-    public void startServer() throws Exception {
-        initServer();
+    public void server(int port) throws Exception {
+        Server server = doInitServer(port);
+        serverMap.put(port, server);
     }
 
     @Override
     public void stop() {
+        doCloseClient();
+    }
+
+    private void doCloseClient() {
         if (clientMap != null && !clientMap.isEmpty()) {
             Iterator<Client> iter = clientMap.values().iterator();
             while (iter.hasNext()) {
-                iter.next().stop();
+                try {
+                    iter.next().stop();
+                } catch (Exception e) {
+                    // do nothing
+                }
             }
         }
     }
 
-    public abstract void initClient() throws Exception;
+    @Override
+    public void registry(Registry registry) {
+        this.registry = registry;
 
-    public abstract void initServer() throws Exception;
+    }
+
+    @Override
+    public Registry getRegistry() {
+        return this.registry;
+    }
+
+    private void closeRegistry() {
+        this.registry.close();
+    }
+
+    public abstract Client doInitClient(String host, int port) throws Exception;
+
+    public abstract Server doInitServer(Integer port) throws Exception;
 }

@@ -3,6 +3,8 @@
  **/
 package com.xiaoyu.transport.netty;
 
+import java.util.concurrent.TimeUnit;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -23,6 +25,7 @@ import io.netty.channel.socket.nio.NioServerSocketChannel;
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
+import io.netty.handler.timeout.IdleStateHandler;
 
 /**
  * 2017年4月
@@ -51,6 +54,8 @@ public class NettyServer implements Server {
         protected void initChannel(SocketChannel ch) throws Exception {
             final ChannelPipeline pipe = ch.pipeline();
             pipe
+                    .addLast("idleStateHandler",
+                            new IdleStateHandler(BeaconConstants.IDLE_READ_TIMEOUT, 0, 0, TimeUnit.SECONDS))
                     .addLast("lengthDecoder",
                             new LengthFieldBasedFrameDecoder(BeaconConstants.MAX_LEN,
                                     BeaconConstants.LEN_OFFSET, BeaconConstants.INT_LEN))
@@ -70,17 +75,16 @@ public class NettyServer implements Server {
         try {
             boot.group(boss, worker)
                     .channel(NioServerSocketChannel.class)
-                    .handler(new LoggingHandler(LogLevel.WARN))
+                    .handler(new LoggingHandler(LogLevel.DEBUG))
                     .option(ChannelOption.SO_BACKLOG, 128)
                     .childOption(ChannelOption.TCP_NODELAY, true)
                     .childHandler(initializer);
             f = boot.bind(port).syncUninterruptibly();
             Channel channel = f.channel();
-            LOG.info("start server in port->{},address->{}", port,NetUtil.localIP());
+            LOG.info("start server at port->{},address->{}", port, NetUtil.localIP());
             if (this.serverChannel != null) {
                 if (!this.serverChannel.isActive()) {
                     NettyChannel.removeChannel(this.serverChannel);
-                    this.serverChannel.close();
                     this.serverChannel = channel;
                 }
             } else {
@@ -96,8 +100,10 @@ public class NettyServer implements Server {
     @Override
     public void stop() {
         try {
-            worker.shutdownGracefully();
-            boss.shutdownGracefully();
+            if (!worker.isShutdown()) {
+                worker.shutdownGracefully();
+                boss.shutdownGracefully();
+            }
         } finally {
             NettyChannel.removeChannel(this.serverChannel);
         }

@@ -10,9 +10,8 @@ import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
 
 /**
- * 2017年4月20日下午2:48:06
- * 
- * @author xiaoyu
+ * @author hongyu
+ * @date 2017-04
  * @description
  */
 public class CglibProxy implements IProxy {

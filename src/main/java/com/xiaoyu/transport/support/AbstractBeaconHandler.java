@@ -21,7 +21,15 @@ public class AbstractBeaconHandler implements BeaconHandler {
     }
 
     @Override
-    public Future<Object> send(Object message) throws Exception {
+    public Object send(Object message) throws Exception {
+        if (message == null) {
+            throw new Exception("发送消息为空");
+        }
+        return null;
+    }
+
+    @Override
+    public Future<Object> sendFuture(Object message) throws Exception {
         if (message == null) {
             throw new Exception("发送消息为空");
         }

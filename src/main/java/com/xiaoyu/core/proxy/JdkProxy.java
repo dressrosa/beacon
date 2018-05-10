@@ -8,9 +8,8 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
 /**
- * 2017年4月20日下午2:41:42
- * 
- * @author xiaoyu
+ * @author hongyu
+ * @date 2017-04
  * @description
  */
 public class JdkProxy implements IProxy {

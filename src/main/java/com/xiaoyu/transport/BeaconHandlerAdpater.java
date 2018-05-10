@@ -46,9 +46,9 @@ public class BeaconHandlerAdpater implements BeaconHandler {
             throw new Exception("发送消息为空");
         }
         if (handler instanceof BeaconServerHandler) {
-            return ((BeaconServerHandler) handler).send(message);
+            return ((BeaconServerHandler) handler).sendFuture(message);
         } else {
-            return ((BeaconClientHandler) handler).send(message);
+            return ((BeaconClientHandler) handler).sendFuture(message);
         }
     }
 
@@ -56,6 +56,12 @@ public class BeaconHandlerAdpater implements BeaconHandler {
         // 正常的client或server关闭后,线程池并没有关闭
         // 这里主动通知线程池关闭
         AbstractBeaconChannel.TASK_POOL.shutdown();
+    }
+
+    @Override
+    public Future<Object> sendFuture(Object message) throws Exception {
+        // TODO Auto-generated method stub
+        return null;
     }
 
 }
