@@ -25,18 +25,18 @@ public class BeaconClientChannel extends AbstractBeaconChannel {
     private static final Logger LOG = LoggerFactory.getLogger("BeaconClientChannel");
 
     /**
-     * 一次wait的时间(ms) 等待时间:SLEEP_TIME*RETRY_NUM
+     * 一次wait的时间(ms) 每次等待时间:SLEEP_TIME*2的RETRY_NUM次方
      */
-    private static final int SLEEP_TIME = 24;
+    private static final int SLEEP_TIME = 1;
     /**
      * 最大尝试次数
      */
-    private static final int MAX_RETRY_NUM = 10;
+    private static final int MAX_RETRY_NUM = 13;
 
     /**
-     * 最大等待时间
+     * future最大等待时间 10s
      */
-    private static final int MAX_WAIT_TIME = 10;
+    private static final int MAX_WAIT_TIME = 5;
 
     protected BaseChannel baseChannel;
 
@@ -46,7 +46,7 @@ public class BeaconClientChannel extends AbstractBeaconChannel {
 
     @Override
     protected Object doSend(Object message) {
-        Future<Object> taskFuture = TASK_POOL.submit(new Callable<Object>() {
+        Future<Object> taskFuture = this.addTask(new Callable<Object>() {
             @Override
             public Object call() throws Exception {
                 // 对同一次的请求加锁,当收到结果时释放,这里仅为了使用notify机制
@@ -62,13 +62,14 @@ public class BeaconClientChannel extends AbstractBeaconChannel {
                     long start = System.currentTimeMillis();
                     // 防止发生意外,导致一直阻塞;再等待一定时间后,以超时结束
                     while ((result = listener.result()) == null && retry <= MAX_RETRY_NUM) {
-                        listener.wait(SLEEP_TIME * retry);
+                        listener.wait(SLEEP_TIME << retry);
                         retry++;
                     }
-                    LOG.info("等待次数->{};耗时->{}", retry, (System.currentTimeMillis() - start));
+                    long end;
+                    LOG.info("Wait for times->{};spend {} ms", retry, (end = System.currentTimeMillis() - start));
                     if (result == null) {
                         result = new RpcResponse()
-                                .setException(new Exception("request exceed limit time"))
+                                .setException(new Exception("Request exceed limit time,take time->" + end))
                                 .setId(((RpcRequest) message).getId());
                     }
                 }
@@ -81,7 +82,7 @@ public class BeaconClientChannel extends AbstractBeaconChannel {
         } catch (Exception e) {
             e.printStackTrace();
             return new RpcResponse()
-                    .setException(new Exception("request failed."))
+                    .setException(new Exception("Request failed."))
                     .setId(((RpcRequest) message).getId());
         }
     }
@@ -94,7 +95,7 @@ public class BeaconClientChannel extends AbstractBeaconChannel {
 
     @Override
     protected Future<Object> doSendFuture(Object message) {
-        Future<Object> taskFuture = TASK_POOL.submit(new Callable<Object>() {
+        Future<Object> taskFuture = this.addTask(new Callable<Object>() {
             @Override
             public Object call() throws Exception {
                 // 对同一次的请求加锁,当收到结果时释放,这里仅为了使用notify机制
@@ -106,17 +107,18 @@ public class BeaconClientChannel extends AbstractBeaconChannel {
                     int retry = 1;
                     // 发送消息
                     baseChannel.send(message);
-                    //同步获取结果
+                    // 同步获取结果
                     long start = System.currentTimeMillis();
                     // 防止发生意外,导致一直阻塞;再等待一定时间后,以超时结束
                     while ((result = listener.result()) == null && retry <= MAX_RETRY_NUM) {
                         listener.wait(SLEEP_TIME * retry);
                         retry++;
                     }
-                    LOG.info("等待次数->{};耗时->{}", retry, (System.currentTimeMillis() - start));
+                    long end;
+                    LOG.info("Wait for times->{};spend {} ms", retry, (end = System.currentTimeMillis() - start));
                     if (result == null) {
                         result = new RpcResponse()
-                                .setException(new Exception("request exceed limit time"))
+                                .setException(new Exception("Request exceed limit time,take time->" + end))
                                 .setId(((RpcRequest) message).getId());
                     }
                 }

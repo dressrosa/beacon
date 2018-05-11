@@ -50,6 +50,9 @@ public class NettyChannel implements BaseChannel {
         return beacon;
     }
 
+    /**
+     * 这里 1检查是否有失效的channel 2.通知线程池关闭
+     */
     public static void checkUnActive() {
         Iterator<Channel> iter = CHANNEL_MAP.keySet().iterator();
         while (iter.hasNext()) {
@@ -60,7 +63,7 @@ public class NettyChannel implements BaseChannel {
         }
         // 正常的client或server关闭后,线程池并没有关闭
         // 这里主动通知线程池关闭
-        AbstractBeaconChannel.TASK_POOL.shutdown();
+        AbstractBeaconChannel.notifyCloseTaskPool();
     }
 
     /**

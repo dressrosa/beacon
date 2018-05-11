@@ -67,6 +67,29 @@ public class BeaconPath {
         return this;
     }
 
+    @Override
+    public int hashCode() {
+        return super.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+        if (obj == this) {
+            return true;
+        }
+        if (!(obj instanceof BeaconPath)) {
+            return false;
+        }
+        BeaconPath p = (BeaconPath) obj;
+        if (this.toPath().equals(p.toPath())) {
+            return true;
+        }
+        return false;
+    }
+
     public String toPath() {
         final StringBuilder builder = new StringBuilder();
         if (this.getSide() == From.SERVER) {
@@ -87,7 +110,7 @@ public class BeaconPath {
         String[] arr1 = path.split("&");
         for (String str : arr1) {
             if (str.startsWith("host")) {
-                String arr[] = str.substring(5).split(":");
+                String[]  arr= str.substring(5).split(":");
                 if (arr.length == 1) {
                     bea.setHost(arr[0]);
                 } else {

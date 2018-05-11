@@ -1,5 +1,6 @@
 package com.xiaoyu.transport.support;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Future;
@@ -8,6 +9,9 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.xiaoyu.core.rpc.message.CallbackListener;
 import com.xiaoyu.transport.api.BaseChannel;
@@ -21,6 +25,7 @@ import com.xiaoyu.transport.api.BaseChannel;
  */
 public abstract class AbstractBeaconChannel implements BaseChannel {
 
+    private static final Logger LOG = LoggerFactory.getLogger(AbstractBeaconChannel.class);
     /**
      * 从server断获取的结果,用于异步获取 requestId->result
      */
@@ -39,7 +44,7 @@ public abstract class AbstractBeaconChannel implements BaseChannel {
     /**
      * 线程池,每一个消费请求都会放入池中执行等待结果
      */
-    public static final ThreadPoolExecutor TASK_POOL = new ThreadPoolExecutor(16, 16,
+    private static final ThreadPoolExecutor TASK_POOL = new ThreadPoolExecutor(16, 16,
             0L, TimeUnit.MILLISECONDS,
             new LinkedBlockingQueue<Runnable>(), new ThreadFactory() {
                 @Override
@@ -55,6 +60,17 @@ public abstract class AbstractBeaconChannel implements BaseChannel {
     public AbstractBeaconChannel setSide(String side) {
         this.side = side;
         return this;
+    }
+
+    public static void notifyCloseTaskPool() {
+        ThreadPoolExecutor pool = TASK_POOL;
+        pool.shutdown();
+        LOG.info("Shutdown the beacon channel task pool.");
+    }
+
+    public Future<Object> addTask(Callable<Object> call) {
+        ThreadPoolExecutor pool = TASK_POOL;
+        return pool.submit(call);
     }
 
     /**
@@ -115,7 +131,9 @@ public abstract class AbstractBeaconChannel implements BaseChannel {
      */
     protected abstract Object doSend(Object message);
 
-    /** 异步
+    /**
+     * 异步
+     * 
      * @param message
      * @return
      */

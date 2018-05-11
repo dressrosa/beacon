@@ -55,7 +55,7 @@ public class BeaconHandlerAdpater implements BeaconHandler {
     public void stop() {
         // 正常的client或server关闭后,线程池并没有关闭
         // 这里主动通知线程池关闭
-        AbstractBeaconChannel.TASK_POOL.shutdown();
+        AbstractBeaconChannel.notifyCloseTaskPool();
     }
 
     @Override

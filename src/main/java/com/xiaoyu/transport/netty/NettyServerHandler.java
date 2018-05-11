@@ -46,7 +46,7 @@ public class NettyServerHandler extends ChannelDuplexHandler {
         if (evt instanceof IdleStateEvent) {
             IdleStateEvent event = (IdleStateEvent) evt;
             if (event.state() == IdleState.READER_IDLE) {
-                LOG.info("server收到心跳,读超时,关闭channel");
+                LOG.info("Server receive read timeout heartbeat,close channel.");
                 NettyChannel.removeChannel(ctx.channel());
             }
         } else {
@@ -76,8 +76,13 @@ public class NettyServerHandler extends ChannelDuplexHandler {
 
     @Override
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
+        // 在client发送消息来之后,在server端返回消息前(一般在请求超时的时候client挂了),client已经关闭,这样就会
+        // 造成 Connection reset by peer的错误,这里去除该channel
+        LOG.error("Exception catch in channel:");
         cause.printStackTrace();
-        ctx.close();
+        if (!ctx.channel().isActive()) {
+            NettyChannel.removeChannel(ctx.channel());
+        }
     }
 
     @Override
