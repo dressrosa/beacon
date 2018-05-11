@@ -20,25 +20,28 @@ import com.xiaoyu.core.rpc.config.bean.BeaconPath;
  */
 public abstract class AbstractRegistry implements Registry {
 
-    // service->serviceDetail
-    protected static final ConcurrentMap<String, Set<String>> SERVICE_MAP = new ConcurrentHashMap<>(32);
+    // service->BeaconPath(serviceDetail)
+    protected static final ConcurrentMap<String, Set<BeaconPath>> SERVICE_MAP = new ConcurrentHashMap<>(32);
 
     @Override
     public boolean discoverService(String service) {
-        // 启动时client找到对应的providers信息,保存在本地缓存
-        if (SERVICE_MAP.containsKey(service)) {
-            return true;
+        Set<BeaconPath> sets = SERVICE_MAP.get(service);
+        if (sets != null) {
+            for (BeaconPath p : sets) {
+                if (p.getSide() == From.SERVER) {
+                    return true;
+                }
+            }
         }
+
         return this.doDiscoverService(service);
     }
 
     @Override
     public List<BeaconPath> getProviders(String service) {
-        Set<String> providers = SERVICE_MAP.get(service);
+        Set<BeaconPath> providers = SERVICE_MAP.get(service);
         List<BeaconPath> list = new ArrayList<>();
-        BeaconPath p = null;
-        for (String str : providers) {
-            p = BeaconPath.toEntity(str);
+        for (BeaconPath p : providers) {
             if (p.getSide() == From.SERVER) {
                 list.add(p);
             }

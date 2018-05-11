@@ -65,10 +65,11 @@ public class BeaconClientChannel extends AbstractBeaconChannel {
                         listener.wait(SLEEP_TIME << retry);
                         retry++;
                     }
-                    LOG.info("等待次数->{};耗时->{}", retry, (System.currentTimeMillis() - start));
+                    long end;
+                    LOG.info("Wait for times->{};spend {} ms", retry, (end = System.currentTimeMillis() - start));
                     if (result == null) {
                         result = new RpcResponse()
-                                .setException(new Exception("request exceed limit time"))
+                                .setException(new Exception("Request exceed limit time,take time->" + end))
                                 .setId(((RpcRequest) message).getId());
                     }
                 }
@@ -81,7 +82,7 @@ public class BeaconClientChannel extends AbstractBeaconChannel {
         } catch (Exception e) {
             e.printStackTrace();
             return new RpcResponse()
-                    .setException(new Exception("request failed."))
+                    .setException(new Exception("Request failed."))
                     .setId(((RpcRequest) message).getId());
         }
     }
@@ -113,10 +114,11 @@ public class BeaconClientChannel extends AbstractBeaconChannel {
                         listener.wait(SLEEP_TIME * retry);
                         retry++;
                     }
-                    LOG.info("等待次数->{};耗时->{}", retry, (System.currentTimeMillis() - start));
+                    long end;
+                    LOG.info("Wait for times->{};spend {} ms", retry, (end = System.currentTimeMillis() - start));
                     if (result == null) {
                         result = new RpcResponse()
-                                .setException(new Exception("request exceed limit time"))
+                                .setException(new Exception("Request exceed limit time,take time->" + end))
                                 .setId(((RpcRequest) message).getId());
                     }
                 }

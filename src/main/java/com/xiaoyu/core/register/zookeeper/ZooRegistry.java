@@ -43,7 +43,7 @@ public class ZooRegistry extends AbstractRegistry {
 
     private ZooUtil zoo;
 
-    // consumer or provider -> listener
+    // consumer or provider path -> listener
     private static final ConcurrentMap<String, IZkChildListener> CHILD_LISTENER_MAP = new ConcurrentHashMap<>(32);
 
     /**
@@ -60,7 +60,7 @@ public class ZooRegistry extends AbstractRegistry {
         IZkChildListener listener = new IZkChildListener() {
             @Override
             public void handleChildChange(String parentPath, List<String> currentChilds) throws Exception {
-                LOG.info("service changed:parentPath->{},currentChilds->{}", parentPath, currentChilds);
+                LOG.info("Service changed:parentPath->{},currentChilds->{}", parentPath, currentChilds);
                 if (currentChilds == null) {
                     return;
                 }
@@ -71,13 +71,18 @@ public class ZooRegistry extends AbstractRegistry {
         if (beaconPath.getSide().equals(From.CLIENT)) {
             // reference
             if (!this.discoverService(beaconPath.getService())) {
-                LOG.error("cannot find the service->{} in zookeeper,please check.", beaconPath.getService());
+                LOG.error("Cannot find the service->{} in zookeeper,please check.", beaconPath.getService());
                 return;
             }
             path = this.consumerPath(service);
             zoo.createPersistent(path);
             zoo.createEphemeral(path + "/" + detailInfo);
-            zoo.subscribeChildChanges(this.providerPath(service), listener);
+            // 监听操作在执行的时候,如果path不存在,会生成临时节点,但是临时节点是不能创建子节点的,这里首先判断下
+            String providerPath = this.providerPath(service);
+            zoo.createPersistent(providerPath);
+            zoo.subscribeChildChanges(providerPath, listener);
+            LOG.info("Subscribe service in zookeeper->{}", providerPath);
+
             // 初始化provider本地缓存
             initProviders(service);
         } else {
@@ -87,16 +92,27 @@ public class ZooRegistry extends AbstractRegistry {
             zoo.createEphemeral(path + "/" + detailInfo);
 
             if (SERVICE_MAP.containsKey(beaconPath.getService())) {
-                SERVICE_MAP.get(beaconPath.getService()).add(detailInfo);
+                SERVICE_MAP.get(beaconPath.getService()).add(beaconPath);
             } else {
-                Set<String> sets = new HashSet<String>();
-                sets.add(detailInfo);
+                Set<BeaconPath> sets = new HashSet<>();
+                sets.add(beaconPath);
                 SERVICE_MAP.put(beaconPath.getService(), sets);
             }
-            zoo.subscribeChildChanges(this.consumerPath(service), listener);
+            // 同上
+            String consumerPath = this.consumerPath(service);
+            zoo.createPersistent(consumerPath);
+            zoo.subscribeChildChanges(consumerPath, listener);
+            LOG.info("Subscribe service in zookeeper->{}", consumerPath);
         }
-        LOG.info("register service to zookeeper->{}", (path + "/" + detailInfo));
+        LOG.info("Register service to zookeeper->{}", (path + "/" + detailInfo));
         CHILD_LISTENER_MAP.putIfAbsent(path, listener);
+    }
+
+    /**
+     * 修复因为异常原因(不知道为啥)导致的server端在线,但是zoo的provider节点child丢失
+     */
+    public void doRecoverProviders() {
+        // TODO
     }
 
     /**
@@ -108,16 +124,16 @@ public class ZooRegistry extends AbstractRegistry {
     private void doResolveInfo(String parentPath, List<String> currentChilds) {
         // ---/beacon/service/xxxx
         String service = parentPath.split("/")[2];
-        Set<String> sets = SERVICE_MAP.get(service);
+        Set<BeaconPath> sets = SERVICE_MAP.get(service);
         int childSize = currentChilds.size();
         List<String> consumerList = new ArrayList<>();
         List<String> providerList = new ArrayList<>();
         // 将client和server分开
-        for (String detail : sets) {
-            if (detail.endsWith(From.CLIENT.name())) {
-                consumerList.add(detail);
+        for (BeaconPath detail : sets) {
+            if (detail.getSide() == From.CLIENT) {
+                consumerList.add(detail.toPath());
             } else {
-                providerList.add(detail);
+                providerList.add(detail.toPath());
             }
         }
         int consumerSize = consumerList.size();
@@ -128,8 +144,8 @@ public class ZooRegistry extends AbstractRegistry {
             if (childSize > consumerSize) {
                 for (String detail : currentChilds) {
                     if (!consumerList.contains(detail)) {
-                        LOG.info("new client online->{}", detail);
-                        SERVICE_MAP.get(service).add(detail);
+                        LOG.info("New client online->{}", detail);
+                        SERVICE_MAP.get(service).add(BeaconPath.toEntity(detail));
                         break;
                     }
                 }
@@ -138,8 +154,8 @@ public class ZooRegistry extends AbstractRegistry {
             else if (childSize < consumerSize) {
                 for (String detail : consumerList) {
                     if (!currentChilds.contains(detail)) {
-                        LOG.info("one client offline->{}", detail);
-                        SERVICE_MAP.get(service).remove(detail);
+                        LOG.info("One client offline->{}", detail);
+                        SERVICE_MAP.get(service).remove(BeaconPath.toEntity(detail));
                         break;
                     }
                 }
@@ -151,8 +167,8 @@ public class ZooRegistry extends AbstractRegistry {
             if (childSize > providerSize) {
                 for (String detail : currentChilds) {
                     if (!providerList.contains(detail)) {
-                        LOG.info("new server online->{}", detail);
-                        SERVICE_MAP.get(service).add(detail);
+                        LOG.info("New server online->{}", detail);
+                        SERVICE_MAP.get(service).add(BeaconPath.toEntity(detail));
                         break;
                     }
                 }
@@ -161,8 +177,8 @@ public class ZooRegistry extends AbstractRegistry {
             else if (childSize < providerSize) {
                 for (String detail : providerList) {
                     if (!currentChilds.contains(detail)) {
-                        LOG.info("one server offline->{}", detail);
-                        SERVICE_MAP.get(service).remove(detail);
+                        LOG.info("One server offline->{}", detail);
+                        SERVICE_MAP.get(service).remove(BeaconPath.toEntity(detail));
                         // TODO 是否关闭对应的client
                         break;
                     }
@@ -178,13 +194,26 @@ public class ZooRegistry extends AbstractRegistry {
         String detailInfo = beaconPath.toPath();
         if (beaconPath.getSide() == From.CLIENT) {
             path = this.consumerPath(beaconPath.getService());
+            // client取消对server端的监听
+            String providerPath = this.providerPath(beaconPath.getService());
+            zoo.subscribeChildChanges(providerPath,
+                    CHILD_LISTENER_MAP.get(providerPath));
+            CHILD_LISTENER_MAP.remove(providerPath);
+            LOG.info("Unsubscribe service in zookeeper->{}", providerPath);
         } else if (beaconPath.getSide() == From.SERVER) {
             path = this.providerPath(beaconPath.getService());
-            Set<String> sets = SERVICE_MAP.get(beaconPath.getService());
-            sets.remove(detailInfo);
+            Set<BeaconPath> sets = SERVICE_MAP.get(beaconPath.getService());
+            sets.remove(beaconPath);
+            // server端取消对client的监听
+            String consumerPath = this.consumerPath(beaconPath.getService());
+            zoo.subscribeChildChanges(consumerPath,
+                    CHILD_LISTENER_MAP.get(consumerPath));
+            CHILD_LISTENER_MAP.remove(consumerPath);
+            LOG.info("Unsubscribe service in zookeeper->{}", consumerPath);
         }
         zoo.remove(path + "/" + detailInfo);
-        LOG.info("unregister service in zookeeper->{}", (path + "/" + detailInfo));
+        LOG.info("Unregister service in zookeeper->{}", (path + "/" + detailInfo));
+
     }
 
     @Override
@@ -194,7 +223,7 @@ public class ZooRegistry extends AbstractRegistry {
             IZkStateListener listener = new IZkStateListener() {
                 @Override
                 public void handleStateChanged(KeeperState state) throws Exception {
-                    LOG.info("zookeeper state->" + state.name());
+                    LOG.info("Get zookeeper state->" + state.name());
                 }
 
                 @Override
@@ -216,20 +245,19 @@ public class ZooRegistry extends AbstractRegistry {
     }
 
     private void doRecover() {
-        LOG.info("revover zookeeper session data.");
+        LOG.info("Revover zookeeper session data.");
         // 恢复service
-        Iterator<Entry<String, Set<String>>> iter = SERVICE_MAP.entrySet().iterator();
+        Iterator<Entry<String, Set<BeaconPath>>> iter = SERVICE_MAP.entrySet().iterator();
         while (iter.hasNext()) {
-            Entry<String, Set<String>> entry = iter.next();
-            Set<String> set = entry.getValue();
+            Entry<String, Set<BeaconPath>> entry = iter.next();
+            Set<BeaconPath> set = entry.getValue();
             String service = entry.getKey();
-            for (String detail : set) {
-                BeaconPath p = BeaconPath.toEntity(detail);
+            for (BeaconPath detail : set) {
                 // 这里client 和 server都会调用,同时建立相同的path不会冲突
-                if (p.getSide() == From.SERVER) {
-                    zoo.createEphemeral(this.providerPath(service) + "/" + detail);
+                if (detail.getSide() == From.SERVER) {
+                    zoo.createEphemeral(this.providerPath(service) + "/" + detail.toPath());
                 } else {
-                    zoo.createEphemeral(this.providerPath(service) + "/" + detail);
+                    zoo.createEphemeral(this.providerPath(service) + "/" + detail.toPath());
                 }
             }
         }
@@ -283,6 +311,8 @@ public class ZooRegistry extends AbstractRegistry {
     public void doInitProviders(String service) {
         ZooUtil tzoo = zoo;
         List<String> childList = tzoo.children(this.providerPath(service));
-        SERVICE_MAP.get(service).addAll(childList);
+        for (String detail : childList) {
+            SERVICE_MAP.get(service).add(BeaconPath.toEntity(detail));
+        }
     }
 }

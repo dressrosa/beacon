@@ -139,8 +139,6 @@ public class ZooUtil {
     }
 
     public void subscribeChildChanges(final String path, IZkChildListener listener) {
-        // 检测是否已经创建
-        createEphemeral(path);
         client.subscribeChildChanges(path, listener);
     }
 

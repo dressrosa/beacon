@@ -97,7 +97,7 @@ public class InvocationHandlerAdapter {
         boolean exist = reg.discoverService(service);
         if (!exist) {
             throw new Exception(
-                    "cannot find the service->" + request.getInterfaceName() + ";please check it.");
+                    "Cannot find the service->" + request.getInterfaceName() + ";please check it.");
         }
         // 获取对应的全部provider
         List<BeaconPath> providers = reg.getProviders(service);
