@@ -78,7 +78,7 @@ public class ZooRegistry extends AbstractRegistry {
             zoo.createPersistent(path);
             zoo.createEphemeral(path + "/" + detailInfo);
             zoo.subscribeChildChanges(this.providerPath(service), listener);
-            // 初始化所属的provider
+            // 初始化provider本地缓存
             initProviders(service);
         } else {
             // exporter
@@ -99,28 +99,35 @@ public class ZooRegistry extends AbstractRegistry {
         CHILD_LISTENER_MAP.putIfAbsent(path, listener);
     }
 
-    // 解析出必要的信息
+    /**
+     * 解析出必要的信息
+     * 
+     * @param parentPath
+     * @param currentChilds
+     */
     private void doResolveInfo(String parentPath, List<String> currentChilds) {
+        // ---/beacon/service/xxxx
         String service = parentPath.split("/")[2];
         Set<String> sets = SERVICE_MAP.get(service);
         int childSize = currentChilds.size();
-        List<String> clientList = new ArrayList<>();
-        List<String> serverList = new ArrayList<>();
-        for (String str : sets) {
-            if (str.endsWith(From.CLIENT.name())) {
-                clientList.add(str);
+        List<String> consumerList = new ArrayList<>();
+        List<String> providerList = new ArrayList<>();
+        // 将client和server分开
+        for (String detail : sets) {
+            if (detail.endsWith(From.CLIENT.name())) {
+                consumerList.add(detail);
             } else {
-                serverList.add(str);
+                providerList.add(detail);
             }
         }
-        int clientSize = clientList.size();
-        int serverSize = serverList.size();
+        int consumerSize = consumerList.size();
+        int providerSize = providerList.size();
         // server端监测到client有变化
         if (parentPath.endsWith(CONSUMERS)) {
             // 有client上线
-            if (childSize > clientSize) {
+            if (childSize > consumerSize) {
                 for (String detail : currentChilds) {
-                    if (!clientList.contains(detail)) {
+                    if (!consumerList.contains(detail)) {
                         LOG.info("new client online->{}", detail);
                         SERVICE_MAP.get(service).add(detail);
                         break;
@@ -128,8 +135,8 @@ public class ZooRegistry extends AbstractRegistry {
                 }
             }
             // 有client下线
-            else if (childSize < clientSize) {
-                for (String detail : clientList) {
+            else if (childSize < consumerSize) {
+                for (String detail : consumerList) {
                     if (!currentChilds.contains(detail)) {
                         LOG.info("one client offline->{}", detail);
                         SERVICE_MAP.get(service).remove(detail);
@@ -141,21 +148,21 @@ public class ZooRegistry extends AbstractRegistry {
         // client监听到server端有变化
         else {
             // 有server上线
-            if (childSize > serverSize) {
-                for (String str : currentChilds) {
-                    if (!serverList.contains(str)) {
-                        LOG.info("new server online->{}", str);
-                        SERVICE_MAP.get(service).add(str);
+            if (childSize > providerSize) {
+                for (String detail : currentChilds) {
+                    if (!providerList.contains(detail)) {
+                        LOG.info("new server online->{}", detail);
+                        SERVICE_MAP.get(service).add(detail);
                         break;
                     }
                 }
             }
             // 有server下线
-            else if (childSize < serverSize) {
-                for (String str : serverList) {
-                    if (!currentChilds.contains(str)) {
-                        LOG.info("one server offline->{}", str);
-                        SERVICE_MAP.get(service).remove(str);
+            else if (childSize < providerSize) {
+                for (String detail : providerList) {
+                    if (!currentChilds.contains(detail)) {
+                        LOG.info("one server offline->{}", detail);
+                        SERVICE_MAP.get(service).remove(detail);
                         // TODO 是否关闭对应的client
                         break;
                     }
@@ -176,7 +183,6 @@ public class ZooRegistry extends AbstractRegistry {
             Set<String> sets = SERVICE_MAP.get(beaconPath.getService());
             sets.remove(detailInfo);
         }
-
         zoo.remove(path + "/" + detailInfo);
         LOG.info("unregister service in zookeeper->{}", (path + "/" + detailInfo));
     }
@@ -270,6 +276,9 @@ public class ZooRegistry extends AbstractRegistry {
         return zoo.childrenNum(path) > 0 ? true : false;
     }
 
+    /**
+     * client启动时,本地并没有对应的已存在的provider,这里初始化所属的provider
+     */
     @Override
     public void doInitProviders(String service) {
         ZooUtil tzoo = zoo;

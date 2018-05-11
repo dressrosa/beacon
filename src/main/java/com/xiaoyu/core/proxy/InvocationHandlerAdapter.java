@@ -68,7 +68,7 @@ public class InvocationHandlerAdapter {
                 .setMethodName(methodName);
         req.setHeartbeat(false);
         req.setId(IdUtil.requestId());
-        //TODO
+        // TODO
         if (BeaconConstants.EQUALS.equals(methodName)) {
             if (args == null || args.length == 0) {
                 return false;
@@ -99,7 +99,9 @@ public class InvocationHandlerAdapter {
             throw new Exception(
                     "cannot find the service->" + request.getInterfaceName() + ";please check it.");
         }
+        // 获取对应的全部provider
         List<BeaconPath> providers = reg.getProviders(service);
+        // 进行容错调用
         FaultTolerant tolerant = SpiManager.defaultSpiExtender(FaultTolerant.class);
 
         return tolerant.invoke(request, providers);

@@ -129,8 +129,9 @@ public class NettyClient implements Client {
     @Override
     public void stop() {
         try {
-            if (!worker.isShutdown()) {
+            if (!worker.isShuttingDown()) {
                 worker.shutdownGracefully();
+                LOG.info("Close client which connected to address->{}:{}", host, port);
             }
         } finally {
             NettyChannel.checkUnActive();
