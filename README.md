@@ -1,4 +1,5 @@
 # beacon
+<<<<<<< HEAD
 (beacon:灯塔.意为希望所有的技术都是为了照亮程序员前进的放向.)
 1. 通信层:netty
 1. 注册中心:zookeeper
@@ -56,3 +57,8 @@ provider端的配置:
 
 #### 目标:
 健壮,扩展,优化细节.
+=======
+基础测试:
+启动一个zookeeper,测试类见:
+beacon-test
+>>>>>>> dev
