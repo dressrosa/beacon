@@ -1,10 +1,9 @@
 # beacon
-<<<<<<< HEAD
 (beacon:灯塔.意为希望所有的技术都是为了照亮程序员前进的放向.)
 1. 通信层:netty
-1. 注册中心:zookeeper
-2. 扩展机制:java spi   
-
+2. 注册中心:zookeeper
+3. 扩展机制:java spi   
+4. 兼容spring
 测试类:
 ```
 com.xiaoyu.test.rpc.spring.SpringTestClient
@@ -24,7 +23,7 @@ consumer端配置:
     http://www.iwouldbe.com/schema/beacon http://www.iwouldbe.com/schema/beacon.xsd">
 
 
-    <beacon:registry address="192.168.61.239" protocol="zookeeper" />
+    <beacon:registry address="127.0.0.1:2181" protocol="zookeeper" />
 
     <beacon:reference id="helloService"
         interfaceName="com.xiaoyu.test.api.IHelloService" />
@@ -44,7 +43,7 @@ provider端的配置:
 
     <beacon:protocol name="beacon" port="1992" />
 
-    <beacon:registry address="192.168.61.239" protocol="zookeeper" />
+    <beacon:registry address="127.0.0.1:2181" protocol="zookeeper" />
 
     <beacon:exporter id="helloService"
         interfaceName="com.xiaoyu.test.api.IHelloService" ref="com.xiaoyu.test.api.HelloServiceImpl" />
@@ -58,7 +57,3 @@ provider端的配置:
 #### 目标:
 健壮,扩展,优化细节.
 =======
-基础测试:
-启动一个zookeeper,测试类见:
-beacon-test
->>>>>>> dev
