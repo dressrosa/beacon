@@ -2,7 +2,7 @@
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <groupId>beacon</groupId>
+    <groupId>com.xiaoyu</groupId>
     <artifactId>beacon</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <parent>
@@ -10,6 +10,18 @@
         <artifactId>spring-boot-starter-parent</artifactId>
         <version>1.5.8.RELEASE</version>
     </parent>
+    <packaging>pom</packaging>
+    <modules>
+        <module>beacon-common</module>
+        <module>beacon-spring</module>
+        <module>beacon-registry</module>
+        <module>beacon-rpc</module>
+        <module>beacon-serialize</module>
+        <module>beacon-transport</module>
+        <module>beacon-cluster</module>
+        <module>beacon-test</module>
+        <module>beacon-log</module>
+    </modules>
 
     <dependencies>
         <dependency>
@@ -62,20 +74,16 @@
             <artifactId>commons-lang3</artifactId>
             <version>3.7</version>
         </dependency>
-
-        <!-- https://mvnrepository.com/artifact/io.protostuff/protostuff-core -->
         <dependency>
             <groupId>io.protostuff</groupId>
             <artifactId>protostuff-core</artifactId>
             <version>1.5.3</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.objenesis/objenesis -->
         <dependency>
             <groupId>org.objenesis</groupId>
             <artifactId>objenesis</artifactId>
             <version>2.5.1</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/org.javassist/javassist -->
         <dependency>
             <groupId>org.javassist</groupId>
             <artifactId>javassist</artifactId>
