@@ -15,6 +15,7 @@ import com.xiaoyu.core.common.message.RpcRequest;
 import com.xiaoyu.core.common.utils.IdUtil;
 import com.xiaoyu.core.register.Registry;
 import com.xiaoyu.core.rpc.api.Context;
+import com.xiaoyu.core.rpc.config.bean.Invocation;
 
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
@@ -98,13 +99,15 @@ public class InvocationHandlerAdapter {
         boolean exist = reg.discoverService(service);
         if (!exist) {
             throw new Exception(
-                    "Cannot find the service->" + service + ";please check it.");
+                    "Cannot find the service->" + service + ";please check whether server start or not.");
         }
+        // TODO 这里需要获取本地local的consumer,来获取调用信息传入
+        BeaconPath consumer = reg.getLocalConsumer(service);
         // 获取对应的全部provider
-        List<BeaconPath> providers = reg.getProviders(service);
+        List<BeaconPath> providers = reg.getLocalProviders(service);
         // 进行容错调用
         FaultTolerant tolerant = SpiManager.defaultSpiExtender(FaultTolerant.class);
-
-        return tolerant.invoke(request, providers);
+        Invocation invocation = new Invocation(consumer, request);
+        return tolerant.invoke(invocation, providers);
     }
 }

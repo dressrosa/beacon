@@ -59,5 +59,14 @@ public interface Registry {
      * @param service
      * @return
      */
-    public List<BeaconPath> getProviders(String service);
+    public List<BeaconPath> getLocalProviders(String service);
+
+    /**
+     * 获取本地的service信息
+     * 对应的consumer本地只存储自身的那一个
+     * 
+     * @param service
+     * @return
+     */
+    public BeaconPath getLocalConsumer(String service);
 }

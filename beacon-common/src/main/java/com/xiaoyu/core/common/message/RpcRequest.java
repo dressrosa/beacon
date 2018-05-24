@@ -10,15 +10,44 @@ package com.xiaoyu.core.common.message;
  */
 public class RpcRequest extends RpcMessage {
 
+    /**
+     * 方法名
+     */
     private String methodName;
 
+    /**
+     * 返回类型
+     */
     private Object returnType;
 
+    /**
+     * 接口名
+     */
     private String interfaceName;
 
+    /**
+     * 接口实现
+     */
     private String interfaceImpl;
 
+    /**
+     * 参数
+     */
     private Object[] params;
+
+    /**
+     * 请求超时
+     */
+    private long timeout;
+
+    public long getTimeout() {
+        return timeout;
+    }
+
+    public RpcRequest setTimeout(long timeout) {
+        this.timeout = timeout;
+        return this;
+    }
 
     public Object getReturnType() {
         return returnType;

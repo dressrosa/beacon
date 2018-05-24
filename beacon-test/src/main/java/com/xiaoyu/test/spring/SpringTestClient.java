@@ -11,18 +11,17 @@ public class SpringTestClient {
         ConfigurableApplicationContext context = new ClassPathXmlApplicationContext("classpath:beacon-client.xml");
         try {
             for (int i = 0; i < 20; i++) {
-                 IHelloService service = (IHelloService) context.getBean(IHelloService.class);
-                 System.out.println(service.hello("xiao鱼") + i);
+                IHelloService service = (IHelloService) context.getBean(IHelloService.class);
+                System.out.println(service.hello("xiao鱼"+i) + i);
                 // CountDownLatch latch = new CountDownLatch(1);
                 // latch.await();
-
             }
 
-        } finally {
-             context.stop();
-             context.close();
+        }
+
+        finally {
+            context.stop();
+            context.close();
         }
     }
 }
-
-
