@@ -2,7 +2,7 @@ package com.xiaoyu.core.cluster;
 
 import java.util.List;
 
-import com.xiaoyu.core.common.message.RpcRequest;
+import com.xiaoyu.core.rpc.config.bean.Invocation;
 
 /**
  * @author hongyu
@@ -16,8 +16,8 @@ public interface FaultTolerant {
      * 
      * @param providers
      * @return
-     * @throws Throwable 
+     * @throws Throwable
      */
-    public Object invoke(RpcRequest request, List<?> providers) throws Throwable;
+    public Object invoke(Invocation invocation, List<?> providers) throws Throwable;
 
 }

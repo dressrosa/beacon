@@ -31,12 +31,7 @@ public class BeaconClientChannel extends AbstractBeaconChannel {
     /**
      * 最大尝试次数
      */
-    private static final int MAX_RETRY_NUM = 13;
-
-    /**
-     * future最大等待时间 10s
-     */
-    private static final int MAX_WAIT_TIME = 5;
+    private static final int MAX_RETRY_NUM = 14;
 
     protected BaseChannel baseChannel;
 
@@ -46,10 +41,10 @@ public class BeaconClientChannel extends AbstractBeaconChannel {
 
     @Override
     protected Object doSend(Object message) {
-        Future<Object> taskFuture = this.addTask(new Callable<Object>() {
+        Future<Object> taskFuture = addTask(new Callable<Object>() {
             @Override
             public Object call() throws Exception {
-                // 对同一次的请求加锁,当收到结果时释放,这里仅为了使用notify机制
+                // 对同一次的请求加锁,当收到结果时释放
                 Object result = null;
                 final CallbackListener listener = new CallbackListener();
                 synchronized (listener) {
@@ -61,15 +56,23 @@ public class BeaconClientChannel extends AbstractBeaconChannel {
                     // 同步等待结果
                     long start = System.currentTimeMillis();
                     // 防止发生意外,导致一直阻塞;再等待一定时间后,以超时结束
-                    while ((result = listener.result()) == null && retry <= MAX_RETRY_NUM) {
-                        listener.wait(SLEEP_TIME << retry);
-                        retry++;
+                    try {
+                        while ((result = listener.result()) == null && retry <= MAX_RETRY_NUM) {
+                            listener.wait(SLEEP_TIME << retry);
+                            retry++;
+                        }
+                    } catch (InterruptedException e) {
+                        // 外围get超时,执行 taskFuture.cancel(true)进行中断
+                        long cost = System.currentTimeMillis() - start;
+                        LOG.info("Wait for {} times;cost {} ms", retry, cost);
+                        return result;
                     }
-                    long end;
-                    LOG.info("Wait for {} times;cost {} ms", retry, (end = System.currentTimeMillis() - start));
+                    long cost = System.currentTimeMillis() - start;
+                    LOG.info("Wait for {} times;cost {} ms", retry, cost);
                     if (result == null) {
+                        // 最大超时
                         result = new RpcResponse()
-                                .setException(new Exception("Request exceed limit time,cost time->" + end))
+                                .setException(new Exception("Request exceed limit time,cost time->" + cost))
                                 .setId(((RpcRequest) message).getId());
                     }
                 }
@@ -78,12 +81,16 @@ public class BeaconClientChannel extends AbstractBeaconChannel {
             }
         });
         try {
-            return taskFuture.get(MAX_WAIT_TIME, TimeUnit.SECONDS);
+            // client设定的超时
+            return taskFuture.get(((RpcRequest) message).getTimeout(), TimeUnit.MILLISECONDS);
         } catch (Exception e) {
-            e.printStackTrace();
+            // 取消正在执行的thread,否则线程会执行完毕才能结束
+            taskFuture.cancel(true);
             return new RpcResponse()
-                    .setException(new Exception("Request failed."))
+                    .setException(new Exception(
+                            "Request failed due to exceed time->" + ((RpcRequest) message).getTimeout() + "ms"))
                     .setId(((RpcRequest) message).getId());
+
         }
     }
 

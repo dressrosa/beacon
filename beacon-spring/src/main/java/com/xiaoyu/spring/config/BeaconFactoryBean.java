@@ -4,10 +4,7 @@ import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 import org.springframework.beans.factory.InitializingBean;
 
-import com.xiaoyu.core.common.bean.BeaconPath;
-import com.xiaoyu.core.common.constant.From;
 import com.xiaoyu.core.common.extension.SpiManager;
-import com.xiaoyu.core.common.utils.NetUtil;
 import com.xiaoyu.core.register.Registry;
 import com.xiaoyu.core.rpc.api.IProxy;
 
@@ -24,22 +21,18 @@ public class BeaconFactoryBean implements FactoryBean<Object>, InitializingBean,
 
     private Registry registry;
 
-    private From side;
+    // private From side;
 
-    public BeaconFactoryBean(Class<?> cls, Registry registry, From side) {
+    public BeaconFactoryBean(Class<?> cls, Registry registry) {
         this.cls = cls;
         this.registry = registry;
-        this.side = side;
+        // this.side = side;
     }
 
     @Override
     public void destroy() throws Exception {
         String service = cls.getName();
-        BeaconPath path = new BeaconPath();
-        path.setHost(NetUtil.localIP())
-                .setSide(side)
-                .setService(service);
-        registry.unregisterService(path);
+        registry.unregisterService(registry.getLocalConsumer(service));
     }
 
     @Override

@@ -221,7 +221,7 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
                                 interfaceName);
                         return;
                     }
-                    BeanDefinition facDef = this.generateFactoryBean(target, reg, From.CLIENT);
+                    BeanDefinition facDef = this.generateFactoryBean(target, reg);
                     parserContext.getRegistry().registerBeanDefinition(beanName, facDef);
                 }
             }
@@ -289,6 +289,7 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
             throws Exception {
         String interfaceName = element.getAttribute("interfaceName");
         String id = element.getAttribute("id");
+        String timeout = element.getAttribute("timeout");
         if (StringUtil.isBlank(interfaceName)) {
             throw new Exception("interfaceName cannot be null in xml tag->" + element.getTagName());
         }
@@ -302,7 +303,9 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
             beaconPath
                     .setSide(From.CLIENT)
                     .setService(interfaceName)
-                    .setHost(NetUtil.localIP());
+                    .setHost(NetUtil.localIP())
+                    .setTimeout(timeout);
+
             if (beaconRegistry != null) {
                 Registry registry = SpiManager.holder(Registry.class).target(beaconRegistry.getProtocol());
                 registry.registerService(beaconPath);
@@ -315,8 +318,7 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
                             id, interfaceName);
                     return;
                 }
-                BeanDefinition facDef = this.generateFactoryBean(target, registry,
-                        From.CLIENT);
+                BeanDefinition facDef = this.generateFactoryBean(target, registry);
                 parserContext.getRegistry().registerBeanDefinition(beanName, facDef);
             } else {
                 // registry还未解析到,导致这里没有registry
@@ -331,8 +333,8 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
     }
 
     // 接口没有构造函数所以无法初始化为bean,通过工厂bean,来避免初始化
-    private BeanDefinition generateFactoryBean(Class<?> target, Registry registry, From side) {
-        BeaconFactoryBean fac = new BeaconFactoryBean(target, registry, side);
+    private BeanDefinition generateFactoryBean(Class<?> target, Registry registry) {
+        BeaconFactoryBean fac = new BeaconFactoryBean(target, registry);
         GenericBeanDefinition facDef = new GenericBeanDefinition();
         facDef.setBeanClass(fac.getClass());
         facDef.setLazyInit(false);
@@ -341,7 +343,6 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
         ConstructorArgumentValues val = new ConstructorArgumentValues();
         val.addGenericArgumentValue(target);
         val.addGenericArgumentValue(registry);
-        val.addGenericArgumentValue(side);
         facDef.setConstructorArgumentValues(val);
         return facDef;
     }

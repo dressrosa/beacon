@@ -22,6 +22,18 @@ public class BeaconPath {
 
     private From side;
 
+    // ms
+    private String timeout;
+
+    public String getTimeout() {
+        return timeout;
+    }
+
+    public BeaconPath setTimeout(String timeout) {
+        this.timeout = timeout;
+        return this;
+    }
+
     public String getService() {
         return service;
     }
@@ -99,10 +111,15 @@ public class BeaconPath {
         } else {
             builder.append("host=").append(this.getHost());
         }
-
+        // side放在最后
         builder.append("&service=").append(this.getService())
-                .append("&ref=").append(this.getRef())
-                .append("&side=").append(this.getSide().name());
+                .append("&ref=").append(this.getRef());
+        if (this.getSide() == From.SERVER) {
+            builder.append("&timeout=").append("");
+        } else {
+            builder.append("&timeout=").append(this.getTimeout());
+        }
+        builder.append("&side=").append(this.getSide().name());
         return builder.toString();
     }
 
@@ -123,6 +140,8 @@ public class BeaconPath {
                 bea.setService(str.substring(8));
             } else if (str.startsWith("ref")) {
                 bea.setRef(str.substring(4));
+            } else if (str.startsWith("timeout")) {
+                bea.setTimeout(str.substring(8));
             } else if (str.startsWith("side")) {
                 bea.setSide(From.fromName(str.substring(5)));
             }

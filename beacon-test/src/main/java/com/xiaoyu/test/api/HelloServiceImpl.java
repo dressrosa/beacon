@@ -1,17 +1,17 @@
 package com.xiaoyu.test.api;
 
+import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 public class HelloServiceImpl implements IHelloService {
 
     @Override
     public String hello(String name) {
-//         try {
-//         TimeUnit.MILLISECONDS.sleep(2000);
-//         } catch (InterruptedException e) {
-//         // TODO Auto-generated catch block
-//         e.printStackTrace();
-//         }
+        try {
+            TimeUnit.MILLISECONDS.sleep(new Random().nextInt(1000));//
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
         return "hello " + name;
     }
 
