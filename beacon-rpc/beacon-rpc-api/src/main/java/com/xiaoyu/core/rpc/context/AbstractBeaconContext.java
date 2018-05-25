@@ -3,6 +3,7 @@ package com.xiaoyu.core.rpc.context;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +29,8 @@ public abstract class AbstractBeaconContext implements Context {
     protected Registry registry;
 
     private static AbstractBeaconContext abstractContext;
-    
+
+    private static final ReentrantLock clientLock = new ReentrantLock();
 
     public AbstractBeaconContext() {
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
@@ -45,12 +47,18 @@ public abstract class AbstractBeaconContext implements Context {
 
     @Override
     public Client client(String host, int port) throws Exception {
-        if (clientMap.containsKey(host)) {
-            return clientMap.get(host);
+        clientLock.lock();
+        try {
+            if (clientMap.containsKey(host)) {
+                return clientMap.get(host);
+            }
+            Client client = doInitClient(host, port);
+            clientMap.put(host, client);
+            return client;
+        } finally {
+            clientLock.unlock();
         }
-        Client client = doInitClient(host, port);
-        clientMap.put(host, client);
-        return client;
+
     }
 
     @Override
