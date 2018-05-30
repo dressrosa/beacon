@@ -4,6 +4,8 @@ import java.util.Iterator;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import com.xiaoyu.core.common.utils.StringUtil;
+
 /**
  * 存储所有扩展的类
  * 
@@ -30,7 +32,11 @@ public class SpiManager {
             holder = new ExtenderHolder<>();
         }
         if (!holder.isEmpty()) {
-            return holder.randomOne();
+            if (StringUtil.isEmpty(holder.getDefault_key())) {
+                return holder.randomOne();
+            } else {
+                return holder.target(holder.getDefault_key());
+            }
         }
         BeaconServiceLoader<T> loader = BeaconServiceLoader.load(cls);
         Iterator<T> iter = loader.iterator();

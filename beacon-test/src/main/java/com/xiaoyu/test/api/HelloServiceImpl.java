@@ -3,12 +3,23 @@ package com.xiaoyu.test.api;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.xiaoyu.beacon.autoconfigure.anno.BeaconExporter;
+
+@Service
+@BeaconExporter(interfaceName="com.xiaoyu.test.api.IHelloService")
 public class HelloServiceImpl implements IHelloService {
 
+    @Autowired
+    private IUserService userService;
+    
     @Override
     public String hello(String name) {
         try {
             TimeUnit.MILLISECONDS.sleep(new Random().nextInt(1000));//
+           System.out.println( userService.name("xixi"));
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

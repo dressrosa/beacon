@@ -7,8 +7,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.xiaoyu.core.common.exception.BizException;
+import com.xiaoyu.core.common.extension.SpiManager;
 import com.xiaoyu.core.common.message.RpcRequest;
 import com.xiaoyu.core.common.message.RpcResponse;
+import com.xiaoyu.core.register.Registry;
 import com.xiaoyu.transport.api.BaseChannel;
 import com.xiaoyu.transport.support.AbstractBeaconChannel;
 
@@ -62,7 +64,13 @@ public class BeaconServerChannel extends AbstractBeaconChannel {
                 // 根据信息,找到实现类
                 for (Method d : target.getDeclaredMethods()) {
                     if (d.getName().equals(req.getMethodName())) {
-                        result = d.invoke(target.newInstance(), req.getParams());
+                        Registry registry = SpiManager.defaultSpiExtender(Registry.class);
+                        Object proxy = registry.getProxyBean(req.getInterfaceName());
+                        if (proxy != null) {
+                            result = d.invoke(proxy, req.getParams());
+                        } else {
+                            result = d.invoke(target.newInstance(), req.getParams());
+                        }
                         break;
                     }
                 }

@@ -47,6 +47,10 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
 
     private static BeaconRegistry beaconRegistry = null;
 
+    public static Set<BeaconPath> getBeaconPathSet() {
+        return referenceSet;
+    }
+
     public BeaconBeanDefinitionParser(Class<?> cls) {
         this.cls = cls;
     }
@@ -70,7 +74,6 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
     @Override
     protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
         try {
-
             if (cls == BeaconReference.class) {
                 doParseReference(element, parserContext);
             } else if (cls == BeaconRegistry.class) {
@@ -83,7 +86,6 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
         } catch (Exception e) {
             e.printStackTrace();
         }
-
     }
 
     private void doRegisterBeaconCloseEvent(ParserContext parserContext, Context context) {
@@ -110,7 +112,7 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
             port = Integer.toString(1992);
         }
         if (!NumberUtils.isCreatable(port)) {
-            throw new Exception("port should be a positive integer in xml tag->" + element.getTagName());
+            throw new Exception("port should be a positive integer in xml tag beacon-protocol");
         }
         try {
             Context context = SpiManager.holder(Context.class).target(name);
@@ -123,7 +125,7 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
                     // 注册中心还没好的话,一部分放到doParseRegistry里注册
                     if (beaconRegistry != null) {
                         p.setPort(port);
-                        context.getRegistry().registerService(p);
+                        // context.getRegistry().registerService(p);
                     } else {
                         p.setPort(port);
                     }
@@ -207,7 +209,7 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
                     // protocol还没好的话,一部分放到doParseProtocol里面注册
                     if (beaconProtocol != null) {
                         p.setPort(beaconProtocol.getPort());
-                        reg.registerService(p);
+                        // reg.registerService(p);
                     }
                 } else if (p.getSide() == From.CLIENT) {
                     reg.registerService(p);
@@ -266,10 +268,10 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
                     .setRef(ref)
                     .setHost(NetUtil.localIP());
             if (beaconRegistry != null) {
-                Registry registry = SpiManager.holder(Registry.class).target(beaconRegistry.getProtocol());
                 if (beaconProtocol != null) {
                     beaconPath.setPort(beaconProtocol.getPort());
-                    registry.registerService(beaconPath);
+                    // 检查bean是否是spring中已有了
+                    referenceSet.add(beaconPath);
                 } else {
                     // protocol还未解析到 ,导致这里没有port
                     referenceSet.add(beaconPath);
@@ -279,8 +281,8 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
                 referenceSet.add(beaconPath);
             }
         } catch (Exception e) {
-            LOG.error("cannot resolve exporter,please check in xml tag->{} with id->{},interface->{}",
-                    element.getTagName(), id, interfaceName, e);
+            LOG.error("cannot resolve exporter,please check in xml tag beacon-exporter with id->{},interface->{}", id,
+                    interfaceName);
             return;
         }
     }
@@ -313,9 +315,8 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
                 String beanName = StringUtil.lowerFirstChar(target.getSimpleName());
                 BeanDefinitionRegistry beanReg = parserContext.getRegistry();
                 if (beanReg.containsBeanDefinition(beanName)) {
-                    LOG.warn("repeat register.please check in xml tag->{} with id->{},interface->{}",
-                            element.getTagName(),
-                            id, interfaceName);
+                    LOG.warn("repeat register.please check in xml tag beacon-reference with id->{},interface->{}", id,
+                            interfaceName);
                     return;
                 }
                 BeanDefinition facDef = this.generateFactoryBean(target, registry);
@@ -326,8 +327,8 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
             }
 
         } catch (Exception e) {
-            LOG.error("cannot resolve reference,please check in xml tag->{} with id->{},interface->{}",
-                    element.getTagName(), id, interfaceName, e);
+            LOG.error("cannot resolve reference,please check in xml tag beacon-reference with id->{},interface->{}",
+                    id, interfaceName);
             return;
         }
     }

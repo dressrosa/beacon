@@ -12,6 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 
 import org.I0Itec.zkclient.IZkChildListener;
@@ -109,6 +110,8 @@ public class ZooRegistry extends AbstractRegistry {
             zoo.createPersistent(consumerPath);
             zoo.subscribeChildChanges(consumerPath, listener);
             LOG.info("Subscribe service in zookeeper->{}", consumerPath);
+            // 本地注册bean
+            addProxyBean(beaconPath);
         }
         // 保存本地
         this.storeLocalService(service, beaconPath);
@@ -124,7 +127,14 @@ public class ZooRegistry extends AbstractRegistry {
      */
     private void checkProviderLost(String service, String detailInfo) {
         if (providerMonitor == null) {
-            providerMonitor = Executors.newSingleThreadScheduledExecutor();
+            providerMonitor = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
+                @Override
+                public Thread newThread(Runnable r) {
+                    Thread t = new Thread(r, "provider-monitor-1");
+                    t.setDaemon(true);
+                    return t;
+                }
+            });
             providerMonitor.scheduleAtFixedRate(new Runnable() {
                 @Override
                 public void run() {
@@ -328,6 +338,11 @@ public class ZooRegistry extends AbstractRegistry {
 
     @Override
     public void close() {
+        // 还没执行到监视器可能就结束了
+        if (providerMonitor != null) {
+            // 关闭检查器
+            providerMonitor.shutdown();
+        }
         ZooUtil tzoo = zoo;
         tzoo.close();
     }
@@ -373,4 +388,5 @@ public class ZooRegistry extends AbstractRegistry {
     public void doStoreLocalService(String service, BeaconPath path) {
         SERVICE_MAP.get(service).add(path);
     }
+
 }

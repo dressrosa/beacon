@@ -19,7 +19,7 @@ public class SpringTestClient {
         try {
             IHelloService service = (IHelloService) context.getBean(IHelloService.class);
             
-            for (int i = 0; i < 100; i++) {
+            for (int i = 0; i < 2; i++) {
                 new Thread(new Runnable() {
 
                     @Override
@@ -27,6 +27,7 @@ public class SpringTestClient {
                         try {
                             System.out.println(service.hello("xiao鱼") + ato1.getAndIncrement());
                         } catch (Exception e) {
+                            e.printStackTrace();
                            System.out.println("失败个数:" +ato.getAndIncrement());
                             //System.out.println(e.getMessage());
                         }

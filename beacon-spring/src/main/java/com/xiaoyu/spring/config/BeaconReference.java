@@ -11,6 +11,17 @@ public class BeaconReference extends BeaconBean {
 
     private String interfaceName;
 
+    private String timeout;
+
+    public String getTimeout() {
+        return timeout;
+    }
+
+    public BeaconReference setTimeout(String timeout) {
+        this.timeout = timeout;
+        return this;
+    }
+
     public String getInterfaceName() {
         return interfaceName;
     }

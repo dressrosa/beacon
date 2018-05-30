@@ -69,4 +69,13 @@ public interface Registry {
      * @return
      */
     public BeaconPath getLocalConsumer(String service);
+
+    /**
+     * 获取代理对象,用于server端调用
+     * 
+     * @param service
+     * @return
+     */
+    public Object getProxyBean(String service);
+
 }

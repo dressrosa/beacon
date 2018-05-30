@@ -15,5 +15,10 @@
             <artifactId>beacon-common</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.xiaoyu</groupId>
+            <artifactId>beacon-registry-api</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
     </dependencies>
 </project>
