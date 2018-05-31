@@ -1,3 +1,7 @@
+/**
+ * 唯有读书,不慵不扰
+ * 
+ */
 package com.xiaoyu.transport.support;
 
 import java.util.concurrent.Callable;
@@ -21,7 +25,7 @@ import com.xiaoyu.transport.api.BaseChannel;
  * 
  * @author hongyu
  * @date 2018-02
- * @description
+ * @description 对channel的接收发送的结果线程池的管理
  */
 public abstract class AbstractBeaconChannel implements BaseChannel {
 

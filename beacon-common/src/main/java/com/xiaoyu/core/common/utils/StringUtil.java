@@ -1,9 +1,18 @@
+/**
+ * 唯有读书,不慵不扰
+ * 
+ */
 package com.xiaoyu.core.common.utils;
 
 import java.io.UnsupportedEncodingException;
 
 import org.apache.commons.lang3.StringUtils;
 
+/**
+ * @author hongyu
+ * @date 2018-05
+ * @description
+ */
 public class StringUtil extends StringUtils {
 
     private static final char SEPARATOR = '_';

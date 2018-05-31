@@ -1,3 +1,7 @@
+/**
+ * 唯有读书,不慵不扰
+ * 
+ */
 package com.xiaoyu.spring.handler;
 
 import java.util.HashSet;
@@ -33,7 +37,7 @@ import com.xiaoyu.spring.listener.SpringContextListener;
 /**
  * @author hongyu
  * @date 2018-04
- * @description
+ * @description 解析xml
  */
 public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionParser {
 
@@ -88,15 +92,15 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
         }
     }
 
-    private void doRegisterBeaconCloseEvent(ParserContext parserContext, Context context) {
+    private void doRegisterBeaconListenerEvent(ParserContext parserContext, Context context) {
         if (!parserContext.getRegistry().containsBeanDefinition("beaconCloseEvent")) {
-            GenericBeanDefinition closeEvent = new GenericBeanDefinition();
+            GenericBeanDefinition event = new GenericBeanDefinition();
             ConstructorArgumentValues val = new ConstructorArgumentValues();
             val.addGenericArgumentValue(context);
-            closeEvent.setConstructorArgumentValues(val);
-            closeEvent.setBeanClass(SpringContextListener.class);
-            closeEvent.setLazyInit(false);
-            parserContext.getRegistry().registerBeanDefinition("beaconCloseEvent", closeEvent);
+            event.setConstructorArgumentValues(val);
+            event.setBeanClass(SpringContextListener.class);
+            event.setLazyInit(false);
+            parserContext.getRegistry().registerBeanDefinition("beaconListenerEvent", event);
         }
     }
 
@@ -135,7 +139,7 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
             if (beaconRegistry != null) {
                 context.registry(SpiManager.holder(Registry.class).target(beaconRegistry.getProtocol()));
                 // 监听spring的close
-                doRegisterBeaconCloseEvent(parserContext, context);
+                doRegisterBeaconListenerEvent(parserContext, context);
             }
 
         } catch (Exception e) {
@@ -192,13 +196,13 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
                 context = SpiManager.holder(Context.class).target(beaconProtocol.getName());
                 context.registry(reg);
                 // 监听spring的close
-                doRegisterBeaconCloseEvent(parserContext, context);
+                doRegisterBeaconListenerEvent(parserContext, context);
             } else {
                 // client端没有beaconProtocol
                 context = SpiManager.defaultSpiExtender(Context.class);
                 context.registry(reg);
                 // 监听spring的close
-                doRegisterBeaconCloseEvent(parserContext, context);
+                doRegisterBeaconListenerEvent(parserContext, context);
             }
 
             // 设置beaconRegistry

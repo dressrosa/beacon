@@ -1,3 +1,7 @@
+/**
+ * 唯有读书,不慵不扰
+ * 
+ */
 package com.xiaoyu.transport.support;
 
 import java.util.concurrent.Future;
@@ -5,11 +9,9 @@ import java.util.concurrent.Future;
 import com.xiaoyu.transport.api.BeaconHandler;
 
 /**
- * 用于消息的处理
- * 
  * @author hongyu
  * @date 2018-02
- * @description
+ * @description 用于对消息的业务处理
  */
 public class AbstractBeaconHandler implements BeaconHandler {
 

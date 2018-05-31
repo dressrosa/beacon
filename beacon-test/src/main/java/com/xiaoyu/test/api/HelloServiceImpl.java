@@ -18,9 +18,9 @@ public class HelloServiceImpl implements IHelloService {
     @Override
     public String hello(String name) {
         try {
-            TimeUnit.MILLISECONDS.sleep(new Random().nextInt(1000));//
+          //  TimeUnit.MILLISECONDS.sleep(new Random().nextInt(500));//
            System.out.println( userService.name("xixi"));
-        } catch (InterruptedException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
         return "hello " + name;

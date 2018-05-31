@@ -1,3 +1,7 @@
+/**
+ * 唯有读书,不慵不扰
+ * 
+ */
 package com.xiaoyu.transport.api;
 
 /**
@@ -5,6 +9,6 @@ package com.xiaoyu.transport.api;
  * @date 2018-04
  * @description
  */
-public interface Server extends BeaconSide{
+public interface Server extends BeaconSide {
 
 }

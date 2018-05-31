@@ -1,5 +1,14 @@
+/**
+ * 唯有读书,不慵不扰
+ * 
+ */
 package com.xiaoyu.core.common.bean;
 
+/**
+ * @author hongyu
+ * @date 2018-05
+ * @description
+ */
 public class BeaconBean {
 
     private String id;

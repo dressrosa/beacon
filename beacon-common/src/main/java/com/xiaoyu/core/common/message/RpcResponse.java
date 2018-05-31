@@ -10,11 +10,6 @@ package com.xiaoyu.core.common.message;
  */
 public class RpcResponse extends RpcMessage {
 
-    @Override
-    public String toString() {
-        return "ResponseMsg []" + getId();
-    }
-
     private Object result;
 
     private Throwable exception;

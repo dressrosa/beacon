@@ -12,12 +12,16 @@ package com.xiaoyu.core.serialize;
 public interface Serializer {
 
     /**
+     * 序列化
+     * 
      * @param obj
      * @return
      */
     public <T> byte[] serialize(T obj);
 
     /**
+     * 反序列化
+     * 
      * @param data
      * @param cls
      * @return

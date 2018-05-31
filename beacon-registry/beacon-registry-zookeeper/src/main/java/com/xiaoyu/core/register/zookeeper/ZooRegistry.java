@@ -1,4 +1,5 @@
 /**
+ * 唯有读书,不慵不扰
  * 
  */
 package com.xiaoyu.core.register.zookeeper;
@@ -282,7 +283,7 @@ public class ZooRegistry extends AbstractRegistry {
 
                 @Override
                 public void handleSessionEstablishmentError(Throwable error) throws Exception {
-                    error.printStackTrace();
+                    LOG.error("handleSessionEstablishmentError->",error);
                 }
 
                 @Override

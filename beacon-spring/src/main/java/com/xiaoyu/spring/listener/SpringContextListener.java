@@ -1,3 +1,7 @@
+/**
+ * 唯有读书,不慵不扰
+ * 
+ */
 package com.xiaoyu.spring.listener;
 
 import java.util.Set;
@@ -12,7 +16,6 @@ import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextClosedEvent;
 import org.springframework.context.event.ContextRefreshedEvent;
 
-import com.alibaba.fastjson.JSON;
 import com.xiaoyu.core.common.bean.BeaconPath;
 import com.xiaoyu.core.common.constant.From;
 import com.xiaoyu.core.register.Registry;
@@ -22,7 +25,7 @@ import com.xiaoyu.spring.handler.BeaconBeanDefinitionParser;
 /**
  * @author hongyu
  * @date 2018-04
- * @description
+ * @description spring监听事件,对spring启动完成和结束进行监听
  */
 
 public class SpringContextListener implements ApplicationListener<ApplicationEvent>, ApplicationContextAware {
@@ -40,7 +43,6 @@ public class SpringContextListener implements ApplicationListener<ApplicationEve
     @Override
     public void onApplicationEvent(ApplicationEvent event) {
         if (event instanceof ContextRefreshedEvent) {
-            System.out.println("启动完毕");
             doInitExporter();
         } else if (event instanceof ContextClosedEvent) {
             LOG.info("close the beacon context...");
@@ -59,7 +61,7 @@ public class SpringContextListener implements ApplicationListener<ApplicationEve
                 if (p.getSide() == From.SERVER) {
                     Class<?> cls = Class.forName(p.getService());
                     Object proxyBean = this.applicationContext.getBean(cls);
-                    //设置spring bean
+                    // 设置spring bean的引用
                     if (proxyBean != null) {
                         p.setProxy(proxyBean);
                     }
@@ -75,7 +77,6 @@ public class SpringContextListener implements ApplicationListener<ApplicationEve
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
-        System.out.println(JSON.toJSONString(applicationContext.getBeanDefinitionNames()));
     }
 
 }

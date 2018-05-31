@@ -1,3 +1,7 @@
+/**
+ * 唯有读书,不慵不扰
+ * 
+ */
 package com.xiaoyu.transport.api;
 
 import java.util.concurrent.Future;
@@ -5,7 +9,7 @@ import java.util.concurrent.Future;
 /**
  * @author hongyu
  * @date 2018-02
- * @description
+ * @description 基础的接收/发送
  */
 public interface BaseChannel {
 

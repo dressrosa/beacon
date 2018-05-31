@@ -1,3 +1,7 @@
+/**
+ * 唯有读书,不慵不扰
+ * 
+ */
 package com.xiaoyu.core.common.utils;
 
 import java.util.Random;
@@ -12,7 +16,7 @@ public class IdUtil {
     private static final Random RAN = new Random();
 
     public static String requestId() {
-        return Math.abs(RAN.nextLong()) + System.currentTimeMillis()/1000 + "";
+        return "" + Math.abs(RAN.nextLong()) + System.currentTimeMillis() / 1000;
     }
 
     public static int randomNum(int bound) {

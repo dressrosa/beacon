@@ -19,7 +19,7 @@ public class SpringTestClient {
         try {
             IHelloService service = (IHelloService) context.getBean(IHelloService.class);
             
-            for (int i = 0; i < 2; i++) {
+            for (int i = 0; i < 200; i++) {
                 new Thread(new Runnable() {
 
                     @Override
@@ -37,9 +37,10 @@ public class SpringTestClient {
             }
 //            CountDownLatch latch = new CountDownLatch(1);
 //            latch.await();
-            TimeUnit.SECONDS.sleep(10);
+            
         }
         finally {
+            TimeUnit.SECONDS.sleep(5);
             context.stop();
             context.close();
         }
