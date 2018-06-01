@@ -1,3 +1,7 @@
+/**
+ * 唯有读书,不慵不扰
+ * 
+ */
 package com.xiaoyu.core.rpc.context;
 
 import java.util.HashMap;
@@ -16,7 +20,7 @@ import com.xiaoyu.transport.api.Server;
 /**
  * @author hongyu
  * @date 2018-04
- * @description
+ * @description 抽象context,完成client server的设置
  */
 public abstract class AbstractBeaconContext implements Context {
 
@@ -75,12 +79,12 @@ public abstract class AbstractBeaconContext implements Context {
     private void doCloseClient() {
         if (clientMap != null && !clientMap.isEmpty()) {
             Iterator<Client> iter = clientMap.values().iterator();
-            while (iter.hasNext()) {
-                try {
+            try {
+                while (iter.hasNext()) {
                     iter.next().stop();
-                } catch (Exception e) {
-                    // do nothing
                 }
+            } catch (Exception e) {
+                // do nothing
             }
         }
     }

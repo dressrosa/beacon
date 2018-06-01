@@ -1,3 +1,7 @@
+/**
+ * 唯有读书,不慵不扰
+ * 
+ */
 package com.xiaoyu.spring.config;
 
 import com.xiaoyu.core.common.bean.BeaconBean;
@@ -5,7 +9,7 @@ import com.xiaoyu.core.common.bean.BeaconBean;
 /**
  * @author hongyu
  * @date 2018-04
- * @description
+ * @description 对应与beacon-protocol
  */
 public class BeaconProtocol extends BeaconBean {
 

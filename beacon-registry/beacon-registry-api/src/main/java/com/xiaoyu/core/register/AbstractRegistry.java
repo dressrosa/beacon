@@ -1,11 +1,14 @@
 /**
+ * 唯有读书,不慵不扰
  * 
  */
 package com.xiaoyu.core.register;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -25,6 +28,22 @@ public abstract class AbstractRegistry implements Registry {
      * service->BeaconPath(serviceDetail)
      */
     protected static final ConcurrentMap<String, Set<BeaconPath>> SERVICE_MAP = new ConcurrentHashMap<>(32);
+
+    /**
+     * service->proxyBean
+     */
+    private static final Map<String, Object> BEAN_MAP = new HashMap<>(32);
+
+    protected void addProxyBean(BeaconPath beaconPath) {
+        if(beaconPath.getProxy() != null) {
+            BEAN_MAP.put(beaconPath.getService(), beaconPath.getProxy());
+        }
+    }
+
+    @Override
+    public Object getProxyBean(String service) {
+        return BEAN_MAP.get(service);
+    }
 
     @Override
     public boolean discoverService(String service) {

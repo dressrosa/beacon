@@ -1,4 +1,5 @@
 /**
+ * 唯有读书,不慵不扰
  * 
  */
 package com.xiaoyu.core.proxy;
@@ -36,7 +37,6 @@ public class InvocationHandlerAdapter {
 
     public InvocationHandlerAdapter(Class<?> ref) {
         this.ref = ref;
-
     }
 
     @SuppressWarnings("unchecked")

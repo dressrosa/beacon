@@ -1,4 +1,5 @@
 /**
+ * 唯有读书,不慵不扰
  * 
  */
 package com.xiaoyu.core.common.utils;
@@ -18,7 +19,6 @@ public class NetUtil {
         try {
             addr = InetAddress.getLocalHost();
         } catch (UnknownHostException e) {
-            e.printStackTrace();
             return null;
         }
         return addr.getHostAddress();

@@ -1,3 +1,7 @@
+/**
+ * 唯有读书,不慵不扰
+ * 
+ */
 package com.xiaoyu.spring.handler;
 
 import org.springframework.beans.factory.xml.NamespaceHandlerSupport;
@@ -10,7 +14,7 @@ import com.xiaoyu.spring.config.BeaconRegistry;
 /**
  * @author hongyu
  * @date 2018-04
- * @description
+ * @description 解析xml
  */
 public class BeaconNamespaceHandler extends NamespaceHandlerSupport {
 

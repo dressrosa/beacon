@@ -1,4 +1,5 @@
 /**
+ * 唯有读书,不慵不扰
  * 
  */
 package com.xiaoyu.core.common.extension;
@@ -17,11 +18,25 @@ public class ExtenderHolder<T> {
 
     private final ConcurrentMap<String, T> holder = new ConcurrentHashMap<>(16);
 
+    /**
+     * 当调用target方法时,设置为默认
+     */
+    private String default_key = null;
+
+    public String getDefault_key() {
+        return default_key;
+    }
+
+    public void setDefault_key(String default_key) {
+        this.default_key = default_key;
+    }
+
     public T target(String name) throws Exception {
         if (!holder.containsKey(name)) {
             throw new Exception("cannot find the target->" + name);
         }
         T t = (T) holder.get(name);
+        setDefault_key(name);
         return t;
     }
 

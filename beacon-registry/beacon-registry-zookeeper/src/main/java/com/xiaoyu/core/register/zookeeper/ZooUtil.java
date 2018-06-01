@@ -1,3 +1,7 @@
+/**
+ * 唯有读书,不慵不扰
+ * 
+ */
 package com.xiaoyu.core.register.zookeeper;
 
 import java.util.ArrayList;
@@ -47,16 +51,16 @@ public class ZooUtil {
             zoo = new ZooUtil(host);
         } catch (Exception e) {
             LOG.error("Connect to zookeeper->{} failed,go into retry.", host, e);
-            while (++num < RETRY_TIMES) {
-                try {
+            try {
+                while (++num < RETRY_TIMES) {
                     zoo = new ZooUtil(host);
                     TimeUnit.MILLISECONDS.sleep(500);
                     if (zoo != null) {
                         break;
                     }
-                } catch (Exception e1) {
-                    e1.printStackTrace();
                 }
+            } catch (Exception e1) {
+               LOG.error("Connect to zookeeper error->",e1);
             }
         }
         if (zoo == null) {

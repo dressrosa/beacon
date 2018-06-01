@@ -1,4 +1,5 @@
 /**
+ * 唯有读书,不慵不扰
  * 
  */
 package com.xiaoyu.core.common.bean;
@@ -24,6 +25,18 @@ public class BeaconPath {
 
     // ms
     private String timeout;
+    
+    //server端调用
+    private Object proxy;
+    
+    public Object getProxy() {
+        return proxy;
+    }
+
+    public BeaconPath setProxy(Object proxy) {
+        this.proxy = proxy;
+        return this;
+    }
 
     public String getTimeout() {
         return timeout;

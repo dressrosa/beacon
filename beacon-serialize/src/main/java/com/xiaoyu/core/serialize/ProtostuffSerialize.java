@@ -22,7 +22,7 @@ import io.protostuff.runtime.RuntimeSchema;
  */
 public class ProtostuffSerialize implements Serializer {
 
-    private static Map<Class<?>, Schema<?>> schemaMap = new ConcurrentHashMap<>();
+    private static Map<Class<?>, Schema<?>> schemaMap = new ConcurrentHashMap<>(16);
     private static Objenesis objenesis = new ObjenesisStd(true);
 
     private <T> Schema<T> getSchema(Class<T> cls) {

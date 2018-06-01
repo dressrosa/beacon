@@ -4,9 +4,8 @@
 package com.xiaoyu.core.rpc.api;
 
 /**
- * 2017年4月20日下午2:44:00
- * 
- * @author xiaoyu
+ * @author hongyu
+ * @date 2017-04
  * @description
  */
 public interface IProxy {
