@@ -37,57 +37,69 @@ public class BeaconServerChannel extends AbstractBeaconChannel {
 
     @Override
     protected Object doSend(Object message) {
-        try {
-            /*
-             * this.channel
-             * .pipeline()
-             * .context("beaconServerHandler")
-             * .writeAndFlush(message);
-             */
-            this.baseChannel.send(message);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        this.addTask(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    /*
+                     * this.channel
+                     * .pipeline()
+                     * .context("beaconServerHandler")
+                     * .writeAndFlush(message);
+                     */
+                    baseChannel.send(message);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
         return null;
     }
 
     @Override
     protected void doReceive(Object message) throws Exception {
-        RpcResponse resp = new RpcResponse();
-        Object result = null;
-        try {
-            RpcRequest req = (RpcRequest) message;
-            resp.setId(req.getId());
-            if (req.isHeartbeat()) {
-                this.baseChannel.send(new RpcResponse().setResult("pong"));
-                return;
-            }
-            try {
-                // 处理收到client信息
-                Class<?> target = Class.forName(req.getInterfaceImpl());
-                // 根据信息,找到实现类
-                for (Method d : target.getDeclaredMethods()) {
-                    if (d.getName().equals(req.getMethodName())) {
-                        Registry registry = SpiManager.defaultSpiExtender(Registry.class);
-                        Object proxy = registry.getProxyBean(req.getInterfaceName());
-                        if (proxy != null) {
-                            result = d.invoke(proxy, req.getParams());
-                        } else {
-                            result = d.invoke(target.newInstance(), req.getParams());
-                        }
-                        break;
+        //同一个channel下会导致处理同步,这里通过线程池将io与业务分隔开.
+        this.addTask(new Runnable() {
+            @Override
+            public void run() {
+                RpcResponse resp = new RpcResponse();
+                Object result = null;
+                try {
+                    RpcRequest req = (RpcRequest) message;
+                    resp.setId(req.getId());
+                    if (req.isHeartbeat()) {
+                        baseChannel.send(new RpcResponse().setResult("pong"));
+                        return;
                     }
+                    try {
+                        // 处理收到client信息
+                        Class<?> target = Class.forName(req.getInterfaceImpl());
+                        // 根据信息,找到实现类
+                        for (Method d : target.getDeclaredMethods()) {
+                            if (d.getName().equals(req.getMethodName())) {
+                                Registry registry = SpiManager.defaultSpiExtender(Registry.class);
+                                Object proxy = registry.getProxyBean(req.getInterfaceName());
+                                if (proxy != null) {
+                                    result = d.invoke(proxy, req.getParams());
+                                } else {
+                                    result = d.invoke(target.newInstance(), req.getParams());
+                                }
+                                break;
+                            }
+                        }
+                    } catch (Exception bize) {
+                        // 非rpc异常
+                        throw new BizException(bize);
+                    }
+                    // 调用发送给client发送结果
+                    baseChannel.send(resp.setResult(result));
+                } catch (Exception e) {
+                    LOG.error("error->" + e);
+                    resp.setException(e);
                 }
-            } catch (Exception bize) {
-                // 非rpc异常
-                throw new BizException(bize);
             }
-        } catch (Exception e) {
-            LOG.error("error->" + e);
-            resp.setException(e);
-        }
-        // 调用发送给client发送结果
-        this.baseChannel.send(resp.setResult(result));
+        });
+
     }
 
     @Override

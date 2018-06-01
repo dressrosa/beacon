@@ -46,11 +46,13 @@ public abstract class AbstractBeaconChannel implements BaseChannel {
     private static final AtomicInteger COUNT = new AtomicInteger(0);
 
     /**
-     * 线程池,每一个消费请求都会放入池中执行等待结果
+     * 线程池,每一个消费请求都会放入池中执行等待结果,相当于newCachedThreadPool
+     * coresize=处理器*3 maxsize=最大内存(mb)/2
      */
-    private static final ThreadPoolExecutor TASK_POOL = new ThreadPoolExecutor(16, 16,
-            0L, TimeUnit.MILLISECONDS,
-            new LinkedBlockingQueue<Runnable>(), new ThreadFactory() {
+    private static final ThreadPoolExecutor TASK_POOL = new ThreadPoolExecutor(
+            Runtime.getRuntime().availableProcessors() << 3, (int) (Runtime.getRuntime().maxMemory() >> 21),
+            60L, TimeUnit.SECONDS,
+            new LinkedBlockingQueue<>(), new ThreadFactory() {
                 @Override
                 public Thread newThread(Runnable r) {
                     return new Thread(r, "BeaconTaskHandler-" + COUNT.getAndIncrement());
@@ -75,6 +77,11 @@ public abstract class AbstractBeaconChannel implements BaseChannel {
     public Future<Object> addTask(Callable<Object> call) {
         ThreadPoolExecutor pool = TASK_POOL;
         return pool.submit(call);
+    }
+
+    public void addTask(Runnable call) {
+        ThreadPoolExecutor pool = TASK_POOL;
+        pool.submit(call);
     }
 
     /**
@@ -123,7 +130,7 @@ public abstract class AbstractBeaconChannel implements BaseChannel {
         if (message == null) {
             throw new Exception("message received is null.");
         }
-        this.doReceive(message);
+        doReceive(message);
         return;
     }
 
