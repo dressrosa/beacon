@@ -72,6 +72,20 @@ public abstract class AbstractBeaconContext implements Context {
     }
 
     @Override
+    public void start() {
+        if (serverMap != null && !serverMap.isEmpty()) {
+            Iterator<Server> iter = serverMap.values().iterator();
+            try {
+                while (iter.hasNext()) {
+                    iter.next().start();
+                }
+            } catch (Exception e) {
+                // do nothing
+            }
+        }
+    }
+
+    @Override
     public void stop() {
         doCloseClient();
     }
@@ -92,7 +106,6 @@ public abstract class AbstractBeaconContext implements Context {
     @Override
     public void registry(Registry registry) {
         this.registry = registry;
-
     }
 
     @Override

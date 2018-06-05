@@ -4,8 +4,8 @@ import org.springframework.stereotype.Service;
 
 import com.xiaoyu.beacon.autoconfigure.anno.BeaconExporter;
 
-@Service
-@BeaconExporter(interfaceName="com.xiaoyu.test.api.IUserService")
+//@Service
+//@BeaconExporter(interfaceName="com.xiaoyu.test.api.IUserService")
 public class UserServiceImpl implements IUserService {
 
 

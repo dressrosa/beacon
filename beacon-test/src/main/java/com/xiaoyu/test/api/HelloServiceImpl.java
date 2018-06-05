@@ -8,8 +8,8 @@ import org.springframework.stereotype.Service;
 
 import com.xiaoyu.beacon.autoconfigure.anno.BeaconExporter;
 
-@Service
-@BeaconExporter(interfaceName="com.xiaoyu.test.api.IHelloService")
+//@Service
+//@BeaconExporter(interfaceName="com.xiaoyu.test.api.IHelloService")
 public class HelloServiceImpl implements IHelloService {
 
     @Autowired

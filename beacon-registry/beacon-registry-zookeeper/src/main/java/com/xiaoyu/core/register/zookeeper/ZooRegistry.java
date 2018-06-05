@@ -283,7 +283,7 @@ public class ZooRegistry extends AbstractRegistry {
 
                 @Override
                 public void handleSessionEstablishmentError(Throwable error) throws Exception {
-                    LOG.error("handleSessionEstablishmentError->",error);
+                    LOG.error("handleSessionEstablishmentError->", error);
                 }
 
                 @Override

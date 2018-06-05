@@ -51,4 +51,8 @@ public interface Context {
      */
     public void stop();
 
+    /**
+     * 启动beacon
+     */
+    public void start();
 }

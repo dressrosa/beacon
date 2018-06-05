@@ -5,8 +5,8 @@
     xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
     http://www.iwouldbe.com/schema/beacon http://www.iwouldbe.com/schema/beacon.xsd">
 
-
-    <beacon:registry address="192.168.61.239:2181" protocol="zookeeper" />
+    
+    <beacon:registry address="192.168.61.82:2181" protocol="zookeeper" />
 
     <beacon:reference id="helloService"
         interfaceName="com.xiaoyu.test.api.IHelloService" timeout="5000"/>

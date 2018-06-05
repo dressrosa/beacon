@@ -115,7 +115,7 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
         if (StringUtil.isBlank(port)) {
             port = Integer.toString(1992);
         }
-        if (!NumberUtils.isCreatable(port)) {
+        if (!NumberUtils.isNumber(port)) {
             throw new Exception("port should be a positive integer in xml tag beacon-protocol");
         }
         try {
@@ -264,6 +264,9 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
                     + element.getTagName());
         }
         try {
+            // 有接口暴漏,则启动context,相当于启动nettyServer
+            Context context = SpiManager.defaultSpiExtender(Context.class);
+            context.start();
             // 注册服务
             BeaconPath beaconPath = new BeaconPath();
             beaconPath
