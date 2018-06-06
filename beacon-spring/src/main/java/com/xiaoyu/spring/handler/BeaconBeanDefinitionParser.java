@@ -55,6 +55,10 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
         return referenceSet;
     }
 
+    public static void removeBeaconPathSet() {
+        referenceSet = null;
+    }
+
     public BeaconBeanDefinitionParser(Class<?> cls) {
         this.cls = cls;
     }
@@ -299,6 +303,8 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
         String interfaceName = element.getAttribute("interfaceName");
         String id = element.getAttribute("id");
         String timeout = element.getAttribute("timeout");
+        int retry = Integer.valueOf(element.getAttribute("retry"));
+
         if (StringUtil.isBlank(interfaceName)) {
             throw new Exception("interfaceName cannot be null in xml tag->" + element.getTagName());
         }
@@ -314,6 +320,9 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
                     .setService(interfaceName)
                     .setHost(NetUtil.localIP())
                     .setTimeout(timeout);
+            if (retry > 0) {
+                beaconPath.setRetry(retry);
+            }
 
             if (beaconRegistry != null) {
                 Registry registry = SpiManager.holder(Registry.class).target(beaconRegistry.getProtocol());

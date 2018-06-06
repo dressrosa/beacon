@@ -28,6 +28,7 @@
             <xsd:attribute name="id" type="string" />
             <xsd:attribute name="interfaceName" type="string" />
             <xsd:attribute name="timeout" type="string" default="3000" use="optional" />
+            <xsd:attribute name="retry" type="int" default="0" use="optional" />
         </xsd:complexType>
     </xsd:element>
 

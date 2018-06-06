@@ -25,7 +25,7 @@ public class SpringTestClient {
                  System.out.println(service.hello("xiao鱼" + a) + a);
                 new Thread(new Runnable() {
                     @Override
-                    public void run() {
+                    public void run() { 
                         try {
                             //cb.await();
                             int a = ato1.getAndIncrement();

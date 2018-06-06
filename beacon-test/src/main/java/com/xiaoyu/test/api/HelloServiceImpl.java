@@ -18,8 +18,8 @@ public class HelloServiceImpl implements IHelloService {
     @Override
     public String hello(String name) {
         try {
-            //new Random().nextInt(5)
-           TimeUnit.MILLISECONDS.sleep(3000);//
+            //
+           TimeUnit.MILLISECONDS.sleep(new Random().nextInt(500));//
         } catch (Exception e) {
             e.printStackTrace();
         }

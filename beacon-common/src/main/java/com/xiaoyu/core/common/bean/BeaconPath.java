@@ -25,10 +25,24 @@ public class BeaconPath {
 
     // ms
     private String timeout;
-    
-    //server端调用
+
+    // server端调用
     private Object proxy;
-    
+
+    /**
+     * 重试次数
+     */
+    private int retry;
+
+    public int getRetry() {
+        return retry;
+    }
+
+    public BeaconPath setRetry(int retry) {
+        this.retry = retry;
+        return this;
+    }
+
     public Object getProxy() {
         return proxy;
     }
@@ -132,6 +146,7 @@ public class BeaconPath {
         } else {
             builder.append("&timeout=").append(this.getTimeout());
         }
+        builder.append("&retry=").append(this.getRetry());
         builder.append("&side=").append(this.getSide().name());
         return builder.toString();
     }
@@ -155,6 +170,8 @@ public class BeaconPath {
                 bea.setRef(str.substring(4));
             } else if (str.startsWith("timeout")) {
                 bea.setTimeout(str.substring(8));
+            } else if (str.startsWith("retry")) {
+                bea.setRetry(Integer.valueOf(str.substring(6)));
             } else if (str.startsWith("side")) {
                 bea.setSide(From.fromName(str.substring(5)));
             }

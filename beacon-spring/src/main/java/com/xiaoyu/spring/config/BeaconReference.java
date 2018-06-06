@@ -23,6 +23,20 @@ public class BeaconReference extends BeaconBean {
      */
     private String timeout;
 
+    /**
+     * 重试次数
+     */
+    private Integer retry;
+
+    public Integer getRetry() {
+        return retry;
+    }
+
+    public BeaconReference setRetry(Integer retry) {
+        this.retry = retry;
+        return this;
+    }
+
     public String getTimeout() {
         return timeout;
     }

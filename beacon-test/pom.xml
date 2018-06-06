@@ -37,8 +37,16 @@
             <artifactId>beacon-transport-netty</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
-        <!-- <dependency> <groupId>com.xiaoyu</groupId> <artifactId>beacon-spring</artifactId> <version>${project.parent.version}</version> 
-            </dependency> -->
+        <dependency>
+            <groupId>com.xiaoyu</groupId>
+            <artifactId>beacon-spring</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.xiaoyu</groupId>
+            <artifactId>beacon-log</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
         <dependency>
             <groupId>com.xiaoyu</groupId>
             <artifactId>beacon-spring-boot-starter</artifactId>
@@ -50,16 +58,11 @@
             <version>1.3.3.RELEASE</version>
         </dependency>
 
-        <dependency>
-            <groupId>org.springframework</groupId>
-            <artifactId>spring-core</artifactId>
-            <version>4.2.5.RELEASE</version>
-        </dependency>
-        
+
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
-             <version>1.3.3.RELEASE</version>
+            <version>1.3.3.RELEASE</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.slf4j</groupId>
@@ -68,6 +71,10 @@
                 <exclusion>
                     <groupId>log4j</groupId>
                     <artifactId>log4j</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>ch.qos.logback</groupId>
+                    <artifactId>logback-classic</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>

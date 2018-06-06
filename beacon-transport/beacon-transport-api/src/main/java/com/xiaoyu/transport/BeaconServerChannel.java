@@ -58,7 +58,7 @@ public class BeaconServerChannel extends AbstractBeaconChannel {
 
     @Override
     protected void doReceive(Object message) throws Exception {
-        //同一个channel下会导致处理同步,这里通过线程池将io与业务分隔开.
+        // 同一个channel下会导致处理同步,这里通过线程池将io与业务分隔开.
         this.addTask(new Runnable() {
             @Override
             public void run() {
@@ -79,6 +79,7 @@ public class BeaconServerChannel extends AbstractBeaconChannel {
                             if (d.getName().equals(req.getMethodName())) {
                                 Registry registry = SpiManager.defaultSpiExtender(Registry.class);
                                 Object proxy = registry.getProxyBean(req.getInterfaceName());
+                                // 有spring的bean
                                 if (proxy != null) {
                                     result = d.invoke(proxy, req.getParams());
                                 } else {
