@@ -48,4 +48,9 @@ public class BeaconConstants {
      */
     public static final String HASHCODE = "hashCode";
 
+    /**
+     * 请求超时时间
+     */
+    public static final String REQUEST_TIMEOUT = "3000";
+
 }

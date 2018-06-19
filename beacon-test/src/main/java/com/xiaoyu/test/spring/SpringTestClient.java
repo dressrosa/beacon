@@ -20,14 +20,14 @@ public class SpringTestClient {
             CountDownLatch latch = new CountDownLatch(1);
             CyclicBarrier cb = new CyclicBarrier(10);
             IHelloService service = (IHelloService) context.getBean(IHelloService.class);
-            for (int i = 0; i < 50; i++) {
-//                 int a = ato1.getAndIncrement();
-//                 System.out.println(service.hello("xiao鱼" + a) + a);
+            for (int i = 0; i < 1; i++) {
+                 int a = ato1.getAndIncrement();
+                 System.out.println(service.hello("xiao鱼" + a) + a);
                 new Thread(new Runnable() {
                     @Override
-                    public void run() {
+                    public void run() { 
                         try {
-                            cb.await();
+                            //cb.await();
                             int a = ato1.getAndIncrement();
                             System.out.println(service.hello("xiao鱼" + a) + a);
                         } catch (Exception e) {
@@ -39,7 +39,7 @@ public class SpringTestClient {
                     }
                 }).start();
             }
-            latch.await(5, TimeUnit.SECONDS);
+            latch.await(6, TimeUnit.SECONDS);
         } finally {
             context.stop();
             context.close();

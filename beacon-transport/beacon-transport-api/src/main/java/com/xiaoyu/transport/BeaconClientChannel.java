@@ -7,6 +7,7 @@ package com.xiaoyu.transport;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,7 +77,7 @@ public class BeaconClientChannel extends AbstractBeaconChannel {
                     if (result == null) {
                         // 最大超时
                         result = new RpcResponse()
-                                .setException(new Exception("Request exceed limit time,cost time->" + cost))
+                                .setException(new TimeoutException("Request exceed limit time,cost time->" + cost))
                                 .setId(((RpcRequest) message).getId());
                     }
                 }
@@ -91,7 +92,7 @@ public class BeaconClientChannel extends AbstractBeaconChannel {
             // 取消正在执行的thread,否则线程会执行完毕才能结束
             taskFuture.cancel(true);
             return new RpcResponse()
-                    .setException(new Exception(
+                    .setException(new TimeoutException(
                             "Request failed due to exceed time->" + ((RpcRequest) message).getTimeout() + "ms"))
                     .setId(((RpcRequest) message).getId());
 
@@ -129,7 +130,7 @@ public class BeaconClientChannel extends AbstractBeaconChannel {
                     LOG.info("Wait for {} times;cost {} ms", retry, (end = System.currentTimeMillis() - start));
                     if (result == null) {
                         result = new RpcResponse()
-                                .setException(new Exception("Request exceed limit time,cost time->" + end))
+                                .setException(new TimeoutException("Request exceed limit time,cost time->" + end))
                                 .setId(((RpcRequest) message).getId());
                     }
                 }

@@ -26,7 +26,6 @@ public class BeaconContext extends AbstractBeaconContext {
     @Override
     public Server doInitServer(Integer port) throws Exception {
         Server server = new NettyServer(port);
-        server.start();
         return server;
     }
 

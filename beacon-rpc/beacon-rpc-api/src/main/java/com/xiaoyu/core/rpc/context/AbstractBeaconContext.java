@@ -45,7 +45,7 @@ public abstract class AbstractBeaconContext implements Context {
                 // 等service取消注册后才关闭注册中心
                 abstractContext.closeRegistry();
             }
-        }));
+        }, "beacon-shutdownhook"));
         abstractContext = this;
     }
 
@@ -62,13 +62,26 @@ public abstract class AbstractBeaconContext implements Context {
         } finally {
             clientLock.unlock();
         }
-
     }
 
     @Override
     public void server(int port) throws Exception {
         Server server = doInitServer(port);
         serverMap.put(port, server);
+    }
+
+    @Override
+    public void start() {
+        if (serverMap != null && !serverMap.isEmpty()) {
+            Iterator<Server> iter = serverMap.values().iterator();
+            try {
+                while (iter.hasNext()) {
+                    iter.next().start();
+                }
+            } catch (Exception e) {
+                // do nothing
+            }
+        }
     }
 
     @Override
@@ -92,7 +105,6 @@ public abstract class AbstractBeaconContext implements Context {
     @Override
     public void registry(Registry registry) {
         this.registry = registry;
-
     }
 
     @Override

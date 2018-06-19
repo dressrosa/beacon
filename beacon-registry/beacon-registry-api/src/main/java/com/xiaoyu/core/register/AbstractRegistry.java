@@ -73,9 +73,11 @@ public abstract class AbstractRegistry implements Registry {
     @Override
     public BeaconPath getLocalConsumer(String service) {
         Set<BeaconPath> providers = SERVICE_MAP.get(service);
-        for (BeaconPath p : providers) {
-            if (p.getSide() == From.CLIENT) {
-                return p;
+        if(providers != null) {
+            for (BeaconPath p : providers) {
+                if (p.getSide() == From.CLIENT) {
+                    return p;
+                }
             }
         }
         return null;

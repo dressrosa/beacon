@@ -68,6 +68,8 @@ public class SpringContextListener implements ApplicationListener<ApplicationEve
                     registry.registerService(p);
                 }
             }
+            // 使命完成
+            BeaconBeanDefinitionParser.removeBeaconPathSet();
         } catch (Exception e) {
             e.printStackTrace();
         }

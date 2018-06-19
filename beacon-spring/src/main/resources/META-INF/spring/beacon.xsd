@@ -6,37 +6,40 @@
 
     <xsd:import namespace="http://www.springframework.org/schema/beans" />
 
-    <!--协议 -->
+    <!--协议beacon-protocol -->
     <xsd:element name="protocol">
         <xsd:complexType>
-            <xsd:attribute name="name" type="string" />
+            <xsd:attribute name="name" type="string" use="required"/>
             <xsd:attribute name="port" type="string" />
         </xsd:complexType>
     </xsd:element>
 
-    <!--注册中心 -->
+    <!--注册中心beacon-registry -->
     <xsd:element name="registry">
         <xsd:complexType>
-            <xsd:attribute name="address" type="string" />
-            <xsd:attribute name="protocol" type="string" />
+            <xsd:attribute name="address" type="string" use="required" />
+            <xsd:attribute name="protocol" type="string" use="required" />
         </xsd:complexType>
     </xsd:element>
 
-    <!--引用 -->
+    <!--引用beacon-reference -->
     <xsd:element name="reference">
         <xsd:complexType>
             <xsd:attribute name="id" type="string" />
             <xsd:attribute name="interfaceName" type="string" />
-            <xsd:attribute name="timeout" type="string" default="3000" use="optional" />
+            <xsd:attribute name="timeout" type="int" default="3000" use="optional" />
+            <xsd:attribute name="retry" type="int" default="0" use="optional" />
+            <xsd:attribute name="check" type="boolean" default="false" use="optional" />
         </xsd:complexType>
     </xsd:element>
 
-    <!--暴露接口 -->
+    <!--暴露接口beacon-exporter -->
     <xsd:element name="exporter">
         <xsd:complexType>
             <xsd:attribute name="id" type="string" />
-            <xsd:attribute name="interfaceName" type="string" />
-            <xsd:attribute name="ref" type="string" />
+            <xsd:attribute name="interfaceName" type="string" use="required" />
+            <xsd:attribute name="ref" type="string" use="required" />
         </xsd:complexType>
     </xsd:element>
+
 </xsd:schema>

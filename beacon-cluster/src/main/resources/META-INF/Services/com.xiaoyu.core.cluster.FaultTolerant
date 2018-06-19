@@ -1,1 +1,2 @@
-faifast.com.xiaoyu.core.cluster.faulttolerant.FailFastTolerant
+failfast.com.xiaoyu.core.cluster.faulttolerant.FailFastTolerant
+failOver.com.xiaoyu.core.cluster.faulttolerant.FailOverTolerant

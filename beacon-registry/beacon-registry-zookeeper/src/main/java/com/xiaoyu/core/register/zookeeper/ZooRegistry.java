@@ -82,26 +82,33 @@ public class ZooRegistry extends AbstractRegistry {
         // 初始化service父节点
         if (beaconPath.getSide().equals(From.CLIENT)) {
             // reference(client)
-            if (!this.discoverService(service)) {
-                LOG.error("Cannot find the service->{} in zookeeper,please check.", service);
-                return;
+            // 启动时检查
+            if (beaconPath.getCheck() && !this.discoverService(service)) {
+                LOG.error("Cannot find providers of the service->{} in zookeeper,please check.", service);
+                try {
+                    throw new Exception(
+                            "Cannot find providers of the service->" + service + " in zookeeper,please check.");
+                } catch (Exception e) {
+                    e.printStackTrace();
+                    return;
+                }
             }
             path = this.consumerPath(service);
             zoo.createPersistent(path);
-            LOG.info("Register service to zookeeper->{}", (path + "/" + detailInfo));
+            LOG.info("Register consumer service to zookeeper->{}", (path + "/" + detailInfo));
             zoo.createEphemeral(this.fullPath(path, detailInfo));
             // 监听操作在执行的时候,如果path不存在,会生成临时节点,但是临时节点是不能创建子节点的,这里首先判断下
             String providerPath = this.providerPath(service);
             zoo.createPersistent(providerPath);
             zoo.subscribeChildChanges(providerPath, listener);
-            LOG.info("Subscribe service in zookeeper->{}", providerPath);
+            LOG.info("Subscribe provider service in zookeeper->{}", providerPath);
             // 初始化provider本地缓存
             initProviders(service);
         } else {
             // exporter(server)
             path = this.providerPath(service);
             zoo.createPersistent(path);
-            LOG.info("Register service to zookeeper->{}", (path + "/" + detailInfo));
+            LOG.info("Register provider service to zookeeper->{}", (path + "/" + detailInfo));
             zoo.createEphemeral(this.fullPath(path, detailInfo));
             // 进行监听某一个具体service,这里会多次调用 ,但是只监听第一个就够了
             checkProviderLost(service, detailInfo);
@@ -110,7 +117,7 @@ public class ZooRegistry extends AbstractRegistry {
             String consumerPath = this.consumerPath(service);
             zoo.createPersistent(consumerPath);
             zoo.subscribeChildChanges(consumerPath, listener);
-            LOG.info("Subscribe service in zookeeper->{}", consumerPath);
+            LOG.info("Subscribe consumer service in zookeeper->{}", consumerPath);
             // 本地注册bean
             addProxyBean(beaconPath);
         }
@@ -283,7 +290,7 @@ public class ZooRegistry extends AbstractRegistry {
 
                 @Override
                 public void handleSessionEstablishmentError(Throwable error) throws Exception {
-                    LOG.error("handleSessionEstablishmentError->",error);
+                    LOG.error("handleSessionEstablishmentError->", error);
                 }
 
                 @Override
