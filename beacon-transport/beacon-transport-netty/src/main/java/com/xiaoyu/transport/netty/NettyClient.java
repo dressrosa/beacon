@@ -134,17 +134,29 @@ public class NettyClient implements Client {
                 LOG.info("Close client which connected to address->{}:{}", host, port);
             }
         } finally {
-            NettyChannel.checkUnActive();
+            NettyChannel.shutdown();
         }
     }
 
     @Override
     public Future<Object> sendFuture(Object message) throws Exception {
+        if (!clientChannel.isActive()) {
+            NettyChannel.checkUnActive();
+            // client在server断掉的时候,并没有清除
+            // 这里server连上了就相当于重连
+            this.connect();
+        }
         return NettyChannel.getChannel(clientChannel, From.CLIENT).sendFuture(message);
     }
 
     @Override
     public Object send(Object message) throws Exception {
+        if (!clientChannel.isActive()) {
+            NettyChannel.checkUnActive();
+            // client在server断掉的时候,并没有清除
+            // 这里server连上了就相当于重连
+            this.connect();
+        }
         return NettyChannel.getChannel(clientChannel, From.CLIENT).send(message);
     }
 }

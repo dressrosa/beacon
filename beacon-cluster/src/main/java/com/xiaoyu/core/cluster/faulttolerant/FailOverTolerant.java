@@ -39,18 +39,22 @@ public class FailOverTolerant implements FaultTolerant {
                 throw e;
             } else {
                 // retry
-                return doRetry(invocation, providers);
+                if (invocation.getConsumer().getRetry() > 0) {
+                    return doRetry(invocation, providers);
+                }
             }
+            throw e;
         }
         return result;
     }
 
     private Object doRetry(Invocation invocation, List<?> providers) throws Throwable {
         int num = 0;
+        LoadBalance loadBalance = SpiManager.defaultSpiExtender(LoadBalance.class);
         // 这里少retry一次,因为如果发送异常,最后一次的catch并没有抛出异常而是while退出了
         // 当然可以在continue之前做个if判断,不过...就是为了省个if,O(∩_∩)O~
-        while (num++ < invocation.getConsumer().getRetry() - 1) {
-            LoadBalance loadBalance = SpiManager.defaultSpiExtender(LoadBalance.class);
+        int retry = invocation.getConsumer().getRetry();
+        while (num++ < retry - 1) {
             BeaconPath provider = (BeaconPath) loadBalance.select(providers);
             Object result = null;
             try {
@@ -67,7 +71,6 @@ public class FailOverTolerant implements FaultTolerant {
             return result;
         }
         // 这里不能直接返回null或result,需要再进行一次正常的调用
-        LoadBalance loadBalance = SpiManager.defaultSpiExtender(LoadBalance.class);
         BeaconPath provider = (BeaconPath) loadBalance.select(providers);
         return invocation.invoke(provider);
     }

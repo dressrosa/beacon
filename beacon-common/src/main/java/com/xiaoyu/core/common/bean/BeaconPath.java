@@ -34,6 +34,17 @@ public class BeaconPath {
      */
     private int retry;
 
+    private boolean check;
+
+    public boolean getCheck() {
+        return check;
+    }
+
+    public BeaconPath setCheck(boolean check) {
+        this.check = check;
+        return this;
+    }
+
     public int getRetry() {
         return retry;
     }
@@ -138,7 +149,7 @@ public class BeaconPath {
         } else {
             builder.append("host=").append(this.getHost());
         }
-        // side放在最后
+
         builder.append("&service=").append(this.getService())
                 .append("&ref=").append(this.getRef());
         if (this.getSide() == From.SERVER) {
@@ -147,6 +158,10 @@ public class BeaconPath {
             builder.append("&timeout=").append(this.getTimeout());
         }
         builder.append("&retry=").append(this.getRetry());
+        if (this.getSide() == From.CLIENT) {
+            builder.append("&check=").append(this.getCheck());
+        }
+        // side放在最后
         builder.append("&side=").append(this.getSide().name());
         return builder.toString();
     }
@@ -172,6 +187,8 @@ public class BeaconPath {
                 bea.setTimeout(str.substring(8));
             } else if (str.startsWith("retry")) {
                 bea.setRetry(Integer.valueOf(str.substring(6)));
+            } else if (str.startsWith("check")) {
+                bea.setCheck(Boolean.getBoolean(str.substring(6)));
             } else if (str.startsWith("side")) {
                 bea.setSide(From.fromName(str.substring(5)));
             }

@@ -26,7 +26,21 @@ public class BeaconReference extends BeaconBean {
     /**
      * 重试次数
      */
-    private Integer retry;
+    private Integer retry = 0;
+
+    /**
+     * 启动时检查
+     */
+    private boolean check;
+
+    public boolean getCheck() {
+        return check;
+    }
+
+    public BeaconReference setCheck(boolean check) {
+        this.check = check;
+        return this;
+    }
 
     public Integer getRetry() {
         return retry;

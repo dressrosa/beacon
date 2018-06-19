@@ -16,15 +16,15 @@ import com.xiaoyu.test.api.IHelloService;
 @ComponentScan(basePackages = { "com.xiaoyu.test" })
 @EnableBeacon
 @EnableWebMvc
-public class TestApplication {
+public class SpringbootClientApplication {
 
     public static void main(String args[]) {
         ConfigurableApplicationContext context = null;
-       // SpringFactoriesLoader
+        // SpringFactoriesLoader
         try {
-            context = SpringApplication.run(TestApplication.class);
-            // IHelloService service = (IHelloService) context.getBean(IHelloService.class);
-            // System.out.println(service.hello("lan"));
+            context = SpringApplication.run(SpringbootClientApplication.class);
+             IHelloService service = (IHelloService) context.getBean(IHelloService.class);
+             System.out.println(service.hello("lan"));
         } finally {
             // context.stop();
             // context.close();

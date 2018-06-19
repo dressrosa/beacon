@@ -19,7 +19,8 @@ public class BizController {
     private IHelloService helloService;
 
     @RequestMapping("/hello")
-    public String hello() {
-        return this.helloService.hello("xiao");
+    public String hello(String name) {
+        String re = this.helloService.hello(name);
+        return re;
     }
 }
