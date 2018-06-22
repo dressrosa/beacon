@@ -7,6 +7,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.alibaba.fastjson.JSON;
+
 /**
  * @author hongyu
  * @date 2018-06
@@ -18,9 +20,9 @@ public class BizController {
     @Autowired
     private IHelloService helloService;
 
-    @RequestMapping("/hello")
+    @RequestMapping(value="/hello",produces="application/json;charset=UTF-8")
     public String hello(String name) {
         String re = this.helloService.hello(name);
-        return re;
+        return JSON.toJSONString(re);
     }
 }

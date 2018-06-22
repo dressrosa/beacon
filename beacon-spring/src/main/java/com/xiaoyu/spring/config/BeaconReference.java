@@ -33,6 +33,19 @@ public class BeaconReference extends BeaconBean {
      */
     private boolean check;
 
+    /**
+     * 容错策略
+     */
+    private String tolerant="failfast";
+
+    public String getTolerant() {
+        return tolerant;
+    }
+
+    public void setTolerant(String tolerant) {
+        this.tolerant = tolerant;
+    }
+
     public boolean getCheck() {
         return check;
     }

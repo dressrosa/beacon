@@ -34,7 +34,24 @@ public class BeaconPath {
      */
     private int retry;
 
+    /**
+     * 启动时检查
+     */
     private boolean check;
+
+    /**
+     * 容错策略
+     */
+    private String tolerant;
+
+    public String getTolerant() {
+        return tolerant;
+    }
+
+    public BeaconPath setTolerant(String tolerant) {
+        this.tolerant = tolerant;
+        return this;
+    }
 
     public boolean getCheck() {
         return check;
@@ -160,8 +177,10 @@ public class BeaconPath {
         builder.append("&retry=").append(this.getRetry());
         if (this.getSide() == From.CLIENT) {
             builder.append("&check=").append(this.getCheck());
+            builder.append("&tolerant=").append(this.getTolerant());
         }
-        // side放在最后
+
+        // 请注意side放在最后
         builder.append("&side=").append(this.getSide().name());
         return builder.toString();
     }
@@ -189,6 +208,8 @@ public class BeaconPath {
                 bea.setRetry(Integer.valueOf(str.substring(6)));
             } else if (str.startsWith("check")) {
                 bea.setCheck(Boolean.getBoolean(str.substring(6)));
+            } else if (str.startsWith("tolerant")) {
+                bea.setTolerant(str.substring(9));
             } else if (str.startsWith("side")) {
                 bea.setSide(From.fromName(str.substring(5)));
             }

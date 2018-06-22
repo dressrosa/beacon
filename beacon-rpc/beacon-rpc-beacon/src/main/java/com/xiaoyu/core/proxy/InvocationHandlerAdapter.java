@@ -106,7 +106,7 @@ public class InvocationHandlerAdapter {
         // 获取对应的全部provider
         List<BeaconPath> providers = reg.getLocalProviders(service);
         // 进行容错调用
-        FaultTolerant tolerant = SpiManager.defaultSpiExtender(FaultTolerant.class);
+        FaultTolerant tolerant = SpiManager.holder(FaultTolerant.class).target(consumer.getTolerant());
         Invocation invocation = new Invocation(consumer, request);
         return tolerant.invoke(invocation, providers);
     }
