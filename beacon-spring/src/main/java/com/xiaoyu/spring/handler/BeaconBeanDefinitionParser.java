@@ -305,7 +305,8 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
         String timeout = element.getAttribute("timeout");
         int retry = Integer.valueOf(element.getAttribute("retry"));
         boolean check = Boolean.getBoolean(element.getAttribute("check"));
-
+        String tolerant = element.getAttribute("tolerant");
+        
         if (StringUtil.isBlank(interfaceName)) {
             throw new Exception("interfaceName cannot be null in xml tag->" + element.getTagName());
         }
@@ -321,7 +322,8 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
                     .setService(interfaceName)
                     .setHost(NetUtil.localIP())
                     .setTimeout(timeout)
-                    .setCheck(check);
+                    .setCheck(check)
+                    .setTolerant(tolerant);
             if (retry > 0) {
                 beaconPath.setRetry(retry);
             }

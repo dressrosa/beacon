@@ -30,6 +30,7 @@
             <xsd:attribute name="timeout" type="int" default="3000" use="optional" />
             <xsd:attribute name="retry" type="int" default="0" use="optional" />
             <xsd:attribute name="check" type="boolean" default="false" use="optional" />
+            <xsd:attribute name="tolerant" type="string" default="failfast" use="optional" />
         </xsd:complexType>
     </xsd:element>
 

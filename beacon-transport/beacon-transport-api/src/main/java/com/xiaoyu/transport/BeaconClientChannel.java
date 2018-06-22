@@ -68,16 +68,14 @@ public class BeaconClientChannel extends AbstractBeaconChannel {
                         }
                     } catch (InterruptedException e) {
                         // 外围get超时,执行 taskFuture.cancel(true)进行中断
-                        long cost = System.currentTimeMillis() - start;
-                        LOG.info("Wait for {} times;cost {} ms", retry, cost);
+                        //LOG.debug("Wait for {} times;cost {} ms", retry, (System.currentTimeMillis() - start));
                         return result;
                     }
-                    long cost = System.currentTimeMillis() - start;
-                    LOG.info("Wait for {} times;cost {} ms", retry, cost);
+                   // LOG.debug("Wait for {} times;cost {} ms", retry, (System.currentTimeMillis() - start));
                     if (result == null) {
                         // 最大超时
                         result = new RpcResponse()
-                                .setException(new TimeoutException("Request exceed limit time,cost time->" + cost))
+                                .setException(new TimeoutException("Request exceed limit time,cost time->" + (System.currentTimeMillis() - start)))
                                 .setId(((RpcRequest) message).getId());
                     }
                 }

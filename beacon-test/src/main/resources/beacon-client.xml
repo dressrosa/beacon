@@ -9,6 +9,6 @@
     <beacon:registry address="192.168.61.82:2181" protocol="zookeeper" />
 
     <beacon:reference id="helloService"
-        interfaceName="com.xiaoyu.test.api.IHelloService" timeout="100" retry="3" />
+        interfaceName="com.xiaoyu.test.api.IHelloService" timeout="100" retry="3" tolerant="failfast" />
 
 </beans>

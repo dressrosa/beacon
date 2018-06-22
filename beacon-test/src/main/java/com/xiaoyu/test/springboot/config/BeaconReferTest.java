@@ -13,11 +13,13 @@ import com.xiaoyu.test.api.IUserService;
 public class BeaconReferTest extends BeaconReferConfiguration {
 
     @Override
-    protected List<BeaconReference> doFindBeaconRefers() {
-        List<BeaconReference> list = new ArrayList<>();
+    protected List<BeaconReference> doFindBeaconRefers() throws Exception {
+        List<BeaconReference> list = new ArrayList<>(2);
         list.add(new BeaconReference().setInterfaceName(IHelloService.class.getName()).setCheck(false));
         list.add(new BeaconReference().setInterfaceName(IUserService.class.getName()).setCheck(false));
         return list;
     }
+
+
 
 }
