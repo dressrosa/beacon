@@ -70,16 +70,15 @@ public class InvocationHandlerAdapter {
                 .setMethodName(methodName);
         req.setHeartbeat(false);
         req.setId(IdUtil.requestId());
-        // TODO
         if (BeaconConstants.EQUALS.equals(methodName)) {
             if (args == null || args.length == 0) {
                 return false;
             }
-            return ref.isInstance(args[0]);
+            return ref == args[0];
         } else if (BeaconConstants.TO_STRING.equals(methodName)) {
-            return ref.toString();
+            return this.doInvoke(req);
         } else if (BeaconConstants.HASHCODE.equals(methodName)) {
-            return ref.hashCode();
+            return this.doInvoke(req);
         }
         return this.doInvoke(req);
     }

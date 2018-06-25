@@ -23,8 +23,8 @@ public class SpringbootClientApplication {
         // SpringFactoriesLoader
         try {
             context = SpringApplication.run(SpringbootClientApplication.class);
-             IHelloService service = (IHelloService) context.getBean(IHelloService.class);
-             System.out.println(service.hello("lan"));
+//             IHelloService service = (IHelloService) context.getBean(IHelloService.class);
+//             System.out.println(service.hello("xiaoyu"));
         } finally {
             // context.stop();
             // context.close();

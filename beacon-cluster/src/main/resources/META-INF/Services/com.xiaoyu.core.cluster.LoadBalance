@@ -1,1 +1,2 @@
 random.com.xiaoyu.core.cluster.loadbalance.RandomLoadBalance
+consistenthash.com.xiaoyu.core.cluster.loadbalance.ConsistentHashLoadBalance

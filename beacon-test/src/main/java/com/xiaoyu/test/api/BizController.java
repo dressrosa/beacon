@@ -22,6 +22,8 @@ public class BizController {
 
     @RequestMapping(value="/hello",produces="application/json;charset=UTF-8")
     public String hello(String name) {
+        System.out.println(this.helloService.toString());
+        System.out.println(this.helloService.hashCode());
         String re = this.helloService.hello(name);
         return JSON.toJSONString(re);
     }
