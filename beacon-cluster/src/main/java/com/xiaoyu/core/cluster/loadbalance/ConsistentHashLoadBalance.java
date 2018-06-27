@@ -18,14 +18,16 @@ import com.xiaoyu.core.common.bean.BeaconPath;
 public class ConsistentHashLoadBalance implements LoadBalance {
 
     /**
-     * hash->virtual machine
+     * hash->virtual providers
      */
     private static final SortedMap<Integer, String> Circle_Sorted_Map = new TreeMap<>();
 
     /**
-     * true machine
+     * true providers
      */
     private static final HashSet<String> Machines = new HashSet<>();
+
+    private static final String Separator = ",";
 
     @SuppressWarnings("unchecked")
     @Override
@@ -34,53 +36,62 @@ public class ConsistentHashLoadBalance implements LoadBalance {
             return providers.get(0);
         }
         List<BeaconPath> pros = (List<BeaconPath>) providers;
+        // 以service为key,这样保证同一个service请求同一个server
         String service = pros.get(0).getService();
-        initMachines(pros);
+        spreadTrueProviders(pros);
 
-        // 找比他大的所以节点
-        SortedMap<Integer, String> virtuals = Circle_Sorted_Map.tailMap(hash(service));
+        // 找比她大的所有节点
+        SortedMap<Integer, String> nodes = Circle_Sorted_Map.tailMap(hash(service));
         int key;
         String host;
-        // 环的终点
-        if (virtuals.isEmpty()) {
+        // 说明已是环的终点
+        if (nodes.isEmpty()) {
+            // 直接取第一个节点
             key = Circle_Sorted_Map.firstKey();
-            host = Circle_Sorted_Map.get(key).split(",")[0];
+            String value = Circle_Sorted_Map.get(key);
+            // 取出虚拟节点中的host
+            host = value.substring(value.indexOf(Separator) + 1);
         } else {
+            // 取下一个节点
             key = hash(service);
-            int firstKey = virtuals.firstKey();
-            host = Circle_Sorted_Map.get(firstKey).split(",")[0];
+            int firstKey = nodes.firstKey();
+            String value = Circle_Sorted_Map.get(firstKey);
+            // 取出虚拟节点中的host
+            host = value.substring(value.indexOf(Separator) + 1);
         }
         for (int i = 0; i < pros.size(); i++) {
-            if (host.equals(pros.get(i).getService())) {
-                return (T) pros.get(i);
+            BeaconPath p = pros.get(i);
+            if (host.equals(p.getHost())) {
+                return (T) p;
             }
         }
         return providers.get(0);
     }
 
     /**
-     * 加入真实节点
+     * 初始化真实节点
      * 
      * @param providers
      */
-    private void initMachines(List<BeaconPath> providers) {
+    private void spreadTrueProviders(List<BeaconPath> providers) {
         for (BeaconPath p : providers) {
             if (Machines.add(p.getHost())) {
-                spreadVirtualMachine(p.getHost());
+                spreadVirtualProvider(p.getHost());
             }
         }
     }
 
     /**
-     * 存储虚拟节点
+     * 初始化虚拟节点
      * 
      * @param host
      */
-    private void spreadVirtualMachine(String host) {
+    private void spreadVirtualProvider(String host) {
         String virtual;
+        // 1:32
         int num = Machines.size() << 5;
         for (int i = 0; i < num; i++) {
-            virtual = host + "," + i;
+            virtual = i + Separator + host;
             Circle_Sorted_Map.put(hash(virtual), virtual);
         }
     }
@@ -94,7 +105,8 @@ public class ConsistentHashLoadBalance implements LoadBalance {
     private static int hash(String str) {
         final int p = 16777619;
         int hash = (int) 2166136261L;
-        for (int i = 0; i < str.length(); i++) {
+        int len = str.length();
+        for (int i = 0; i < len; i++) {
             hash = (hash ^ str.charAt(i)) * p;
         }
         hash += hash << 13;

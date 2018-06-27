@@ -8,9 +8,16 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
     <artifactId>beacon-test</artifactId>
+    <packaging>pom</packaging>
+    <modules>
+        <module>beacon-test-api</module>
+        <module>beacon-test-spring</module>
+        <module>beacon-test-springboot</module>
+    </modules>
     <properties>
         <skip_maven_deploy>true</skip_maven_deploy>
     </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.xiaoyu</groupId>
@@ -99,4 +106,5 @@
 
         </plugins>
     </build>
+
 </project>
