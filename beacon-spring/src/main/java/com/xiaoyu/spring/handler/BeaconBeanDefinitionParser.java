@@ -202,7 +202,7 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
                 // 监听spring的close
                 doRegisterBeaconListenerEvent(parserContext, context);
             } else {
-                // client端没有beaconProtocol
+                // client端没有的话就取默认的beaconProtocol
                 context = SpiManager.defaultSpiExtender(Context.class);
                 context.registry(reg);
                 // 监听spring的close

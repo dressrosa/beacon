@@ -70,16 +70,15 @@ public class InvocationHandlerAdapter {
                 .setMethodName(methodName);
         req.setHeartbeat(false);
         req.setId(IdUtil.requestId());
-        // TODO
         if (BeaconConstants.EQUALS.equals(methodName)) {
             if (args == null || args.length == 0) {
                 return false;
             }
-            return ref.isInstance(args[0]);
+            return ref == args[0];
         } else if (BeaconConstants.TO_STRING.equals(methodName)) {
-            return ref.toString();
+            return this.doInvoke(req);
         } else if (BeaconConstants.HASHCODE.equals(methodName)) {
-            return ref.hashCode();
+            return this.doInvoke(req);
         }
         return this.doInvoke(req);
     }
@@ -97,6 +96,7 @@ public class InvocationHandlerAdapter {
         // 判断service是否存在
         String service = request.getInterfaceName();
         boolean exist = reg.discoverService(service);
+        //TODO 可能是注册中心数据丢失,并不是server掉线.这里抛异常可能会导致需要等待下次恢复检查才能继续进行.
         if (!exist) {
             throw new Exception(
                     "Cannot find the service->" + service + ";please check whether server start or not.");

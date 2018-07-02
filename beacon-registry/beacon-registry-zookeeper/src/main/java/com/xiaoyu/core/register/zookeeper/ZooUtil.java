@@ -54,7 +54,7 @@ public class ZooUtil {
             try {
                 while (++num < RETRY_TIMES) {
                     zoo = new ZooUtil(host);
-                    TimeUnit.MILLISECONDS.sleep(500);
+                    TimeUnit.MILLISECONDS.sleep(1000);
                     if (zoo != null) {
                         break;
                     }

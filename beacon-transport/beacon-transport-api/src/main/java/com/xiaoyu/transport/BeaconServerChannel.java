@@ -10,6 +10,7 @@ import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.xiaoyu.core.common.constant.BeaconConstants;
 import com.xiaoyu.core.common.exception.BizException;
 import com.xiaoyu.core.common.extension.SpiManager;
 import com.xiaoyu.core.common.message.RpcRequest;
@@ -41,12 +42,6 @@ public class BeaconServerChannel extends AbstractBeaconChannel {
             @Override
             public void run() {
                 try {
-                    /*
-                     * this.channel
-                     * .pipeline()
-                     * .context("beaconServerHandler")
-                     * .writeAndFlush(message);
-                     */
                     baseChannel.send(message);
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -72,31 +67,51 @@ public class BeaconServerChannel extends AbstractBeaconChannel {
                         return;
                     }
                     try {
+                        Registry registry = SpiManager.defaultSpiExtender(Registry.class);
+                        Object proxy = registry.getProxyBean(req.getInterfaceName());
                         // 处理收到client信息
                         Class<?> target = Class.forName(req.getInterfaceImpl());
-                        // 根据信息,找到实现类
-                        for (Method d : target.getDeclaredMethods()) {
-                            if (d.getName().equals(req.getMethodName())) {
-                                Registry registry = SpiManager.defaultSpiExtender(Registry.class);
-                                Object proxy = registry.getProxyBean(req.getInterfaceName());
-                                // 有spring的bean
-                                if (proxy != null) {
-                                    result = d.invoke(proxy, req.getParams());
-                                } else {
-                                    result = d.invoke(target.newInstance(), req.getParams());
+                        if (BeaconConstants.TO_STRING.equals(req.getMethodName())) {
+                            // 有spring的bean
+                            if (proxy != null) {
+                                result = proxy.toString();
+                            } else {
+                                result = target.newInstance().toString();
+                            }
+                        } else if (BeaconConstants.HASHCODE.equals(req.getMethodName())) {
+                            // 有spring的bean
+                            if (proxy != null) {
+                                result = proxy.hashCode();
+                            } else {
+                                result = target.newInstance().hashCode();
+                            }
+                        } else {
+                            // 根据信息,找到实现类 declareMethods是不包含toString,hashCode的
+                            for (Method d : target.getDeclaredMethods()) {
+                                if (d.getName().equals(req.getMethodName())) {
+                                    // 有spring的bean
+                                    if (proxy != null) {
+                                        result = d.invoke(proxy, req.getParams());
+                                    } else {
+                                        result = d.invoke(target.newInstance(), req.getParams());
+                                    }
+                                    break;
                                 }
-                                break;
                             }
                         }
                     } catch (Exception bize) {
                         // 非rpc异常
                         throw new BizException(bize);
                     }
-                    // 调用发送给client发送结果
+                } catch (Exception e) {
+                    resp.setException(e);
+                    LOG.error("Beacon exception->", e);
+                }
+                // 调用发送给client发送结果
+                try {
                     baseChannel.send(resp.setResult(result));
                 } catch (Exception e) {
-                    LOG.error("error->" + e);
-                    resp.setException(e);
+                    e.printStackTrace();
                 }
             }
         });

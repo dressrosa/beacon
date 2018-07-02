@@ -5,9 +5,11 @@
     <artifactId>beacon-spring</artifactId>
     <parent>
         <groupId>com.xiaoyu</groupId>
-        <artifactId>beacon</artifactId>
+        <artifactId>beacon-pom</artifactId>
         <version>0.0.1-SNAPSHOT</version>
+        <relativePath>../pom/pom.xml</relativePath>
     </parent>
+    <packaging>jar</packaging>
     <properties>
         <spring.version>4.2.5.RELEASE</spring.version>
     </properties>
@@ -35,18 +37,15 @@
         </dependency>
         <dependency>
             <groupId>com.xiaoyu</groupId>
-            <artifactId>beacon-common</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.xiaoyu</groupId>
             <artifactId>beacon-registry-api</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>com.xiaoyu</groupId>
             <artifactId>beacon-rpc-api</artifactId>
-            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.xiaoyu</groupId>
+            <artifactId>beacon-log</artifactId>
         </dependency>
     </dependencies>
 </project>

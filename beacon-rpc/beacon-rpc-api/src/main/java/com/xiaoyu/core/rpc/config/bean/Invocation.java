@@ -4,6 +4,9 @@
  */
 package com.xiaoyu.core.rpc.config.bean;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.xiaoyu.core.common.bean.BeaconPath;
 import com.xiaoyu.core.common.extension.SpiManager;
 import com.xiaoyu.core.common.message.RpcRequest;
@@ -18,6 +21,8 @@ import com.xiaoyu.core.rpc.api.Context;
  * @description
  */
 public class Invocation {
+
+    private static final Logger LOG = LoggerFactory.getLogger(Invocation.class);
 
     private BeaconPath consumer;
 
@@ -45,6 +50,7 @@ public class Invocation {
                 .send(request);
         RpcResponse result = (RpcResponse) ret;
         if (result.getException() != null) {
+            LOG.error("Beacon exception->", result.getException());
             throw result.getException();
         }
         return result.getResult();

@@ -4,33 +4,37 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.xiaoyu</groupId>
-        <artifactId>beacon</artifactId>
+        <artifactId>beacon-pom</artifactId>
         <version>0.0.1-SNAPSHOT</version>
+        <relativePath>../pom/pom.xml</relativePath>
     </parent>
     <artifactId>beacon-test</artifactId>
+    <packaging>pom</packaging>
+    <modules>
+        <module>beacon-test-api</module>
+        <module>beacon-test-spring</module>
+        <module>beacon-test-springboot</module>
+    </modules>
     <properties>
         <skip_maven_deploy>true</skip_maven_deploy>
     </properties>
+
     <dependencies>
         <dependency>
             <groupId>com.xiaoyu</groupId>
             <artifactId>beacon-common</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>com.xiaoyu</groupId>
             <artifactId>beacon-rpc-beacon</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>com.xiaoyu</groupId>
             <artifactId>beacon-registry-zookeeper</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>com.xiaoyu</groupId>
             <artifactId>beacon-serialize</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>com.xiaoyu</groupId>
@@ -40,12 +44,10 @@
         <dependency>
             <groupId>com.xiaoyu</groupId>
             <artifactId>beacon-spring</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>com.xiaoyu</groupId>
             <artifactId>beacon-log</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
         <dependency>
             <groupId>com.xiaoyu</groupId>
@@ -85,6 +87,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-deploy-plugin</artifactId>
+                <version>2.7</version>
                 <configuration>
                     <skip>true</skip>
                 </configuration>
@@ -92,6 +95,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-install-plugin</artifactId>
+                <version>2.4</version>
                 <configuration>
                     <skip>true</skip>
                 </configuration>
@@ -99,4 +103,5 @@
 
         </plugins>
     </build>
+
 </project>
