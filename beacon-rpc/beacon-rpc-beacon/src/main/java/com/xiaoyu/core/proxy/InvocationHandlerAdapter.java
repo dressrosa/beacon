@@ -96,6 +96,7 @@ public class InvocationHandlerAdapter {
         // 判断service是否存在
         String service = request.getInterfaceName();
         boolean exist = reg.discoverService(service);
+        //TODO 可能是注册中心数据丢失,并不是server掉线.这里抛异常可能会导致需要等待下次恢复检查才能继续进行.
         if (!exist) {
             throw new Exception(
                     "Cannot find the service->" + service + ";please check whether server start or not.");

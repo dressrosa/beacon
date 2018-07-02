@@ -8,22 +8,28 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
     <artifactId>beacon-transport-netty</artifactId>
+    <packaging>jar</packaging>
     <dependencies>
         <dependency>
             <groupId>com.xiaoyu</groupId>
             <artifactId>beacon-transport-api</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
+        
         <dependency>
             <groupId>com.xiaoyu</groupId>
             <artifactId>beacon-serialize</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
 
         <dependency>
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
             <version>4.1.6.Final</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.javassist</groupId>
+            <artifactId>javassist</artifactId>
+            <version>3.22.0-GA</version>
         </dependency>
     </dependencies>
 </project>

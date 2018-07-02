@@ -4,16 +4,35 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.xiaoyu</groupId>
-        <artifactId>beacon</artifactId>
+        <artifactId>beacon-pom</artifactId>
         <version>0.0.1-SNAPSHOT</version>
+        <relativePath>../pom/pom.xml</relativePath>
     </parent>
     <artifactId>beacon-transport</artifactId>
-    <dependencies>
-
-    </dependencies>
     <packaging>pom</packaging>
     <modules>
         <module>beacon-transport-api</module>
         <module>beacon-transport-netty</module>
     </modules>
+    <dependencies>
+        <dependency>
+            <groupId>com.xiaoyu</groupId>
+            <artifactId>beacon-log</artifactId>
+        </dependency>
+    </dependencies>
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.xiaoyu</groupId>
+                <artifactId>beacon-transport-api</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.xiaoyu</groupId>
+                <artifactId>beacon-transport-netty</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 </project>

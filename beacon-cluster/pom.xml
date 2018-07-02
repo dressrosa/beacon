@@ -4,21 +4,21 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.xiaoyu</groupId>
-        <artifactId>beacon</artifactId>
+        <artifactId>beacon-pom</artifactId>
         <version>0.0.1-SNAPSHOT</version>
+        <relativePath>../pom/pom.xml</relativePath>
     </parent>
     <artifactId>beacon-cluster</artifactId>
-
+    <packaging>jar</packaging>
     <dependencies>
         <dependency>
             <groupId>com.xiaoyu</groupId>
-            <artifactId>beacon-common</artifactId>
-            <version>${project.parent.version}</version>
+            <artifactId>beacon-rpc-api</artifactId>
         </dependency>
+
         <dependency>
             <groupId>com.xiaoyu</groupId>
-            <artifactId>beacon-rpc-api</artifactId>
-            <version>${project.parent.version}</version>
+            <artifactId>beacon-log</artifactId>
         </dependency>
     </dependencies>
 </project>

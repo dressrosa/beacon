@@ -8,21 +8,22 @@
         <version>0.0.1-SNAPSHOT</version>
     </parent>
     <artifactId>beacon-rpc-api</artifactId>
+    <packaging>jar</packaging>
     <dependencies>
         <dependency>
             <groupId>com.xiaoyu</groupId>
-            <artifactId>beacon-common</artifactId>
-            <version>${project.parent.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>com.xiaoyu</groupId>
             <artifactId>beacon-registry-api</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
+        
         <dependency>
             <groupId>com.xiaoyu</groupId>
             <artifactId>beacon-transport-api</artifactId>
-            <version>${project.parent.version}</version>
+            <version>${project.version}</version>
+        </dependency>
+        
+        <dependency>
+            <groupId>com.xiaoyu</groupId>
+            <artifactId>beacon-log</artifactId>
         </dependency>
     </dependencies>
 </project>

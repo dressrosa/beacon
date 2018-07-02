@@ -74,6 +74,10 @@ public class ConsistentHashLoadBalance implements LoadBalance {
      * @param providers
      */
     private void spreadTrueProviders(List<BeaconPath> providers) {
+        //TODO 如果有机器下线,这里并没有给清除,所以这里先重置.
+        Circle_Sorted_Map.clear();
+        Machines.clear();
+        
         for (BeaconPath p : providers) {
             if (Machines.add(p.getHost())) {
                 spreadVirtualProvider(p.getHost());

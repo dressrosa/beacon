@@ -18,7 +18,6 @@
         <dependency>
             <groupId>com.xiaoyu</groupId>
             <artifactId>beacon-spring</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
     </dependencies>
 </project>
