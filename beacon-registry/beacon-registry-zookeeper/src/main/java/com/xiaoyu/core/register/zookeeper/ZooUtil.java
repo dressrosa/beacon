@@ -30,9 +30,9 @@ public class ZooUtil {
     private static final Integer RETRY_TIMES = 10;
 
     /**
-     * 临时节点消失的时间 30s
+     * 临时节点消失的时间 10s
      */
-    private static final Integer SESSION_TIMEOUT = 30_000;
+    private static final Integer SESSION_TIMEOUT = 10_000;
     /**
      * 连接超时 3s
      */

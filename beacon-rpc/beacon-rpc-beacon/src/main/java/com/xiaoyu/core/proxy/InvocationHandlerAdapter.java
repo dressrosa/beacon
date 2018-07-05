@@ -67,7 +67,8 @@ public class InvocationHandlerAdapter {
         final RpcRequest req = new RpcRequest()
                 .setInterfaceName(ref.getName())
                 .setParams(args)
-                .setMethodName(methodName);
+                .setMethodName(methodName)
+                .setReturnType(method.getReturnType());
         req.setHeartbeat(false);
         req.setId(IdUtil.requestId());
         if (BeaconConstants.EQUALS.equals(methodName)) {

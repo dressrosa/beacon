@@ -74,10 +74,9 @@ public class ConsistentHashLoadBalance implements LoadBalance {
      * @param providers
      */
     private void spreadTrueProviders(List<BeaconPath> providers) {
-        //TODO 如果有机器下线,这里并没有给清除,所以这里先重置.
+        // TODO 如果有机器下线,这里并没有给清除,所以这里先重置.
         Circle_Sorted_Map.clear();
         Machines.clear();
-        
         for (BeaconPath p : providers) {
             if (Machines.add(p.getHost())) {
                 spreadVirtualProvider(p.getHost());
@@ -91,11 +90,12 @@ public class ConsistentHashLoadBalance implements LoadBalance {
      * @param host
      */
     private void spreadVirtualProvider(String host) {
-        String virtual;
+        String virtual = null;
+        String appendStr = Separator + host;
         // 1:32
-        int num = Machines.size() << 5;
-        for (int i = 0; i < num; i++) {
-            virtual = i + Separator + host;
+        int size = 32;
+        for (int i = 0; i < size; i++) {
+            virtual = String.valueOf(i).concat(appendStr);
             Circle_Sorted_Map.put(hash(virtual), virtual);
         }
     }
@@ -118,8 +118,8 @@ public class ConsistentHashLoadBalance implements LoadBalance {
         hash += hash << 3;
         hash ^= hash >> 17;
         hash += hash << 5;
+        // hash负数正数(相反数)
         if (hash < 0) {
-            // 取相反数
             hash = ~hash + 1;
         }
         return hash;

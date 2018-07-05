@@ -51,7 +51,7 @@ public class FailOverTolerant implements FaultTolerant {
     private Object doRetry(Invocation invocation, List<?> providers) throws Throwable {
         int num = 0;
         LoadBalance loadBalance = SpiManager.defaultSpiExtender(LoadBalance.class);
-        // 这里少retry一次,因为如果发送异常,最后一次的catch并没有抛出异常而是while退出了
+        // 这里少retry一次,因为如果发生异常,最后一次的catch并没有抛出异常而是while退出了
         // 当然可以在continue之前做个if判断,不过...就是为了省个if,O(∩_∩)O~
         int retry = invocation.getConsumer().getRetry();
         while (num++ < retry - 1) {

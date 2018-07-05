@@ -30,13 +30,13 @@ public class BeaconClientChannel extends AbstractBeaconChannel {
     private static final Logger LOG = LoggerFactory.getLogger("BeaconClientChannel");
 
     /**
-     * 一次wait的时间(ms) 每次等待时间:SLEEP_TIME*2的RETRY_NUM次方
+     * 一次wait的时间(ms)
      */
-    private static final int SLEEP_TIME = 1;
+    private static final int SLEEP_TIME = 10;
     /**
-     * 最大尝试次数
+     * 最大尝试次数 最大即100秒
      */
-    private static final int MAX_RETRY_NUM = 14;
+    private static final int MAX_RETRY_NUM = 10_000;
 
     protected BaseChannel baseChannel;
 
@@ -63,19 +63,23 @@ public class BeaconClientChannel extends AbstractBeaconChannel {
                     // 防止发生意外,导致一直阻塞;再等待一定时间后,以超时结束
                     try {
                         while ((result = listener.result()) == null && retry <= MAX_RETRY_NUM) {
-                            listener.wait(SLEEP_TIME << retry);
+                            // 这里可能会导致最大多等一个SLEEP_TIME
+                            listener.wait(SLEEP_TIME);
                             retry++;
                         }
                     } catch (InterruptedException e) {
                         // 外围get超时,执行 taskFuture.cancel(true)进行中断
-                        //LOG.debug("Wait for {} times;cost {} ms", retry, (System.currentTimeMillis() - start));
+                        // LOG.debug("Wait for {} times;cost {} ms", retry, (System.currentTimeMillis()
+                        // - start));
                         return result;
                     }
-                   // LOG.debug("Wait for {} times;cost {} ms", retry, (System.currentTimeMillis() - start));
+                    // LOG.debug("Wait for {} times;cost {} ms", retry, (System.currentTimeMillis()
+                    // - start));
                     if (result == null) {
                         // 最大超时
                         result = new RpcResponse()
-                                .setException(new TimeoutException("Request exceed limit time,cost time->" + (System.currentTimeMillis() - start)))
+                                .setException(new TimeoutException(
+                                        "Request exceed limit time,cost time->" + (System.currentTimeMillis() - start)))
                                 .setId(((RpcRequest) message).getId());
                     }
                 }
@@ -121,7 +125,7 @@ public class BeaconClientChannel extends AbstractBeaconChannel {
                     long start = System.currentTimeMillis();
                     // 防止发生意外,导致一直阻塞;再等待一定时间后,以超时结束
                     while ((result = listener.result()) == null && retry <= MAX_RETRY_NUM) {
-                        listener.wait(SLEEP_TIME * retry);
+                        listener.wait(SLEEP_TIME);
                         retry++;
                     }
                     long end;

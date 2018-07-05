@@ -176,6 +176,9 @@ public class ZooRegistry extends AbstractRegistry {
                 // 当前服务器提供的provider
                 if (From.SERVER.equals(p.getSide()) && host.equals(p.getHost())) {
                     zoo.createEphemeral(this.fullPath(this.providerPath(service), p.toPath()));
+                } else {
+                    // 发现consumer也可能丢
+                    zoo.createEphemeral(this.fullPath(this.consumerPath(service), p.toPath()));
                 }
             }
         }
@@ -208,9 +211,10 @@ public class ZooRegistry extends AbstractRegistry {
         if (parentPath.endsWith(CONSUMERS)) {
             // 有client上线
             if (childSize > consumerSize) {
+                LOG.info("New client online.");
                 for (String s : currentChilds) {
                     if (!consumerList.contains(s)) {
-                        LOG.info("New client online->{}", s);
+                        LOG.info("store consumer service ->{}", s);
                         this.storeLocalService(service, BeaconPath.toEntity(s));
                         break;
                     }
@@ -218,9 +222,10 @@ public class ZooRegistry extends AbstractRegistry {
             }
             // 有client下线
             else if (childSize < consumerSize) {
+                LOG.info("One client offline.");
                 for (String s : consumerList) {
                     if (!currentChilds.contains(s)) {
-                        LOG.info("One client offline->{}", s);
+                        LOG.info("remove consumer service->{}", s);
                         SERVICE_MAP.get(service).remove(BeaconPath.toEntity(s));
                         break;
                     }
@@ -231,9 +236,10 @@ public class ZooRegistry extends AbstractRegistry {
         else {
             // 有server上线
             if (childSize > providerSize) {
+                LOG.info("New server online.");
                 for (String s : currentChilds) {
                     if (!providerList.contains(s)) {
-                        LOG.info("New server online->{}", s);
+                        LOG.info("store provider service ->{}", s);
                         this.storeLocalService(service, BeaconPath.toEntity(s));
                         break;
                     }
@@ -241,9 +247,14 @@ public class ZooRegistry extends AbstractRegistry {
             }
             // 有server下线
             else if (childSize < providerSize) {
+                // TODO 这里可能是server关闭后,又启动了,但是session消息的时间是根据SESSION_TIMEOUT(这里=10s)设定的
+                // 所以10s左右session才会消失,也就是说server 10s内再次启动后,注册的节点都会因为session失效而消失.
+                // 因此导致client没收到server启动通知反而收到server关闭的通知.
+                // 这里需要考虑session timeout和server重启的平衡性
+                LOG.info("One server offline.");
                 for (String s : providerList) {
                     if (!currentChilds.contains(s)) {
-                        LOG.info("One server offline->{}", s);
+                        LOG.info("remove provider service->{}", s);
                         SERVICE_MAP.get(service).remove(BeaconPath.toEntity(s));
                         // TODO 是否关闭对应的client
                         break;
