@@ -13,9 +13,11 @@ import com.xiaoyu.core.common.extension.SpiManager;
 import com.xiaoyu.core.rpc.config.bean.Invocation;
 
 /**
+ * 快速失败
+ * 
  * @author hongyu
  * @date 2018-05
- * @description 快速失败
+ * @description 相当于正常调用,不做任何额外处理
  */
 public class FailFastTolerant implements FaultTolerant {
 

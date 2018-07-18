@@ -18,9 +18,11 @@ import com.xiaoyu.core.common.extension.SpiManager;
 import com.xiaoyu.core.rpc.config.bean.Invocation;
 
 /**
+ * 失败重试
+ * 
  * @author hongyu
  * @date 2018-06
- * @description 失败重试
+ * @description 对非业务类失败,进行一定的重试
  */
 public class FailOverTolerant implements FaultTolerant {
 
@@ -35,6 +37,7 @@ public class FailOverTolerant implements FaultTolerant {
         try {
             result = invocation.invoke(provider);
         } catch (Throwable e) {
+            // 业务类异常,直接正常抛出
             if (e instanceof BizException) {
                 throw e;
             } else {
@@ -54,8 +57,9 @@ public class FailOverTolerant implements FaultTolerant {
         // 这里少retry一次,因为如果发生异常,最后一次的catch并没有抛出异常而是while退出了
         // 当然可以在continue之前做个if判断,不过...就是为了省个if,O(∩_∩)O~
         int retry = invocation.getConsumer().getRetry();
+        BeaconPath provider = null;
         while (num++ < retry - 1) {
-            BeaconPath provider = (BeaconPath) loadBalance.select(providers);
+            provider = (BeaconPath) loadBalance.select(providers);
             Object result = null;
             try {
                 LOG.info("Invoke failed, retry {} times", num);
@@ -71,7 +75,7 @@ public class FailOverTolerant implements FaultTolerant {
             return result;
         }
         // 这里不能直接返回null或result,需要再进行一次正常的调用
-        BeaconPath provider = (BeaconPath) loadBalance.select(providers);
+        provider = (BeaconPath) loadBalance.select(providers);
         return invocation.invoke(provider);
     }
 

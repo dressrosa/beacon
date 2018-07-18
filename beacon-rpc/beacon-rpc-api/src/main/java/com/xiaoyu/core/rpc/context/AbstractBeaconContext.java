@@ -51,6 +51,9 @@ public abstract class AbstractBeaconContext implements Context {
 
     @Override
     public Client client(String host, int port) throws Exception {
+        /**
+         * 当第一次大量请求时,可能导致client多次初始化,并覆盖掉已初始化的.
+         */
         clientLock.lock();
         try {
             if (clientMap.containsKey(host)) {

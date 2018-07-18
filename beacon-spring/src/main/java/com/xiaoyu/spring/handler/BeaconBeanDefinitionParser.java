@@ -4,6 +4,7 @@
  */
 package com.xiaoyu.spring.handler;
 
+import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -246,6 +247,7 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
         String interfaceName = element.getAttribute("interfaceName");
         String ref = element.getAttribute("ref");
         String id = element.getAttribute("id");
+        String methods = element.getAttribute("methods");
         if (StringUtil.isBlank(interfaceName)) {
             throw new Exception(" interfaceName cannot be null in xml tag->" + element.getTagName());
         }
@@ -267,6 +269,20 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
             throw new Exception("ref->" + ref + " is not implement of interface->" + interfaceName + " in xml tag->"
                     + element.getTagName());
         }
+        if (StringUtil.isNotEmpty(methods)) {
+            if (methods.contains("&")) {
+                throw new Exception("Methods contain the illegal character '&' in beacon-provider");
+            }
+        } else {
+            // 取所有的方法
+            Method[] mes = refCls.getDeclaredMethods();
+            StringBuilder namesBuilder = new StringBuilder();
+            for (int i = 0; i < mes.length - 1; i++) {
+                namesBuilder.append(mes[i].getName()).append(",");
+            }
+            namesBuilder.append(mes[mes.length - 1].getName());
+            methods = namesBuilder.toString();
+        }
         try {
             // 有接口暴漏,则启动context,相当于启动nettyServer
             Context context = SpiManager.defaultSpiExtender(Context.class);
@@ -277,7 +293,8 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
                     .setSide(From.SERVER)
                     .setService(interfaceName)
                     .setRef(ref)
-                    .setHost(NetUtil.localIP());
+                    .setHost(NetUtil.localIP())
+                    .setMethods(methods);
             if (beaconRegistry != null) {
                 if (beaconProtocol != null) {
                     beaconPath.setPort(beaconProtocol.getPort());
@@ -306,7 +323,7 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
         int retry = Integer.valueOf(element.getAttribute("retry"));
         boolean check = Boolean.getBoolean(element.getAttribute("check"));
         String tolerant = element.getAttribute("tolerant");
-        
+
         if (StringUtil.isBlank(interfaceName)) {
             throw new Exception("interfaceName cannot be null in xml tag->" + element.getTagName());
         }

@@ -13,7 +13,7 @@ import com.xiaoyu.core.common.bean.BeaconPath;
  * 
  * @author hongyu
  * @date 2018-06
- * @description 尽量保证同一个请求service尽量每次都映射到同一个server,这样可以保证server端的缓存有效性
+ * @description 尽量保证同一个请求service每次都映射到同一个server,这样可以保证server端的缓存有效性
  */
 public class ConsistentHashLoadBalance implements LoadBalance {
 
@@ -38,7 +38,7 @@ public class ConsistentHashLoadBalance implements LoadBalance {
         List<BeaconPath> pros = (List<BeaconPath>) providers;
         // 以service为key,这样保证同一个service请求同一个server
         String service = pros.get(0).getService();
-        spreadTrueProviders(pros);
+        this.spreadTrueProviders(pros);
 
         // 找比她大的所有节点
         SortedMap<Integer, String> nodes = Circle_Sorted_Map.tailMap(hash(service));
@@ -69,7 +69,7 @@ public class ConsistentHashLoadBalance implements LoadBalance {
     }
 
     /**
-     * 初始化真实节点
+     * 根据真实节点生成虚拟节点
      * 
      * @param providers
      */
@@ -102,6 +102,7 @@ public class ConsistentHashLoadBalance implements LoadBalance {
 
     /**
      * FNV1_32_HASH
+     * 保证hash的散列,来达到均匀铺开
      * 
      * @param str
      * @return
@@ -118,7 +119,7 @@ public class ConsistentHashLoadBalance implements LoadBalance {
         hash += hash << 3;
         hash ^= hash >> 17;
         hash += hash << 5;
-        // hash负数正数(相反数)
+        // hash负数取正数(相反数)
         if (hash < 0) {
             hash = ~hash + 1;
         }
