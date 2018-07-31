@@ -5,6 +5,7 @@ package com.xiaoyu.core.proxy;
 
 import java.lang.reflect.Method;
 
+import com.xiaoyu.core.common.bean.ProxyWrapper;
 import com.xiaoyu.core.rpc.api.IProxy;
 
 import net.sf.cglib.proxy.Enhancer;
@@ -19,13 +20,14 @@ import net.sf.cglib.proxy.MethodProxy;
 public class CglibProxy implements IProxy {
 
     @Override
-    public Object getProxy(final Object target) {
+    public Object getProxy(ProxyWrapper wrapper) {
         final Enhancer hancer = new Enhancer();
         Class<?> cls = null;
+        Object target = wrapper.getTarget();
         // 接口提供给client
         if (target instanceof Class && (cls = (Class<?>) target).isInterface()) {
             hancer.setSuperclass(cls);
-            hancer.setCallback(new InvocationHandlerAdapter(cls).getHandler(MethodInterceptor.class));
+            hancer.setCallback(new InvocationHandlerAdapter(wrapper).getHandler(MethodInterceptor.class));
             return hancer.create();
         } else {
             // server直接调用实现类

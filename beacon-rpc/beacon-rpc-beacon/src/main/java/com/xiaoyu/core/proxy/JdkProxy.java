@@ -7,6 +7,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
+import com.xiaoyu.core.common.bean.ProxyWrapper;
 import com.xiaoyu.core.rpc.api.IProxy;
 
 /**
@@ -19,8 +20,9 @@ public class JdkProxy implements IProxy {
     private InvocationHandler invocationHandler;
 
     @Override
-    public Object getProxy(final Object target) {
+    public Object getProxy(final ProxyWrapper wrapper) {
         Class<?> cls = null;
+        Object target = wrapper.getTarget();
         // 接口提供给client
         if (target instanceof Class && (cls = (Class<?>) target).isInterface()) {
             invocationHandler = new InvocationHandlerAdapter(cls).getHandler(InvocationHandler.class);

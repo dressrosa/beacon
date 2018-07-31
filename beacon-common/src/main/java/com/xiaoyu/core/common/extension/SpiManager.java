@@ -19,6 +19,9 @@ import com.xiaoyu.core.common.utils.StringUtil;
  */
 public class SpiManager {
 
+    /**
+     * targetClass->extendHolder
+     */
     private static final ConcurrentMap<Class<?>, ExtenderHolder<?>> SPI_MAP = new ConcurrentHashMap<>(16);
 
     /**
@@ -30,11 +33,11 @@ public class SpiManager {
      */
     @SuppressWarnings("unchecked")
     public static <T> T defaultSpiExtender(Class<T> cls) throws Exception {
-        T t = null;
         ExtenderHolder<T> holder = (ExtenderHolder<T>) SPI_MAP.get(cls);
         if (holder == null) {
-            holder = new ExtenderHolder<>();
+            SPI_MAP.putIfAbsent(cls, new ExtenderHolder<>());
         }
+        holder = (ExtenderHolder<T>) SPI_MAP.get(cls);
         if (!holder.isEmpty()) {
             if (StringUtil.isEmpty(holder.getDefault_key())) {
                 return holder.randomOne();
@@ -42,6 +45,8 @@ public class SpiManager {
                 return holder.target(holder.getDefault_key());
             }
         }
+        T t = null;
+        // TODO 首次并发加载可能会加载多次
         BeaconServiceLoader<T> loader = BeaconServiceLoader.load(cls);
         Iterator<T> iter = loader.iterator();
         // 存储所有的,取最后一个
@@ -52,7 +57,6 @@ public class SpiManager {
         if (t == null) {
             throw new Exception("cannot find spi of " + cls.getName());
         }
-        SPI_MAP.putIfAbsent(cls, holder);
         return t;
     }
 
@@ -67,18 +71,19 @@ public class SpiManager {
         T t = null;
         ExtenderHolder<T> holder = (ExtenderHolder<T>) SPI_MAP.get(cls);
         if (holder == null) {
-            holder = new ExtenderHolder<>();
+            SPI_MAP.putIfAbsent(cls, new ExtenderHolder<>());
         }
+        holder = (ExtenderHolder<T>) SPI_MAP.get(cls);
         if (!holder.isEmpty()) {
             return holder;
         }
+        // TODO 首次并发加载可能会加载多次
         BeaconServiceLoader<T> loader = BeaconServiceLoader.load(cls);
         Iterator<T> iter = loader.iterator();
         while (iter.hasNext()) {
             t = iter.next();
             holder.put(loader.getProtocolName(), t);
         }
-        SPI_MAP.putIfAbsent(cls, holder);
         return holder;
     }
 

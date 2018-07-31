@@ -2,17 +2,18 @@
  * 唯有读书,不慵不扰
  * 
  */
-package com.xiaoyu.spring.config;
+package com.xiaoyu.filter.generic;
 
-import com.xiaoyu.core.common.bean.BeaconBean;
+import com.xiaoyu.core.common.constant.From;
 
 /**
  * @author hongyu
- * @date 2018-05
- * @description 对应于beacon-reference
+ * @date 2018-07
+ * @description 对应于BeaconReference,仅用于泛型调用
  */
-public class BeaconReference extends BeaconBean {
+public class GenericReference {
 
+    private String from = From.CLIENT.name();
     /**
      * 接口名
      */
@@ -21,7 +22,7 @@ public class BeaconReference extends BeaconBean {
     /**
      * 请求超时
      */
-    private String timeout="3000";
+    private String timeout = "3000";
 
     /**
      * 重试次数
@@ -31,7 +32,7 @@ public class BeaconReference extends BeaconBean {
     /**
      * 启动时检查
      */
-    private boolean check;
+    private boolean check = false;
 
     /**
      * 容错策略
@@ -43,11 +44,20 @@ public class BeaconReference extends BeaconBean {
      */
     private boolean generic = false;
 
+    public String getFrom() {
+        return from;
+    }
+
+    public GenericReference setFrom(String from) {
+        this.from = from;
+        return this;
+    }
+
     public boolean isGeneric() {
         return generic;
     }
 
-    public BeaconReference setGeneric(boolean generic) {
+    public GenericReference setGeneric(boolean generic) {
         this.generic = generic;
         return this;
     }
@@ -64,7 +74,7 @@ public class BeaconReference extends BeaconBean {
         return check;
     }
 
-    public BeaconReference setCheck(boolean check) {
+    public GenericReference setCheck(boolean check) {
         this.check = check;
         return this;
     }
@@ -73,7 +83,7 @@ public class BeaconReference extends BeaconBean {
         return retry;
     }
 
-    public BeaconReference setRetry(Integer retry) {
+    public GenericReference setRetry(Integer retry) {
         this.retry = retry;
         return this;
     }
@@ -82,7 +92,7 @@ public class BeaconReference extends BeaconBean {
         return timeout;
     }
 
-    public BeaconReference setTimeout(String timeout) {
+    public GenericReference setTimeout(String timeout) {
         this.timeout = timeout;
         return this;
     }
@@ -91,7 +101,7 @@ public class BeaconReference extends BeaconBean {
         return interfaceName;
     }
 
-    public BeaconReference setInterfaceName(String interfaceName) {
+    public GenericReference setInterfaceName(String interfaceName) {
         this.interfaceName = interfaceName;
         return this;
     }

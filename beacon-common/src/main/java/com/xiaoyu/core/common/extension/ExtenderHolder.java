@@ -4,6 +4,7 @@
  */
 package com.xiaoyu.core.common.extension;
 
+import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -33,8 +34,15 @@ public class ExtenderHolder<T> {
 
     public T target(String name) throws Exception {
         if (!holder.containsKey(name)) {
-            throw new Exception("cannot find the target->" + name);
+            // 在首次(首次划重点)并发加载的情况下,可能在SpiManger.holder()方法中,
+            // BeaconLoader还未加载完,holder.isEmpty已经不为空,导致想取的数据还没有,这里
+            // 睡眠1ms来缓冲.不过这种情况基本不会出现
+            Thread.sleep(1);
+            if (!holder.containsKey(name)) {
+                throw new Exception("cannot find the target->" + name);
+            }
         }
+
         T t = (T) holder.get(name);
         setDefault_key(name);
         return t;
@@ -55,5 +63,9 @@ public class ExtenderHolder<T> {
     protected T randomOne() {
         // 返回一个能用的就行
         return holder.values().iterator().next();
+    }
+
+    public Collection<T> values() {
+        return holder.values();
     }
 }

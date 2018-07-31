@@ -27,7 +27,10 @@
             <artifactId>beacon-transport-netty</artifactId>
             <version>${project.version}</version>
         </dependency>
-        
+        <dependency>
+            <groupId>com.xiaoyu</groupId>
+            <artifactId>beacon-filter</artifactId>
+        </dependency>
         <dependency>
             <groupId>cglib</groupId>
             <artifactId>cglib</artifactId>

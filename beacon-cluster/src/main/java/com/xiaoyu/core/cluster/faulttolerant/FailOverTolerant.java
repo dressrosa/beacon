@@ -46,7 +46,6 @@ public class FailOverTolerant implements FaultTolerant {
                     return doRetry(invocation, providers);
                 }
             }
-            throw e;
         }
         return result;
     }

@@ -83,7 +83,7 @@ public class ZooRegistry extends AbstractRegistry {
         if (beaconPath.getSide().equals(From.CLIENT)) {
             // reference(client)
             // 启动时检查
-            if (beaconPath.getCheck() && !this.discoverService(service)) {
+            if (beaconPath.isCheck() && !this.discoverService(service)) {
                 LOG.error("Cannot find providers of the service->{} in zookeeper,please check.", service);
                 try {
                     throw new Exception(

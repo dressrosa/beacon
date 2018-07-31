@@ -1,7 +1,9 @@
 package com.xiaoyu.core.cluster.loadbalance;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -32,13 +34,14 @@ public class ConsistentHashLoadBalance implements LoadBalance {
     @SuppressWarnings("unchecked")
     @Override
     public <T> T select(List<T> providers) {
-        if (providers.size() == 1) {
+        int size = providers.size();
+        if (size == 1) {
             return providers.get(0);
         }
         List<BeaconPath> pros = (List<BeaconPath>) providers;
         // 以service为key,这样保证同一个service请求同一个server
         String service = pros.get(0).getService();
-        this.spreadTrueProviders(pros);
+        Map<String, BeaconPath> proMap = this.spreadTrueProviders(pros);
 
         // 找比她大的所有节点
         SortedMap<Integer, String> nodes = Circle_Sorted_Map.tailMap(hash(service));
@@ -59,29 +62,27 @@ public class ConsistentHashLoadBalance implements LoadBalance {
             // 取出虚拟节点中的host
             host = value.substring(value.indexOf(Separator) + 1);
         }
-        for (int i = 0; i < pros.size(); i++) {
-            BeaconPath p = pros.get(i);
-            if (host.equals(p.getHost())) {
-                return (T) p;
-            }
-        }
-        return providers.get(0);
+        return (T) proMap.get(host);
     }
 
     /**
      * 根据真实节点生成虚拟节点
      * 
      * @param providers
+     * @return
      */
-    private void spreadTrueProviders(List<BeaconPath> providers) {
+    private Map<String, BeaconPath> spreadTrueProviders(List<BeaconPath> providers) {
         // TODO 如果有机器下线,这里并没有给清除,所以这里先重置.
         Circle_Sorted_Map.clear();
         Machines.clear();
+        Map<String, BeaconPath> proMap = new HashMap<>(providers.size() << 1);
         for (BeaconPath p : providers) {
+            proMap.put(p.getHost(), p);
             if (Machines.add(p.getHost())) {
                 spreadVirtualProvider(p.getHost());
             }
         }
+        return proMap;
     }
 
     /**
@@ -111,8 +112,9 @@ public class ConsistentHashLoadBalance implements LoadBalance {
         final int p = 16777619;
         int hash = (int) 2166136261L;
         int len = str.length();
+        char[] chs = str.toCharArray();
         for (int i = 0; i < len; i++) {
-            hash = (hash ^ str.charAt(i)) * p;
+            hash = (hash ^ chs[i]) * p;
         }
         hash += hash << 13;
         hash ^= hash >> 7;

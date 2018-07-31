@@ -50,6 +50,20 @@ public class BeaconPath {
      */
     private String methods;
 
+    /**
+     * 泛型
+     */
+    private boolean generic = false;
+
+    public boolean isGeneric() {
+        return generic;
+    }
+
+    public BeaconPath setGeneric(boolean generic) {
+        this.generic = generic;
+        return this;
+    }
+
     public String getMethods() {
         return methods;
     }
@@ -68,7 +82,7 @@ public class BeaconPath {
         return this;
     }
 
-    public boolean getCheck() {
+    public boolean isCheck() {
         return check;
     }
 
@@ -188,15 +202,14 @@ public class BeaconPath {
             builder.append("&timeout=").append("");
             builder.append("&methods=").append(this.getMethods());
         } else {
+            builder.append("&check=").append(this.isCheck());
+            builder.append("&tolerant=").append(this.getTolerant());
             builder.append("&timeout=").append(this.getTimeout());
             builder.append("&methods=").append("");
-        }
-        builder.append("&retry=").append(this.getRetry());
-        if (this.getSide() == From.CLIENT) {
-            builder.append("&check=").append(this.getCheck());
-            builder.append("&tolerant=").append(this.getTolerant());
-        }
 
+        }
+        builder.append("&generic=").append(this.isGeneric());
+        builder.append("&retry=").append(this.getRetry());
         // 请注意side放在最后
         builder.append("&side=").append(this.getSide().name());
         return builder.toString();
@@ -226,6 +239,8 @@ public class BeaconPath {
                 if (StringUtil.isNotEmpty(ms)) {
                     bea.setMethods(ms);
                 }
+            } else if (str.startsWith("generic")) {
+                bea.setGeneric(Boolean.valueOf(str.substring(8)));
             } else if (str.startsWith("retry")) {
                 bea.setRetry(Integer.valueOf(str.substring(6)));
             } else if (str.startsWith("check")) {

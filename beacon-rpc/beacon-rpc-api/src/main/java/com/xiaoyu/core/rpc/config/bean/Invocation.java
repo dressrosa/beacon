@@ -42,6 +42,11 @@ public class Invocation {
         return request;
     }
 
+    public Invocation setConsumer(BeaconPath consumer) {
+        this.consumer = consumer;
+        return this;
+    }
+
     public Object invoke(BeaconPath provider) throws Throwable {
         String methods = provider.getMethods();
         String[] mes = methods.split(",");
