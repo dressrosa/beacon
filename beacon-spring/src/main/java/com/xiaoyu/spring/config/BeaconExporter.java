@@ -22,6 +22,20 @@ public class BeaconExporter extends BeaconBean {
      */
     private String ref;
 
+    /**
+     * 服务分组
+     */
+    private String group="";
+
+    public String getGroup() {
+        return group;
+    }
+
+    public BeaconExporter setGroup(String group) {
+        this.group = group;
+        return this;
+    }
+
     public String getInterfaceName() {
         return interfaceName;
     }

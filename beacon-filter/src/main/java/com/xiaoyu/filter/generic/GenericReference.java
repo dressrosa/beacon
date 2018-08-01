@@ -4,16 +4,18 @@
  */
 package com.xiaoyu.filter.generic;
 
-import com.xiaoyu.core.common.constant.From;
-
 /**
  * @author hongyu
  * @date 2018-07
  * @description 对应于BeaconReference,仅用于泛型调用
  */
+/**
+ * @author hongyu
+ * @date 2018-08-01 11:45
+ * @description
+ */
 public class GenericReference {
 
-    private String from = From.CLIENT.name();
     /**
      * 接口名
      */
@@ -30,35 +32,21 @@ public class GenericReference {
     private Integer retry = 0;
 
     /**
-     * 启动时检查
-     */
-    private boolean check = false;
-
-    /**
      * 容错策略
      */
     private String tolerant = "failfast";
 
     /**
-     * 是否泛型接口
+     * 服务分组
      */
-    private boolean generic = false;
+    private String group = "";
 
-    public String getFrom() {
-        return from;
+    public String getGroup() {
+        return group;
     }
 
-    public GenericReference setFrom(String from) {
-        this.from = from;
-        return this;
-    }
-
-    public boolean isGeneric() {
-        return generic;
-    }
-
-    public GenericReference setGeneric(boolean generic) {
-        this.generic = generic;
+    public GenericReference setGroup(String group) {
+        this.group = group;
         return this;
     }
 
@@ -68,15 +56,6 @@ public class GenericReference {
 
     public void setTolerant(String tolerant) {
         this.tolerant = tolerant;
-    }
-
-    public boolean getCheck() {
-        return check;
-    }
-
-    public GenericReference setCheck(boolean check) {
-        this.check = check;
-        return this;
     }
 
     public Integer getRetry() {

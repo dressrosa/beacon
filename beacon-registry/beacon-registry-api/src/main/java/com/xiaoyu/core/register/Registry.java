@@ -58,12 +58,13 @@ public interface Registry {
     public void unregisterService(BeaconPath beaconPath);
 
     /**
-     * 获取对应的provider是
+     * 获取对应的provider
      * 
+     * @param group
      * @param service
      * @return
      */
-    public List<BeaconPath> getLocalProviders(String service);
+    public List<BeaconPath> getLocalProviders(String group, String service);
 
     /**
      * 获取本地的service信息

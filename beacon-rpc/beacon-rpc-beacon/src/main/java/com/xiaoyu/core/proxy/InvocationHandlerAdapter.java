@@ -38,22 +38,25 @@ public class InvocationHandlerAdapter {
      */
     private Class<?> ref;
 
-    private String genericRef;
+    /**
+     * 实际的接口名称
+     */
+    private String actualService;
 
     private ProxyWrapper wrapper;
 
     public InvocationHandlerAdapter(Class<?> ref) {
         this.ref = ref;
-        genericRef = ref.getName();
+        actualService = ref.getName();
     }
 
     public InvocationHandlerAdapter(ProxyWrapper wrapper) {
         this.ref = (Class<?>) wrapper.getTarget();
         this.wrapper = wrapper;
         if (wrapper.isGeneric()) {
-            genericRef = wrapper.getRealRef();
+            actualService = wrapper.getRealRef();
         } else {
-            genericRef = ref.getName();
+            actualService = ref.getName();
         }
 
     }
@@ -84,7 +87,7 @@ public class InvocationHandlerAdapter {
     private Object preInvoke(Method method, Object[] args) throws Throwable {
         String methodName = method.getName();
         final RpcRequest req = new RpcRequest()
-                .setInterfaceName(genericRef)
+                .setInterfaceName(actualService)
                 .setParams(args)
                 .setMethodName(methodName)
                 .setReturnType(method.getReturnType());
@@ -129,8 +132,13 @@ public class InvocationHandlerAdapter {
         filter.invoke(invocation);
 
         // 获取对应的全部provider
-        List<BeaconPath> providers = reg.getLocalProviders(service);
-
+        List<BeaconPath> providers = reg.getLocalProviders(consumer.getGroup(), service);
+        // 同group下无provider
+        if (providers.isEmpty()) {
+            throw new Exception(
+                    "Cannot find the service->" + service + " in the group->" + consumer.getGroup()
+                            + ";please check whether service belong to one group.");
+        }
         // 容错调用
         FaultTolerant tolerant = SpiManager.holder(FaultTolerant.class).target(consumer.getTolerant());
         return tolerant.invoke(invocation, providers);
@@ -145,7 +153,8 @@ public class InvocationHandlerAdapter {
         BeaconPath con = new BeaconPath();
         con.setGeneric(true)
                 .setTolerant((String) attach.get("tolerant"))
-                .setTimeout((String) attach.get("timeout"));
+                .setTimeout((String) attach.get("timeout"))
+                .setGroup((String)attach.get("group"));
         return con;
     }
 }

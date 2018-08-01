@@ -61,6 +61,7 @@ public class GenericFilter implements Filter {
             invocation.setConsumer(con);
             // for safe concurrent
             if (Consumer_Map.put(key, con) == null) {
+                // (可忽略).高并发下,可能导致这里同个con还没注册完,其他线程就已经开始执行了
                 registry.registerService(con);
             }
         }

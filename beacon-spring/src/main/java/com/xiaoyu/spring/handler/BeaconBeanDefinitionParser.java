@@ -248,11 +248,15 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
         String ref = element.getAttribute("ref");
         String id = element.getAttribute("id");
         String methods = element.getAttribute("methods");
+        String group = element.getAttribute("group");
         if (StringUtil.isBlank(interfaceName)) {
             throw new Exception(" interfaceName cannot be null in xml tag->" + element.getTagName());
         }
         if (StringUtil.isBlank(ref)) {
             throw new Exception(" ref cannot be null in xml tag->" + element.getTagName());
+        }
+        if (StringUtil.isBlank(group)) {
+            group = "";
         }
         // 检查接口的合法性
         Class<?> interfaceCls = Class.forName(interfaceName);
@@ -294,7 +298,8 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
                     .setService(interfaceName)
                     .setRef(ref)
                     .setHost(NetUtil.localIP())
-                    .setMethods(methods);
+                    .setMethods(methods)
+                    .setGroup(group);
             if (beaconRegistry != null) {
                 if (beaconProtocol != null) {
                     beaconPath.setPort(beaconProtocol.getPort());
@@ -323,12 +328,16 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
         int retry = Integer.valueOf(element.getAttribute("retry"));
         boolean check = Boolean.getBoolean(element.getAttribute("check"));
         String tolerant = element.getAttribute("tolerant");
+        String group = element.getAttribute("group");
 
         if (StringUtil.isBlank(interfaceName)) {
             throw new Exception("interfaceName cannot be null in xml tag->" + element.getTagName());
         }
         if (StringUtil.isBlank(id)) {
             throw new Exception("id cannot be null in xml tag->" + element.getTagName());
+        }
+        if (StringUtil.isBlank(group)) {
+            group = "";
         }
         try {
 
@@ -340,7 +349,8 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
                     .setHost(NetUtil.localIP())
                     .setTimeout(timeout)
                     .setCheck(check)
-                    .setTolerant(tolerant);
+                    .setTolerant(tolerant)
+                    .setGroup(group);
             if (retry > 0) {
                 beaconPath.setRetry(retry);
             }

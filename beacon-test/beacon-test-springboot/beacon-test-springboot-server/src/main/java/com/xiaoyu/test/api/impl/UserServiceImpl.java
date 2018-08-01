@@ -6,7 +6,7 @@ import com.xiaoyu.beacon.autoconfigure.anno.BeaconExporter;
 import com.xiaoyu.test.api.IUserService;
 
 @Service
-@BeaconExporter(interfaceName = "com.xiaoyu.test.api.IUserService")
+@BeaconExporter(interfaceName = "com.xiaoyu.test.api.IUserService",group="produce")
 public class UserServiceImpl implements IUserService {
 
     @Override

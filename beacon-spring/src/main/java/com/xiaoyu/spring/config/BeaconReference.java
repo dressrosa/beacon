@@ -21,7 +21,7 @@ public class BeaconReference extends BeaconBean {
     /**
      * 请求超时
      */
-    private String timeout="3000";
+    private String timeout = "3000";
 
     /**
      * 重试次数
@@ -42,6 +42,20 @@ public class BeaconReference extends BeaconBean {
      * 是否泛型接口
      */
     private boolean generic = false;
+
+    /**
+     * 服务分组
+     */
+    private String group="";
+
+    public String getGroup() {
+        return group;
+    }
+
+    public BeaconReference setGroup(String group) {
+        this.group = group;
+        return this;
+    }
 
     public boolean isGeneric() {
         return generic;

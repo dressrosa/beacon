@@ -9,6 +9,6 @@
   <packaging>pom</packaging>
   <modules>
       <module>beacon-test-spring-server</module>
-      <module>beacon-test.spring-client</module>
+      <module>beacon-test-spring-client</module>
   </modules>
 </project>

@@ -30,7 +30,7 @@ public class ProxyWrapper {
     private String realRef;
 
     /**
-     * 泛型所提供的额外属性
+     * 泛型所提供的额外属性,如tolerant,timeout等
      */
     private Map<String, Object> attach;
 

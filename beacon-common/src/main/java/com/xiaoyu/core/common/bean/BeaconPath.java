@@ -55,6 +55,20 @@ public class BeaconPath {
      */
     private boolean generic = false;
 
+    /**
+     * 服务分组
+     */
+    private String group = "";
+
+    public String getGroup() {
+        return group;
+    }
+
+    public BeaconPath setGroup(String group) {
+        this.group = group;
+        return this;
+    }
+
     public boolean isGeneric() {
         return generic;
     }
@@ -210,6 +224,7 @@ public class BeaconPath {
         }
         builder.append("&generic=").append(this.isGeneric());
         builder.append("&retry=").append(this.getRetry());
+        builder.append("&group=").append(this.getGroup());
         // 请注意side放在最后
         builder.append("&side=").append(this.getSide().name());
         return builder.toString();
@@ -243,6 +258,8 @@ public class BeaconPath {
                 bea.setGeneric(Boolean.valueOf(str.substring(8)));
             } else if (str.startsWith("retry")) {
                 bea.setRetry(Integer.valueOf(str.substring(6)));
+            } else if (str.startsWith("group")) {
+                bea.setGroup(str.substring(6));
             } else if (str.startsWith("check")) {
                 bea.setCheck(Boolean.getBoolean(str.substring(6)));
             } else if (str.startsWith("tolerant")) {

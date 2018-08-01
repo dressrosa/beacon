@@ -10,6 +10,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import com.xiaoyu.core.common.bean.ProxyWrapper;
 import com.xiaoyu.core.common.extension.SpiManager;
+import com.xiaoyu.core.common.utils.StringUtil;
 import com.xiaoyu.core.rpc.api.IProxy;
 import com.xiaoyu.core.rpc.service.GenericService;
 
@@ -32,8 +33,8 @@ public class GenericRequestLauncher {
         if (ref == null) {
             return null;
         }
-        if (!ref.isGeneric()) {
-            throw new Exception("genericService must set generic true");
+        if (StringUtil.isBlank(ref.getInterfaceName())) {
+            throw new Exception("interfacxeName must be provided");
         }
         String key = generateKey(ref);
         if (!Ref_Map.containsKey(key)) {
@@ -44,6 +45,7 @@ public class GenericRequestLauncher {
             Map<String, Object> attach = new HashMap<>(4);
             attach.put("tolerant", ref.getTolerant());
             attach.put("timeout", ref.getTimeout());
+            attach.put("group", ref.getGroup() == null ? "" : ref.getGroup());
             wrapper.setAttach(attach);
             // safe concurrent
             Ref_Map.put(key, proxy.getProxy(wrapper));
@@ -52,7 +54,9 @@ public class GenericRequestLauncher {
     }
 
     private static String generateKey(GenericReference ref) {
-        String key = ref.getInterfaceName();
+        String key = (ref.getGroup() == null ? "" : ref.getGroup())
+                .concat(":")
+                .concat(ref.getInterfaceName());
         return key;
     }
 }
