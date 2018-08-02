@@ -5,6 +5,7 @@
 package com.xiaoyu.core.common.bean;
 
 import com.xiaoyu.core.common.constant.From;
+import com.xiaoyu.core.common.utils.StringUtil;
 
 /**
  * @author hongyu
@@ -44,6 +45,48 @@ public class BeaconPath {
      */
     private String tolerant;
 
+    /**
+     * 指定暴露的方法,逗号分隔
+     */
+    private String methods;
+
+    /**
+     * 泛型
+     */
+    private boolean generic = false;
+
+    /**
+     * 服务分组
+     */
+    private String group = "";
+
+    public String getGroup() {
+        return group;
+    }
+
+    public BeaconPath setGroup(String group) {
+        this.group = group;
+        return this;
+    }
+
+    public boolean isGeneric() {
+        return generic;
+    }
+
+    public BeaconPath setGeneric(boolean generic) {
+        this.generic = generic;
+        return this;
+    }
+
+    public String getMethods() {
+        return methods;
+    }
+
+    public BeaconPath setMethods(String methods) {
+        this.methods = methods;
+        return this;
+    }
+
     public String getTolerant() {
         return tolerant;
     }
@@ -53,7 +96,7 @@ public class BeaconPath {
         return this;
     }
 
-    public boolean getCheck() {
+    public boolean isCheck() {
         return check;
     }
 
@@ -171,15 +214,17 @@ public class BeaconPath {
                 .append("&ref=").append(this.getRef());
         if (this.getSide() == From.SERVER) {
             builder.append("&timeout=").append("");
+            builder.append("&methods=").append(this.getMethods());
         } else {
-            builder.append("&timeout=").append(this.getTimeout());
-        }
-        builder.append("&retry=").append(this.getRetry());
-        if (this.getSide() == From.CLIENT) {
-            builder.append("&check=").append(this.getCheck());
+            builder.append("&check=").append(this.isCheck());
             builder.append("&tolerant=").append(this.getTolerant());
-        }
+            builder.append("&timeout=").append(this.getTimeout());
+            builder.append("&methods=").append("");
 
+        }
+        builder.append("&generic=").append(this.isGeneric());
+        builder.append("&retry=").append(this.getRetry());
+        builder.append("&group=").append(this.getGroup());
         // 请注意side放在最后
         builder.append("&side=").append(this.getSide().name());
         return builder.toString();
@@ -204,8 +249,17 @@ public class BeaconPath {
                 bea.setRef(str.substring(4));
             } else if (str.startsWith("timeout")) {
                 bea.setTimeout(str.substring(8));
+            } else if (str.startsWith("methods")) {
+                String ms = str.substring(8);
+                if (StringUtil.isNotEmpty(ms)) {
+                    bea.setMethods(ms);
+                }
+            } else if (str.startsWith("generic")) {
+                bea.setGeneric(Boolean.valueOf(str.substring(8)));
             } else if (str.startsWith("retry")) {
                 bea.setRetry(Integer.valueOf(str.substring(6)));
+            } else if (str.startsWith("group")) {
+                bea.setGroup(str.substring(6));
             } else if (str.startsWith("check")) {
                 bea.setCheck(Boolean.getBoolean(str.substring(6)));
             } else if (str.startsWith("tolerant")) {

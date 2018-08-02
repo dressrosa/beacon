@@ -35,7 +35,7 @@ public abstract class AbstractRegistry implements Registry {
     private static final Map<String, Object> BEAN_MAP = new HashMap<>(32);
 
     protected void addProxyBean(BeaconPath beaconPath) {
-        if(beaconPath.getProxy() != null) {
+        if (beaconPath.getProxy() != null) {
             BEAN_MAP.put(beaconPath.getService(), beaconPath.getProxy());
         }
     }
@@ -59,11 +59,11 @@ public abstract class AbstractRegistry implements Registry {
     }
 
     @Override
-    public List<BeaconPath> getLocalProviders(String service) {
+    public List<BeaconPath> getLocalProviders(String group, String service) {
         Set<BeaconPath> providers = SERVICE_MAP.get(service);
         List<BeaconPath> list = new ArrayList<>();
         for (BeaconPath p : providers) {
-            if (p.getSide() == From.SERVER) {
+            if (p.getSide() == From.SERVER && p.getGroup().equals(group)) {
                 list.add(p);
             }
         }
@@ -72,9 +72,9 @@ public abstract class AbstractRegistry implements Registry {
 
     @Override
     public BeaconPath getLocalConsumer(String service) {
-        Set<BeaconPath> providers = SERVICE_MAP.get(service);
-        if(providers != null) {
-            for (BeaconPath p : providers) {
+        Set<BeaconPath> paths = SERVICE_MAP.get(service);
+        if (paths != null) {
+            for (BeaconPath p : paths) {
                 if (p.getSide() == From.CLIENT) {
                     return p;
                 }

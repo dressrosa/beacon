@@ -49,7 +49,7 @@ public interface Context {
     /**
      * 停止context
      */
-    public void stop();
+    public void shutdown();
 
     /**
      * 启动beacon

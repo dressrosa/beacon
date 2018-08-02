@@ -7,7 +7,7 @@ package com.xiaoyu.core.common.bean;
 /**
  * @author hongyu
  * @date 2018-05
- * @description
+ * @description 由BeaconExporter,BeaconProtocol,BeaconReference,BeaconRegistry继承
  */
 public class BeaconBean {
 

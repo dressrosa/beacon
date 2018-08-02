@@ -17,6 +17,7 @@
         <module>beacon-cluster</module>
         <module>beacon-test</module>
         <module>beacon-log</module>
+        <module>beacon-filter</module>
     </modules>
 
     <dependencyManagement>
@@ -78,6 +79,12 @@
             <dependency>
                 <groupId>com.xiaoyu</groupId>
                 <artifactId>beacon-log</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+            
+            <dependency>
+                <groupId>com.xiaoyu</groupId>
+                <artifactId>beacon-filter</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>

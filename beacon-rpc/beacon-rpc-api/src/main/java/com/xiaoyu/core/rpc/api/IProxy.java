@@ -3,6 +3,8 @@
  */
 package com.xiaoyu.core.rpc.api;
 
+import com.xiaoyu.core.common.bean.ProxyWrapper;
+
 /**
  * @author hongyu
  * @date 2017-04
@@ -11,9 +13,8 @@ package com.xiaoyu.core.rpc.api;
 public interface IProxy {
 
     /**
-     * @param target
+     * @param wrapper
      * @return
      */
-    public Object getProxy(final Object target);
-
+    public Object getProxy(final ProxyWrapper wrapper);
 }

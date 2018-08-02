@@ -25,6 +25,7 @@ import com.xiaoyu.transport.api.Server;
 public abstract class AbstractBeaconContext implements Context {
 
     private static final Logger LOG = LoggerFactory.getLogger(AbstractBeaconContext.class);
+    
     // host->client
     protected static Map<String, Client> clientMap = new HashMap<>(16);
     // port->server
@@ -51,6 +52,9 @@ public abstract class AbstractBeaconContext implements Context {
 
     @Override
     public Client client(String host, int port) throws Exception {
+        /**
+         * 当第一次大量请求时,可能导致client多次初始化,并覆盖掉已初始化的.
+         */
         clientLock.lock();
         try {
             if (clientMap.containsKey(host)) {
@@ -85,13 +89,25 @@ public abstract class AbstractBeaconContext implements Context {
     }
 
     @Override
-    public void stop() {
-        doCloseClient();
+    public void shutdown() {
+        LOG.info("Begin shutdown beacon.");
+        doShutdown();
+        LOG.info("Completely shutdown beacon.");
     }
 
-    private void doCloseClient() {
+    private void doShutdown() {
         if (clientMap != null && !clientMap.isEmpty()) {
             Iterator<Client> iter = clientMap.values().iterator();
+            try {
+                while (iter.hasNext()) {
+                    iter.next().stop();
+                }
+            } catch (Exception e) {
+                // do nothing
+            }
+        }
+        if (serverMap != null && !serverMap.isEmpty()) {
+            Iterator<Server> iter = serverMap.values().iterator();
             try {
                 while (iter.hasNext()) {
                     iter.next().stop();

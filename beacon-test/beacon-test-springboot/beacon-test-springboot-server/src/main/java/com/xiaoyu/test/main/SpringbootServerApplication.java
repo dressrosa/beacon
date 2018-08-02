@@ -5,7 +5,6 @@ package com.xiaoyu.test.main;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 
 import com.xiaoyu.beacon.autoconfigure.EnableBeacon;
@@ -16,7 +15,6 @@ import com.xiaoyu.beacon.autoconfigure.EnableBeacon;
 public class SpringbootServerApplication {
 
     public static void main(String args[]) {
-        ConfigurableApplicationContext context = SpringApplication.run(SpringbootServerApplication.class);
-        System.out.println(context.getStartupDate());
+        SpringApplication.run(SpringbootServerApplication.class);
     }
 }

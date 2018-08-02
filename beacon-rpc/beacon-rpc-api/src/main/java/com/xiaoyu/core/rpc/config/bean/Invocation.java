@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.xiaoyu.core.common.bean.BeaconPath;
+import com.xiaoyu.core.common.exception.BeaconException;
 import com.xiaoyu.core.common.extension.SpiManager;
 import com.xiaoyu.core.common.message.RpcRequest;
 import com.xiaoyu.core.common.message.RpcResponse;
@@ -41,7 +42,25 @@ public class Invocation {
         return request;
     }
 
+    public Invocation setConsumer(BeaconPath consumer) {
+        this.consumer = consumer;
+        return this;
+    }
+
     public Object invoke(BeaconPath provider) throws Throwable {
+        String methods = provider.getMethods();
+        String[] mes = methods.split(",");
+        boolean access = false;
+        for (int i = 0; i < mes.length; i++) {
+            if (request.getMethodName().equals(mes[i])) {
+                access = true;
+                break;
+            }
+        }
+        if (!access) {
+            throw new BeaconException("have no access to invoke the method " + request.getMethodName() + " in "
+                    + request.getInterfaceName());
+        }
         request.setInterfaceImpl(provider.getRef());
         request.setTimeout(Long.valueOf(consumer.getTimeout()));
         // 发送消息

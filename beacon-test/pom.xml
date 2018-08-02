@@ -54,11 +54,6 @@
             <artifactId>beacon-spring-boot-starter</artifactId>
             <version>${project.parent.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.springframework.boot</groupId>
-            <artifactId>spring-boot-starter-tomcat</artifactId>
-            <version>1.3.3.RELEASE</version>
-        </dependency>
 
 
         <dependency>

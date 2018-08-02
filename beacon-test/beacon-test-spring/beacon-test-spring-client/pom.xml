@@ -7,7 +7,7 @@
         <artifactId>beacon-test-spring</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
-    <artifactId>beacon-test.spring-client</artifactId>
+    <artifactId>beacon-test-spring-client</artifactId>
     <dependencies>
         <dependency>
             <groupId>com.xiaoyu</groupId>

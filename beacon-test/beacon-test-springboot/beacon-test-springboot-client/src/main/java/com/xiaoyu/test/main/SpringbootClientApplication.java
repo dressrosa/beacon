@@ -5,6 +5,7 @@ package com.xiaoyu.test.main;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
@@ -17,6 +18,7 @@ import com.xiaoyu.beacon.autoconfigure.EnableBeacon;
 public class SpringbootClientApplication {
 
     public static void main(String args[]) {
-        SpringApplication.run(SpringbootClientApplication.class);
+        ConfigurableApplicationContext ctx =  SpringApplication.run(SpringbootClientApplication.class);
+        ctx.toString();
     }
 }

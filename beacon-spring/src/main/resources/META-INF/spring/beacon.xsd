@@ -10,7 +10,7 @@
     <xsd:element name="protocol">
         <xsd:complexType>
             <xsd:attribute name="name" type="string" use="required"/>
-            <xsd:attribute name="port" type="string" />
+            <xsd:attribute name="port" type="positiveInteger" />
         </xsd:complexType>
     </xsd:element>
 
@@ -22,15 +22,16 @@
         </xsd:complexType>
     </xsd:element>
 
-    <!--引用beacon-reference -->
+    <!--引用接口beacon-reference -->
     <xsd:element name="reference">
         <xsd:complexType>
             <xsd:attribute name="id" type="string" />
             <xsd:attribute name="interfaceName" type="string" />
-            <xsd:attribute name="timeout" type="int" default="3000" use="optional" />
-            <xsd:attribute name="retry" type="int" default="0" use="optional" />
+            <xsd:attribute name="timeout" type="positiveInteger" default="3000" use="optional" />
+            <xsd:attribute name="retry" type="nonNegativeInteger" default="0" use="optional" />
             <xsd:attribute name="check" type="boolean" default="false" use="optional" />
             <xsd:attribute name="tolerant" type="string" default="failfast" use="optional" />
+            <xsd:attribute name="group" type="string" use="optional" />
         </xsd:complexType>
     </xsd:element>
 
@@ -40,6 +41,8 @@
             <xsd:attribute name="id" type="string" />
             <xsd:attribute name="interfaceName" type="string" use="required" />
             <xsd:attribute name="ref" type="string" use="required" />
+            <xsd:attribute name="methods" type="string" use="optional"/>
+            <xsd:attribute name="group" type="string" use="optional"/>
         </xsd:complexType>
     </xsd:element>
 

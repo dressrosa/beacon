@@ -11,7 +11,7 @@ import com.xiaoyu.test.api.IHelloService;
 import com.xiaoyu.test.api.IUserService;
 
 @Service
-@BeaconExporter(interfaceName = "com.xiaoyu.test.api.IHelloService")
+@BeaconExporter(interfaceName = "com.xiaoyu.test.api.IHelloService",methods="hello,name,sing",group="dev")
 public class HelloServiceImpl implements IHelloService {
 
     @Autowired

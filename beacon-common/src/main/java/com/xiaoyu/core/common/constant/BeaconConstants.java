@@ -53,4 +53,13 @@ public class BeaconConstants {
      */
     public static final String REQUEST_TIMEOUT = "3000";
 
+    /**
+     * 过滤链
+     */
+    public static final String FILTER_CHAIN = "filterchain";
+
+    /**
+     * 泛型方法
+     */
+    public static final String $_$INVOKE = "$_$invoke";
 }

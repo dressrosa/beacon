@@ -7,6 +7,7 @@ package com.xiaoyu.spring.config;
 import org.springframework.beans.factory.DisposableBean;
 import org.springframework.beans.factory.FactoryBean;
 
+import com.xiaoyu.core.common.bean.ProxyWrapper;
 import com.xiaoyu.core.common.extension.SpiManager;
 import com.xiaoyu.core.register.Registry;
 import com.xiaoyu.core.rpc.api.IProxy;
@@ -39,7 +40,7 @@ public class BeaconFactoryBean implements FactoryBean<Object>, DisposableBean {
     @Override
     public Object getObject() throws Exception {
         // 工厂bean实际返回的不是本身,而是这里的值
-        return SpiManager.defaultSpiExtender(IProxy.class).getProxy(cls);
+        return SpiManager.defaultSpiExtender(IProxy.class).getProxy(new ProxyWrapper(cls));
     }
 
     @Override

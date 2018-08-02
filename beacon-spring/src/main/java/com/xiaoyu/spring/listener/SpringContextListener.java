@@ -45,8 +45,8 @@ public class SpringContextListener implements ApplicationListener<ApplicationEve
         if (event instanceof ContextRefreshedEvent) {
             doInitExporter();
         } else if (event instanceof ContextClosedEvent) {
-            LOG.info("close the beacon context...");
-            this.beaconContext.stop();
+            LOG.info("close the beacon context.");
+            this.beaconContext.shutdown();
         }
     }
 
