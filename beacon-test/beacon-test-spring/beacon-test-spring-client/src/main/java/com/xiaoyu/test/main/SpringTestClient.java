@@ -5,9 +5,9 @@ import java.util.concurrent.CountDownLatch;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+import com.xiaoyu.core.common.generic.GenericReference;
 import com.xiaoyu.core.rpc.service.GenericService;
-import com.xiaoyu.filter.generic.GenericReference;
-import com.xiaoyu.filter.generic.GenericRequestLauncher;
+import com.xiaoyu.proxy.common.GenericRequestLauncher;
 import com.xiaoyu.test.api.IHelloService;
 
 public class SpringTestClient {

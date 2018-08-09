@@ -39,7 +39,7 @@ public class ExtenderHolder<T> {
             // 睡眠1ms来缓冲.不过这种情况基本不会出现
             Thread.sleep(1);
             if (!holder.containsKey(name)) {
-                throw new Exception("cannot find the target->" + name);
+                throw new Exception("cannot find the spi target->" + name);
             }
         }
 

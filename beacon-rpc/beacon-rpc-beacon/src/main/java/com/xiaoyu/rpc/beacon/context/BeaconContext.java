@@ -2,8 +2,9 @@
  * 唯有读书,不慵不扰
  * 
  */
-package com.xiaoyu.core.rpc.context;
+package com.xiaoyu.rpc.beacon.context;
 
+import com.xiaoyu.core.rpc.context.AbstractBeaconContext;
 import com.xiaoyu.transport.api.Client;
 import com.xiaoyu.transport.api.Server;
 import com.xiaoyu.transport.netty.NettyClient;

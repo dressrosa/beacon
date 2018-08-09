@@ -18,5 +18,9 @@
             <groupId>com.xiaoyu</groupId>
             <artifactId>beacon-spring</artifactId>
         </dependency>
+        <dependency>
+            <groupId>com.xiaoyu</groupId>
+            <artifactId>beacon-proxy</artifactId>
+        </dependency>
     </dependencies>
 </project>

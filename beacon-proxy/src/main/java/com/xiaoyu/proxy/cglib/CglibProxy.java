@@ -1,12 +1,13 @@
 /**
  * 唯有读书,不慵不扰
  */
-package com.xiaoyu.core.proxy;
+package com.xiaoyu.proxy.cglib;
 
 import java.lang.reflect.Method;
 
 import com.xiaoyu.core.common.bean.ProxyWrapper;
-import com.xiaoyu.core.rpc.api.IProxy;
+import com.xiaoyu.proxy.api.IProxy;
+import com.xiaoyu.proxy.api.InvocationHandlerAdapter;
 
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;

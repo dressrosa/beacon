@@ -1,7 +1,7 @@
 /**
  * 唯有读书,不慵不扰
  */
-package com.xiaoyu.filter.generic;
+package com.xiaoyu.proxy.common;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -10,9 +10,10 @@ import java.util.concurrent.ConcurrentMap;
 
 import com.xiaoyu.core.common.bean.ProxyWrapper;
 import com.xiaoyu.core.common.extension.SpiManager;
+import com.xiaoyu.core.common.generic.GenericReference;
 import com.xiaoyu.core.common.utils.StringUtil;
-import com.xiaoyu.core.rpc.api.IProxy;
 import com.xiaoyu.core.rpc.service.GenericService;
+import com.xiaoyu.proxy.api.IProxy;
 
 /**
  * 泛型调用服务发布

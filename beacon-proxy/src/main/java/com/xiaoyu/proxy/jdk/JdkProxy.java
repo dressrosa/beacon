@@ -1,14 +1,15 @@
 /**
  * 唯有读书,不慵不扰
  */
-package com.xiaoyu.core.proxy;
+package com.xiaoyu.proxy.jdk;
 
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
 
 import com.xiaoyu.core.common.bean.ProxyWrapper;
-import com.xiaoyu.core.rpc.api.IProxy;
+import com.xiaoyu.proxy.api.IProxy;
+import com.xiaoyu.proxy.api.InvocationHandlerAdapter;
 
 /**
  * @author hongyu

@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.alibaba.fastjson.JSON;
 import com.xiaoyu.test.api.IHelloService;
+import com.xiaoyu.test.api.IUserService;
 
 /**
  * @author hongyu
@@ -20,12 +21,21 @@ public class BizController {
 
     @Autowired
     private IHelloService helloService;
+    
+    @Autowired
+    private IUserService userService;
 
     @RequestMapping(value = "/hello", produces = "application/json;charset=UTF-8")
     public String hello(String name) {
 //        System.out.println(this.helloService.toString());
 //        System.out.println(this.helloService.hashCode());
         String re = this.helloService.hello(name);
+        return JSON.toJSONString(re);
+    }
+    
+    @RequestMapping(value = "/hi", produces = "application/json;charset=UTF-8")
+    public String hi(String name) {
+        Object re = this.userService.age(name);
         return JSON.toJSONString(re);
     }
 }

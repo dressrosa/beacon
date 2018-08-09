@@ -40,6 +40,20 @@ public class RpcRequest extends RpcMessage {
      */
     private long timeout;
 
+    /**
+     * 参数类型
+     */
+    private Class<?>[] paramTypes;
+
+    public Class<?>[] getParamTypes() {
+        return paramTypes;
+    }
+
+    public RpcRequest setParamTypes(Class<?>[] paramTypes) {
+        this.paramTypes = paramTypes;
+        return this;
+    }
+
     public long getTimeout() {
         return timeout;
     }

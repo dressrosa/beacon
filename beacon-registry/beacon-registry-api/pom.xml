@@ -16,7 +16,7 @@
             <artifactId>fastjson</artifactId>
             <version>1.2.24</version>
         </dependency>
-        
+
         <dependency>
             <groupId>com.xiaoyu</groupId>
             <artifactId>beacon-common</artifactId>

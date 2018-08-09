@@ -1,7 +1,11 @@
 package com.xiaoyu.test.api;
 
-public interface IUserService extends IBaseService {
+import feign.Param;
+import feign.RequestLine;
 
-    public int age(String name);
+public interface IUserService {
+
+    @RequestLine("GET /hello")
+    public int age(@Param("name")String name);
 
 }

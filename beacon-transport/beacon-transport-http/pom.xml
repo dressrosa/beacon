@@ -1,0 +1,24 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+    <parent>
+        <groupId>com.xiaoyu</groupId>
+        <artifactId>beacon-transport</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+    </parent>
+    <artifactId>beacon-transport-http</artifactId>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.xiaoyu</groupId>
+            <artifactId>beacon-transport-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>io.github.openfeign</groupId>
+            <artifactId>feign-core</artifactId>
+            <version>9.7.0</version>
+        </dependency>
+    </dependencies>
+</project>

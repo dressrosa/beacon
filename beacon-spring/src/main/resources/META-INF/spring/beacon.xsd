@@ -10,7 +10,7 @@
     <xsd:element name="protocol">
         <xsd:complexType>
             <xsd:attribute name="name" type="string" use="required"/>
-            <xsd:attribute name="port" type="positiveInteger" />
+            <xsd:attribute name="port" type="positiveInteger" use="optional"/>
         </xsd:complexType>
     </xsd:element>
 

@@ -25,7 +25,7 @@ import com.xiaoyu.transport.api.Server;
 public abstract class AbstractBeaconContext implements Context {
 
     private static final Logger LOG = LoggerFactory.getLogger(AbstractBeaconContext.class);
-    
+
     // host->client
     protected static Map<String, Client> clientMap = new HashMap<>(16);
     // port->server

@@ -18,6 +18,7 @@
         <module>beacon-test</module>
         <module>beacon-log</module>
         <module>beacon-filter</module>
+        <module>beacon-proxy</module>
     </modules>
 
     <dependencies>
@@ -59,6 +60,12 @@
 
         <dependency>
             <groupId>com.xiaoyu</groupId>
+            <artifactId>beacon-rpc-rest</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.xiaoyu</groupId>
             <artifactId>beacon-serialize</artifactId>
             <version>${project.version}</version>
         </dependency>
@@ -80,10 +87,16 @@
             <artifactId>beacon-log</artifactId>
             <version>${project.version}</version>
         </dependency>
-        
+
         <dependency>
             <groupId>com.xiaoyu</groupId>
             <artifactId>beacon-filter</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.xiaoyu</groupId>
+            <artifactId>beacon-proxy</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

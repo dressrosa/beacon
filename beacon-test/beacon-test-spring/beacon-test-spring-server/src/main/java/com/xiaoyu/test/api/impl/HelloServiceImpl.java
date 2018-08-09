@@ -20,7 +20,7 @@ public class HelloServiceImpl implements IHelloService {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return "hello " + userService.name(name);
+        return "hello " + userService.age(name);
     }
 
     @Override

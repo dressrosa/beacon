@@ -2,7 +2,7 @@
  * 唯有读书,不慵不扰
  * 
  */
-package com.xiaoyu.filter.generic;
+package com.xiaoyu.core.common.generic;
 
 /**
  * @author hongyu
@@ -11,7 +11,7 @@ package com.xiaoyu.filter.generic;
  */
 /**
  * @author hongyu
- * @date 2018-08-01 11:45
+ * @date 2018-08
  * @description
  */
 public class GenericReference {
