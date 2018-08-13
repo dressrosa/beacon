@@ -4,17 +4,29 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.xiaoyu</groupId>
-        <artifactId>beacon-test</artifactId>
+        <artifactId>beacon-test-springboot</artifactId>
         <version>0.0.1-SNAPSHOT</version>
     </parent>
-    <artifactId>beacon-test-springboot</artifactId>
-    <packaging>pom</packaging>
-    <modules>
-        <module>beacon-test-springboot-server</module>
-        <module>beacon-test-springboot-client</module>
-        <module>beacon-test-springboot-rest-client</module>
-        <module>beacon-test-springboot-rest-server</module>
-    </modules>
+    <artifactId>beacon-test-springboot-rest-server</artifactId>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.xiaoyu</groupId>
+            <artifactId>beacon-test-api</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.xiaoyu</groupId>
+            <artifactId>beacon-spring-boot-starter</artifactId>
+            <version>${project.parent.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+            <version>1.3.3.RELEASE</version>
+        </dependency>
+    </dependencies>
+
     <build>
         <plugins>
             <plugin>
@@ -36,4 +48,5 @@
 
         </plugins>
     </build>
+
 </project>

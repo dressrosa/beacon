@@ -57,4 +57,5 @@ public class HttpClient implements Client {
     public Object send(Object message) throws Exception {
         return HttpChannel.getChannel(feign, url, From.CLIENT).send(message);
     }
+
 }

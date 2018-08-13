@@ -7,8 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.alibaba.fastjson.JSON;
-import com.xiaoyu.test.api.IHelloService;
+import com.xiaoyu.test.api.IUserService;
 
 /**
  * @author hongyu
@@ -17,15 +16,14 @@ import com.xiaoyu.test.api.IHelloService;
  */
 @RestController
 public class BizController {
-    
+
     @Autowired
-    private IHelloService helloService;
+    private IUserService userService;
 
     //for beacon
     @RequestMapping(value = "/hello", produces = "application/json;charset=UTF-8")
     public String hello(String name) {
-        String re = this.helloService.hello(name);
-        return JSON.toJSONString(re);
+        int re = this.userService.age(name);
+        return re+"";
     }
-   
 }
