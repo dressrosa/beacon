@@ -1,9 +1,17 @@
+/**
+ * 唯有读书,不慵不扰
+ */
 package com.xiaoyu.test.main;
 
 import java.util.concurrent.CountDownLatch;
 
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
+/**
+ * @author hongyu
+ * @date 2018-08
+ * @description
+ */
 public class SpringTestServer {
 
     public static void main(String[] args) throws Exception {

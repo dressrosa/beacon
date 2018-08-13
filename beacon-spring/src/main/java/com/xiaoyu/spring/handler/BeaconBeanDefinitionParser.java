@@ -117,11 +117,13 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
         if (StringUtil.isBlank(name)) {
             throw new Exception("name cannot be null in xml tag->" + element.getTagName());
         }
-        if (StringUtil.isBlank(port)) {
-            port = Integer.toString(1992);
-        }
-        if (!NumberUtils.isNumber(port)) {
-            throw new Exception("port should be a positive integer in xml tag beacon-protocol");
+        if (name.equals("beacon")) {
+            if (StringUtil.isBlank(port)) {
+                port = Integer.toString(1992);
+            }
+            if (!NumberUtils.isNumber(port)) {
+                throw new Exception("port should be a positive integer in xml tag beacon-protocol");
+            }
         }
         try {
             Context context = SpiManager.holder(Context.class).target(name);

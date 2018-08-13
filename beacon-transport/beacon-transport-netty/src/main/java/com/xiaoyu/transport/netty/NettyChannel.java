@@ -39,11 +39,11 @@ public class NettyChannel implements BaseChannel {
 
     }
 
-    public static BeaconHandler getChannel(Channel ch, From client) throws Exception {
+    public static BeaconHandler getChannel(Channel ch, From side) throws Exception {
         BeaconHandler beacon = CHANNEL_MAP.get(ch);
         if (beacon == null) {
             NettyChannel nc = new NettyChannel(ch);
-            if (From.CLIENT == client) {
+            if (From.CLIENT == side) {
                 BeaconHandler b = new BeaconClientHandler(new BeaconClientChannel(nc));
                 CHANNEL_MAP.putIfAbsent(ch, (beacon = b));
             } else {

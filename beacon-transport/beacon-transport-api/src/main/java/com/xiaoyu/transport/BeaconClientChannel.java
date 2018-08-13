@@ -91,6 +91,7 @@ public class BeaconClientChannel extends AbstractBeaconChannel {
             // client设定的超时..
             return taskFuture.get(((RpcRequest) message).getTimeout(), TimeUnit.MILLISECONDS);
         } catch (Exception e) {
+            e.printStackTrace();
             // 取消正在执行的thread,否则线程会执行完毕才能结束
             taskFuture.cancel(true);
             return new RpcResponse()

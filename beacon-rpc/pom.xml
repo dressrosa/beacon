@@ -13,8 +13,9 @@
     <modules>
         <module>beacon-rpc-api</module>
         <module>beacon-rpc-beacon</module>
+        <module>beacon-rpc-rest</module>
     </modules>
-    
+
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -26,6 +27,12 @@
             <dependency>
                 <groupId>com.xiaoyu</groupId>
                 <artifactId>beacon-rpc-beacon</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.xiaoyu</groupId>
+                <artifactId>beacon-rpc-rest</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>

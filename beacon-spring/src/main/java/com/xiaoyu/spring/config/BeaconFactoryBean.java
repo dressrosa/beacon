@@ -10,7 +10,7 @@ import org.springframework.beans.factory.FactoryBean;
 import com.xiaoyu.core.common.bean.ProxyWrapper;
 import com.xiaoyu.core.common.extension.SpiManager;
 import com.xiaoyu.core.register.Registry;
-import com.xiaoyu.core.rpc.api.IProxy;
+import com.xiaoyu.proxy.api.IProxy;
 
 /**
  * @author hongyu

@@ -43,6 +43,12 @@
             <groupId>com.xiaoyu</groupId>
             <artifactId>beacon-rpc-api</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>com.xiaoyu</groupId>
+            <artifactId>beacon-proxy</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>com.xiaoyu</groupId>
             <artifactId>beacon-log</artifactId>
