@@ -5,16 +5,15 @@
     <parent>
         <groupId>com.xiaoyu</groupId>
         <artifactId>beacon-test</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>0.0.1</version>
     </parent>
     <artifactId>beacon-test-api</artifactId>
 
     <dependencies>
-     <dependency>
+        <dependency>
             <groupId>com.xiaoyu</groupId>
             <artifactId>beacon-rpc-rest</artifactId>
-            <version>${project.parent.version}</version>
         </dependency>
-    
+
     </dependencies>
 </project>

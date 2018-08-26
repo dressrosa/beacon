@@ -26,7 +26,7 @@ public abstract class AbstractBeaconContext implements Context {
 
     private static final Logger LOG = LoggerFactory.getLogger(AbstractBeaconContext.class);
 
-    // host->client
+    // host+":"+port->client
     protected static Map<String, Client> clientMap = new HashMap<>(16);
     // port->server
     protected static Map<Integer, Server> serverMap = new HashMap<>(16);
@@ -57,11 +57,12 @@ public abstract class AbstractBeaconContext implements Context {
          */
         clientLock.lock();
         try {
-            if (clientMap.containsKey(host)) {
-                return clientMap.get(host);
+            String key = host + ":" + port;
+            if (clientMap.containsKey(key)) {
+                return clientMap.get(key);
             }
             Client client = doInitClient(host, port);
-            clientMap.put(host, client);
+            clientMap.put(key, client);
             return client;
         } finally {
             clientLock.unlock();

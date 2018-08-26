@@ -12,7 +12,7 @@ import com.xiaoyu.beacon.autoconfigure.anno.BeaconExporter;
 import com.xiaoyu.test.api.IHelloService;
 
 @Service
-@BeaconExporter(interfaceName = "com.xiaoyu.test.api.IHelloService", methods = "hello,name,sing", group = "dev")
+//@BeaconExporter(interfaceName = "com.xiaoyu.test.api.IHelloService", group = "dev")
 public class HelloServiceImpl implements IHelloService {
 
     @Override

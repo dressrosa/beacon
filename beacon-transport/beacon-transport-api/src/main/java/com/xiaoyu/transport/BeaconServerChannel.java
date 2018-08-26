@@ -67,15 +67,15 @@ public class BeaconServerChannel extends AbstractBeaconChannel {
                         return;
                     }
                     try {
+                        // 处理收到client信息
                         Registry registry = SpiManager.defaultSpiExtender(Registry.class);
                         Object proxy = registry.getProxyBean(req.getInterfaceName());
-                        // 处理收到client信息
-                        Class<?> target = Class.forName(req.getInterfaceImpl());
                         if (BeaconConstants.TO_STRING.equals(req.getMethodName())) {
                             // 有spring的bean
                             if (proxy != null) {
                                 result = proxy.toString();
                             } else {
+                                Class<?> target = Class.forName(req.getInterfaceImpl());
                                 result = target.newInstance().toString();
                             }
                         } else if (BeaconConstants.HASHCODE.equals(req.getMethodName())) {
@@ -83,21 +83,30 @@ public class BeaconServerChannel extends AbstractBeaconChannel {
                             if (proxy != null) {
                                 result = proxy.hashCode();
                             } else {
+                                Class<?> target = Class.forName(req.getInterfaceImpl());
                                 result = target.newInstance().hashCode();
                             }
                         } else {
                             // 根据信息,找到实现类 declareMethods是不包含toString,hashCode的
-                            for (Method d : target.getDeclaredMethods()) {
-                                if (d.getName().equals(req.getMethodName())) {
-                                    // 有spring的bean
-                                    if (proxy != null) {
+                            if (proxy != null) {
+                                Method[] methods = proxy.getClass().getSuperclass().getDeclaredMethods();
+                                for (Method d : methods) {
+                                    if (d.getName().equals(req.getMethodName())) {
                                         result = d.invoke(proxy, req.getParams());
-                                    } else {
-                                        result = d.invoke(target.newInstance(), req.getParams());
+                                        break;
                                     }
-                                    break;
+                                }
+                            } else {
+                                Class<?> target = Class.forName(req.getInterfaceImpl());
+                                Method[] methods = target.getDeclaredMethods();
+                                for (Method d : methods) {
+                                    if (d.getName().equals(req.getMethodName())) {
+                                        result = d.invoke(target.newInstance(), req.getParams());
+                                        break;
+                                    }
                                 }
                             }
+
                         }
                     } catch (Exception bize) {
                         // 非rpc异常

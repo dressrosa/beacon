@@ -4,9 +4,9 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.xiaoyu</groupId>
-        <artifactId>beacon-pom</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
-        <relativePath>../pom/pom.xml</relativePath>
+        <artifactId>beacon-parent</artifactId>
+        <version>0.0.1</version>
+       <!--  <relativePath>../pom/pom.xml</relativePath> -->
     </parent>
     <artifactId>beacon-transport</artifactId>
     <packaging>pom</packaging>
@@ -15,12 +15,9 @@
         <module>beacon-transport-netty</module>
         <module>beacon-transport-http</module>
     </modules>
-    <dependencies>
-        <dependency>
-            <groupId>com.xiaoyu</groupId>
-            <artifactId>beacon-log</artifactId>
-        </dependency>
-    </dependencies>
+    <properties>
+        <project.version>0.0.1</project.version>
+    </properties>
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -28,13 +25,11 @@
                 <artifactId>beacon-transport-api</artifactId>
                 <version>${project.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>com.xiaoyu</groupId>
                 <artifactId>beacon-transport-netty</artifactId>
                 <version>${project.version}</version>
             </dependency>
-
             <dependency>
                 <groupId>com.xiaoyu</groupId>
                 <artifactId>beacon-transport-http</artifactId>
@@ -42,4 +37,17 @@
             </dependency>
         </dependencies>
     </dependencyManagement>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.7.0</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

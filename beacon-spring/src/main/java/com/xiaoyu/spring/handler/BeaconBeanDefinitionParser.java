@@ -384,16 +384,12 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
 
     // 接口没有构造函数所以无法初始化为bean,通过工厂bean,来避免初始化
     private BeanDefinition generateFactoryBean(Class<?> target, Registry registry) {
-        BeaconFactoryBean fac = new BeaconFactoryBean(target, registry);
         GenericBeanDefinition facDef = new GenericBeanDefinition();
-        facDef.setBeanClass(fac.getClass());
+        facDef.setBeanClass(BeaconFactoryBean.class);
+        facDef.getPropertyValues().add("target", target);
+        facDef.getPropertyValues().add("registry", registry);
         facDef.setLazyInit(false);
         facDef.setAutowireMode(AbstractBeanDefinition.AUTOWIRE_BY_TYPE);
-        // 构造函数
-        ConstructorArgumentValues val = new ConstructorArgumentValues();
-        val.addGenericArgumentValue(target);
-        val.addGenericArgumentValue(registry);
-        facDef.setConstructorArgumentValues(val);
         return facDef;
     }
 
