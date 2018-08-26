@@ -4,9 +4,9 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.xiaoyu</groupId>
-        <artifactId>beacon-pom</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
-        <relativePath>../pom/pom.xml</relativePath>
+        <artifactId>beacon-parent</artifactId>
+        <version>0.0.1</version>
+       <!--  <relativePath>../pom/pom.xml</relativePath> -->
     </parent>
     <artifactId>beacon-log</artifactId>
     <packaging>jar</packaging>

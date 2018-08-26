@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.xiaoyu</groupId>
         <artifactId>beacon-rpc</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>0.0.1</version>
     </parent>
     <artifactId>beacon-rpc-beacon</artifactId>
     <packaging>jar</packaging>
@@ -14,20 +14,45 @@
             <groupId>com.xiaoyu</groupId>
             <artifactId>beacon-rpc-api</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>com.xiaoyu</groupId>
+            <artifactId>beacon-transport-netty</artifactId>
+        </dependency>
+
+
+
+        <dependency>
+            <groupId>com.xiaoyu</groupId>
+            <artifactId>beacon-common</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.xiaoyu</groupId>
+            <artifactId>beacon-log</artifactId>
+        </dependency>
+
         <dependency>
             <groupId>com.xiaoyu</groupId>
             <artifactId>beacon-registry-api</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.xiaoyu</groupId>
-            <artifactId>beacon-transport-netty</artifactId>
-            <version>${project.version}</version>
-        </dependency>
 
         <dependency>
-            <groupId>cglib</groupId>
-            <artifactId>cglib</artifactId>
-            <version>3.2.4</version>
+            <groupId>com.xiaoyu</groupId>
+            <artifactId>beacon-transport-api</artifactId>
         </dependency>
+
     </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

@@ -22,30 +22,44 @@ public class BeaconFactoryBean implements FactoryBean<Object>, DisposableBean {
     /**
      * 接口类
      */
-    private Class<?> cls;
+    private Class<?> target;
 
     private Registry registry;
 
-    public BeaconFactoryBean(Class<?> cls, Registry registry) {
-        this.cls = cls;
+    public Class<?> getTarget() {
+        return target;
+    }
+
+    public void setTarget(Class<?> target) {
+        this.target = target;
+    }
+
+    public Registry getRegistry() {
+        return registry;
+    }
+
+    public void setRegistry(Registry registry) {
         this.registry = registry;
+    }
+
+    public BeaconFactoryBean() {
     }
 
     @Override
     public void destroy() throws Exception {
-        String service = cls.getName();
+        String service = target.getName();
         registry.unregisterService(registry.getLocalConsumer(service));
     }
 
     @Override
     public Object getObject() throws Exception {
         // 工厂bean实际返回的不是本身,而是这里的值
-        return SpiManager.defaultSpiExtender(IProxy.class).getProxy(new ProxyWrapper(cls));
+        return SpiManager.defaultSpiExtender(IProxy.class).getProxy(new ProxyWrapper(target));
     }
 
     @Override
     public Class<?> getObjectType() {
-        return cls;
+        return target;
     }
 
     @Override

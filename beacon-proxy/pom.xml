@@ -4,18 +4,13 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.xiaoyu</groupId>
-        <artifactId>beacon-pom</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
-        <relativePath>../pom/pom.xml</relativePath>
+        <artifactId>beacon-parent</artifactId>
+        <version>0.0.1</version>
+        <!-- <relativePath>../pom/pom.xml</relativePath> -->
     </parent>
     <artifactId>beacon-proxy</artifactId>
-
+    <packaging>jar</packaging>
     <dependencies>
-        <dependency>
-            <groupId>com.xiaoyu</groupId>
-            <artifactId>beacon-log</artifactId>
-        </dependency>
-
         <dependency>
             <groupId>com.xiaoyu</groupId>
             <artifactId>beacon-filter</artifactId>
@@ -32,6 +27,43 @@
             <version>3.2.4</version>
         </dependency>
 
-    </dependencies>
 
+        <dependency>
+            <groupId>com.xiaoyu</groupId>
+            <artifactId>beacon-rpc-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.xiaoyu</groupId>
+            <artifactId>beacon-common</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.xiaoyu</groupId>
+            <artifactId>beacon-log</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.xiaoyu</groupId>
+            <artifactId>beacon-registry-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.xiaoyu</groupId>
+            <artifactId>beacon-transport-api</artifactId>
+        </dependency>
+
+    </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>

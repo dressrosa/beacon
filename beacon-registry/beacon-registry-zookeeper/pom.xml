@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.xiaoyu</groupId>
         <artifactId>beacon-registry</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>0.0.1</version>
     </parent>
     <artifactId>beacon-registry-zookeeper</artifactId>
     <packaging>jar</packaging>
@@ -14,14 +14,35 @@
             <groupId>com.xiaoyu</groupId>
             <artifactId>beacon-registry-api</artifactId>
         </dependency>
-        <dependency>
-            <groupId>com.xiaoyu</groupId>
-            <artifactId>beacon-log</artifactId>
-        </dependency>
+
         <dependency>
             <groupId>com.101tec</groupId>
             <artifactId>zkclient</artifactId>
             <version>0.10</version>
         </dependency>
+
+
+        <dependency>
+            <groupId>com.xiaoyu</groupId>
+            <artifactId>beacon-common</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.xiaoyu</groupId>
+            <artifactId>beacon-log</artifactId>
+        </dependency>
+
     </dependencies>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 </project>
