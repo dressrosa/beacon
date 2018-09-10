@@ -82,7 +82,7 @@ public class ZooRegistry extends AbstractRegistry {
             }
         };
         // 初始化service父节点
-        if (beaconPath.getSide().equals(From.CLIENT)) {
+        if (beaconPath.getSide() == From.CLIENT) {
             // reference(client)
             // 启动时检查
             if (beaconPath.isCheck() && !this.discoverService(service)) {
@@ -113,7 +113,7 @@ public class ZooRegistry extends AbstractRegistry {
             LOG.info("Register provider service to zookeeper->{}", (path + "/" + detailInfo));
             zoo.createEphemeral(this.fullPath(path, detailInfo));
             // 进行监听某一个具体service,这里会多次调用 ,但是只监听第一个就够了
-            checkProviderLost(service, detailInfo);
+            this.monitorProviderLost(service, detailInfo);
 
             // 同reference
             String consumerPath = this.consumerPath(service);
@@ -135,30 +135,31 @@ public class ZooRegistry extends AbstractRegistry {
      * ,但是zoo的provider节点child丢失
      * 这里单独进行监听其中一个就行
      */
-    private void checkProviderLost(String service, String detailInfo) {
-        if (providerMonitor == null) {
-            providerMonitor = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
-                @Override
-                public Thread newThread(Runnable r) {
-                    Thread t = new Thread(r, "provider-monitor-1");
-                    t.setDaemon(true);
-                    return t;
-                }
-            });
-            providerMonitor.scheduleAtFixedRate(new Runnable() {
-                @Override
-                public void run() {
-                    LOG.debug("-check current provider whether lost or not-");
-                    String providerPath = providerPath(service);
-                    List<String> list = zoo.children(providerPath);
-                    // provider丢失
-                    if (!list.contains(detailInfo)) {
-                        // 进行provider数据恢复
-                        doRecoverProviders();
-                    }
-                }
-            }, 60, 60, TimeUnit.SECONDS);
+    private void monitorProviderLost(String service, String detailInfo) {
+        if (providerMonitor != null) {
+            return;
         }
+        LOG.debug("-Monitor current provider whether lost or not-");
+        providerMonitor = Executors.newSingleThreadScheduledExecutor(new ThreadFactory() {
+            @Override
+            public Thread newThread(Runnable r) {
+                Thread t = new Thread(r, "provider-monitor-1");
+                t.setDaemon(true);
+                return t;
+            }
+        });
+        providerMonitor.scheduleAtFixedRate(new Runnable() {
+            @Override
+            public void run() {
+                String providerPath = providerPath(service);
+                List<String> list = zoo.children(providerPath);
+                // provider丢失
+                if (!list.contains(detailInfo)) {
+                    // 进行provider数据恢复
+                    doRecoverProviders();
+                }
+            }
+        }, 60, 60, TimeUnit.SECONDS);
     }
 
     /**
@@ -166,7 +167,8 @@ public class ZooRegistry extends AbstractRegistry {
      * ,但是zoo的provider节点child丢失
      */
     private void doRecoverProviders() {
-        LOG.info("Recover zookeeper session data when something error happened in connection between zoo and provider");
+        LOG.info("Recover zookeeper session data when something error "
+                + "happened in connection between zoo and provider");
         // 恢复service
         Iterator<Entry<String, Set<BeaconPath>>> iter = SERVICE_MAP.entrySet().iterator();
         String host = NetUtil.localIP();
@@ -176,7 +178,7 @@ public class ZooRegistry extends AbstractRegistry {
             Set<BeaconPath> set = entry.getValue();
             for (BeaconPath p : set) {
                 // 当前服务器提供的provider
-                if (From.SERVER.equals(p.getSide()) && host.equals(p.getHost())) {
+                if (From.SERVER == p.getSide() && host.equals(p.getHost())) {
                     zoo.createEphemeral(this.fullPath(this.providerPath(service), p.toPath()));
                 } else {
                     // 发现consumer也可能丢
@@ -199,7 +201,7 @@ public class ZooRegistry extends AbstractRegistry {
         int childSize = currentChilds.size();
         List<String> consumerList = new ArrayList<>();
         List<String> providerList = new ArrayList<>();
-        // 将client和server分开
+        // 本地缓存,将client和server分开
         for (BeaconPath path : sets) {
             if (path.getSide() == From.CLIENT) {
                 consumerList.add(path.toPath());
@@ -249,8 +251,9 @@ public class ZooRegistry extends AbstractRegistry {
             }
             // 有server下线
             else if (childSize < providerSize) {
-                // TODO 这里可能是server关闭后,又启动了,但是session消息的时间是根据SESSION_TIMEOUT(这里=10s)设定的
-                // 所以10s左右session才会消失,也就是说server 10s内再次启动后,注册的节点都会因为session失效而消失.
+                // TODO 这里可能是server关闭后,又启动了,但是session消息的时间是根据SESSION_TIMEOUT设定的
+                // 所以SESSION_TIMEOUT后session才会消失,也就是说server
+                // SESSION_TIMEOUT内再次启动后,注册的节点都会因为session失效而消失.
                 // 因此导致client没收到server启动通知反而收到server关闭的通知.
                 // 这里需要考虑session timeout和server重启时差的平衡性
                 // LOG.info("One server offline.");
@@ -381,6 +384,8 @@ public class ZooRegistry extends AbstractRegistry {
                 }
             }
         }
+        // 关闭所有
+        tzoo.unsubscribeAll();
         tzoo.close();
     }
 

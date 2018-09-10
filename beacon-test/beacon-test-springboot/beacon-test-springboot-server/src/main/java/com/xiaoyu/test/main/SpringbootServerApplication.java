@@ -15,6 +15,8 @@ import com.xiaoyu.beacon.autoconfigure.EnableBeacon;
 public class SpringbootServerApplication {
 
     public static void main(String args[]) {
-        SpringApplication.run(SpringbootServerApplication.class);
+        SpringApplication app = new SpringApplication(SpringbootServerApplication.class);
+        app.setWebEnvironment(false);
+        app.run(args);
     }
 }
