@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <parent>
         <groupId>com.xiaoyu</groupId>
-        <artifactId>beacon-test</artifactId>
+        <artifactId>beacon-example</artifactId>
         <version>0.0.1</version>
     </parent>
     <artifactId>beacon-test-api</artifactId>

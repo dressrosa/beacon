@@ -7,6 +7,7 @@ package com.xiaoyu.core.register;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -49,8 +50,9 @@ public abstract class AbstractRegistry implements Registry {
     public boolean discoverService(String service) {
         Set<BeaconPath> sets = SERVICE_MAP.get(service);
         if (sets != null) {
-            for (BeaconPath p : sets) {
-                if (p.getSide() == From.SERVER) {
+            Iterator<BeaconPath> iter = sets.iterator();
+            while(iter.hasNext()) {
+                if (iter.next().getSide() == From.SERVER) {
                     return true;
                 }
             }

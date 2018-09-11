@@ -89,7 +89,15 @@ public class BeaconServerChannel extends AbstractBeaconChannel {
                         } else {
                             // 根据信息,找到实现类 declareMethods是不包含toString,hashCode的
                             if (proxy != null) {
-                                Method[] methods = proxy.getClass().getSuperclass().getDeclaredMethods();
+                                Class<?> cl1 = proxy.getClass();
+                                Method[] methods = null;
+                                // spring java原生代理
+                                if (cl1.getName().equals(req.getInterfaceImpl())) {
+                                    methods = cl1.getDeclaredMethods();
+                                } else {
+                                    // spring cglib代理
+                                    methods = cl1.getSuperclass().getDeclaredMethods();
+                                }
                                 for (Method d : methods) {
                                     if (d.getName().equals(req.getMethodName())) {
                                         result = d.invoke(proxy, req.getParams());

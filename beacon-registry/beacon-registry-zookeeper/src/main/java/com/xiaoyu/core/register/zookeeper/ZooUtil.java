@@ -30,9 +30,9 @@ public class ZooUtil {
     private static final Integer RETRY_TIMES = 10;
 
     /**
-     * 临时节点消失的时间 10s
+     * 临时节点消失的时间
      */
-    private static final Integer SESSION_TIMEOUT = 10_000;
+    private static final Integer SESSION_TIMEOUT = 2_000;
     /**
      * 连接超时 3s
      */
@@ -60,7 +60,7 @@ public class ZooUtil {
                     }
                 }
             } catch (Exception e1) {
-               LOG.error("Connect to zookeeper error->",e1);
+                LOG.error("Connect to zookeeper error->", e1);
             }
         }
         if (zoo == null) {
@@ -121,6 +121,10 @@ public class ZooUtil {
 
     public void subscribeStateChanges(final IZkStateListener listener) {
         client.subscribeStateChanges(listener);
+    }
+
+    public void unsubscribeAll() {
+        client.unsubscribeAll();
     }
 
     public void writeData(String path, Object data) {
