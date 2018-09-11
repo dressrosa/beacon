@@ -17,7 +17,7 @@
         <module>beacon-rpc</module>
         <module>beacon-serialize</module>
         <module>beacon-spring</module>
-        <module>beacon-test</module>
+        <module>beacon-example</module>
         <module>beacon-transport</module>
         <module>beacon-pom</module>
     </modules>

@@ -8,7 +8,7 @@
         <version>0.0.1</version>
        <!--  <relativePath>../pom/pom.xml</relativePath> -->
     </parent>
-    <artifactId>beacon-test</artifactId>
+    <artifactId>beacon-example</artifactId>
     <packaging>pom</packaging>
     <modules>
         <module>beacon-test-api</module>
