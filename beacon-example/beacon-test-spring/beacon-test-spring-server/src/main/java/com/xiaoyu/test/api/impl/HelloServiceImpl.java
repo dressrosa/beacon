@@ -42,4 +42,9 @@ public class HelloServiceImpl implements IHelloService {
 
     }
 
+    @Override
+    public int age(String name) {
+        return 0;
+    }
+
 }

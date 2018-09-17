@@ -82,6 +82,10 @@ public abstract class AbstractInvocationHandler {
                 .setReturnType(method.getReturnType())
                 .setParamTypes(method.getParameterTypes());
         req.setHeartbeat(false);
+        // void不能反序列化
+        if ("void".equals(method.getReturnType().getName())) {
+            req.setReturnType(Void.class);
+        }
         req.setId(IdUtil.requestId());
         if (BeaconConstants.EQUALS.equals(methodName)) {
             if (args == null || args.length == 0) {

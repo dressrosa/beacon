@@ -3,15 +3,19 @@
  */
 package com.xiaoyu.test.api;
 
-/**for beacon
+/**
+ * for beacon
+ * 
  * @author hongyu
  * @date 2018-08
  * @description
  */
-public interface IHelloService extends IBaseService{
+public interface IHelloService extends IBaseService {
 
     public String hello(String name);
-    
+
     public void sing(String song);
+
+    public int age(String name);
 
 }
