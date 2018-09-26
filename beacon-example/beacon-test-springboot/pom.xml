@@ -5,10 +5,8 @@
     <parent>
         <groupId>com.xiaoyu</groupId>
         <artifactId>beacon-example</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>0.0.1</version>
     </parent>
-    <groupId>com.xiaoyu</groupId>
-    <version>0.0.1</version>
     <artifactId>beacon-test-springboot</artifactId>
     <packaging>pom</packaging>
     <modules>

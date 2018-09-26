@@ -4,6 +4,8 @@
  */
 package com.xiaoyu.spring.listener;
 
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -18,6 +20,8 @@ import org.springframework.context.event.ContextRefreshedEvent;
 
 import com.xiaoyu.core.common.bean.BeaconPath;
 import com.xiaoyu.core.common.constant.From;
+import com.xiaoyu.core.common.utils.BeaconUtil;
+import com.xiaoyu.core.common.utils.StringUtil;
 import com.xiaoyu.core.register.Registry;
 import com.xiaoyu.core.rpc.api.Context;
 import com.xiaoyu.spring.handler.BeaconBeanDefinitionParser;
@@ -32,7 +36,7 @@ public class SpringContextListener implements ApplicationListener<ApplicationEve
 
     private static final Logger LOG = LoggerFactory.getLogger(SpringContextListener.class);
 
-    private ApplicationContext applicationContext;
+    private ApplicationContext springContext;
 
     private Context beaconContext;
 
@@ -60,10 +64,29 @@ public class SpringContextListener implements ApplicationListener<ApplicationEve
             for (BeaconPath p : sets) {
                 if (p.getSide() == From.SERVER) {
                     Class<?> cls = Class.forName(p.getService());
-                    Object proxyBean = this.applicationContext.getBean(cls);
-                    // 设置spring bean的引用
-                    if (proxyBean != null) {
-                        p.setProxy(proxyBean);
+                    Map<String, ?> proxyBeans = springContext.getBeansOfType(cls, true, true);
+                    if (proxyBeans.isEmpty()) {
+                        String key = StringUtil.lowerFirstChar(cls.getSimpleName());
+                        if (springContext.containsBean(key)) {
+                            p.setProxy(BeaconUtil.getOriginBean(springContext.getBean(key)));
+                        } else {
+                            throw new Exception(
+                                    "cannot find spring bean with name '" + cls.getName() + "'");
+                        }
+                    } else {
+                        // 设置spring bean
+                        Iterator<?> iter = proxyBeans.values().iterator();
+                        if (proxyBeans.size() == 1) {
+                            p.setProxy(iter.next());
+                        } else {
+                            while (iter.hasNext()) {
+                                Object bean = iter.next();
+                                if (cls.isInstance(bean)) {
+                                    p.setProxy(bean);
+                                    break;
+                                }
+                            }
+                        }
                     }
                     registry.registerService(p);
                 }
@@ -78,7 +101,7 @@ public class SpringContextListener implements ApplicationListener<ApplicationEve
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-        this.applicationContext = applicationContext;
+        this.springContext = applicationContext;
     }
 
 }
