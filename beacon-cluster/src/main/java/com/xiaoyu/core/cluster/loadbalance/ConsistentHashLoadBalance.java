@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import com.xiaoyu.core.cluster.LoadBalance;
 import com.xiaoyu.core.common.bean.BeaconPath;
@@ -22,12 +23,18 @@ public class ConsistentHashLoadBalance implements LoadBalance {
     /**
      * hash->virtual providers
      */
-    private static final SortedMap<Integer, String> Circle_Sorted_Map = new TreeMap<>();
+    private SortedMap<Integer, String> Circle_Sorted_Map = new TreeMap<>();
 
     /**
-     * true providers
+     * true providers,这里用来判断是否已经加入Circle_Sorted_Map
      */
     private static final HashSet<String> Machines = new HashSet<>();
+
+    /**
+     * 这里读写锁,用来对server端下线后,服务不一致时候,对Circle_Sorted_Map进行clear的操作
+     * clear加写锁,add加读锁
+     */
+    private static final ReentrantReadWriteLock Read_Write_Lock = new ReentrantReadWriteLock();
 
     private static final String Separator = ",";
 
@@ -39,8 +46,10 @@ public class ConsistentHashLoadBalance implements LoadBalance {
             return providers.get(0);
         }
         List<BeaconPath> pros = (List<BeaconPath>) providers;
+        doCheckRefresh(pros);
         // 以service为key,这样保证同一个service请求同一个server
         String service = pros.get(0).getService();
+        // host->BeaconPath
         Map<String, BeaconPath> proMap = this.spreadTrueProviders(pros);
 
         // 找比她大的所有节点
@@ -66,20 +75,46 @@ public class ConsistentHashLoadBalance implements LoadBalance {
     }
 
     /**
+     * 检查是否server已经不一致,需清空Circle_Sorted_Map和Machines
+     * 
+     * @param pros
+     */
+    private void doCheckRefresh(List<BeaconPath> pros) {
+        for (BeaconPath p : pros) {
+            if (!Machines.contains(p.getHost())) {
+                // 这里写锁,一旦进入,其他都需要等待clear完成
+                Read_Write_Lock.writeLock().lock();
+                try {
+                    // 这里再判断一次,因为在读锁释放后,可能这里已经contain了
+                    if (!Machines.contains(p.getHost())) {
+                        Circle_Sorted_Map.clear();
+                        Machines.clear();
+                    }
+                } finally {
+                    Read_Write_Lock.writeLock().unlock();
+                }
+            }
+        }
+    }
+
+    /**
      * 根据真实节点生成虚拟节点
      * 
      * @param providers
      * @return
      */
     private Map<String, BeaconPath> spreadTrueProviders(List<BeaconPath> providers) {
-        // TODO 如果有机器下线,这里并没有给清除,所以这里先重置.
-        Circle_Sorted_Map.clear();
-        Machines.clear();
         Map<String, BeaconPath> proMap = new HashMap<>(providers.size() << 1);
         for (BeaconPath p : providers) {
             proMap.put(p.getHost(), p);
-            if (Machines.add(p.getHost())) {
-                spreadVirtualProvider(p.getHost());
+            // 这里读锁,每个线程都可以进入
+            Read_Write_Lock.readLock().lock();
+            try {
+                if (Machines.add(p.getHost())) {
+                    spreadVirtualProvider(p.getHost());
+                }
+            } finally {
+                Read_Write_Lock.readLock().unlock();
             }
         }
         return proMap;
