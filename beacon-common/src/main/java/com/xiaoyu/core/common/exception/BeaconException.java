@@ -9,7 +9,7 @@ package com.xiaoyu.core.common.exception;
  * @date 2018-07
  * @description
  */
-public class BeaconException extends Exception {
+public class BeaconException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 

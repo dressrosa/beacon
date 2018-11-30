@@ -58,7 +58,24 @@ public class BeaconPath {
     /**
      * 服务分组
      */
-    private String group = "";
+    private String group;
+
+    /**
+     * 服务降级 格式(策略:降级类)
+     * timeout:次数
+     * fault:次数
+     * query:限流量
+     */
+    private String downgrade;
+
+    public String getDowngrade() {
+        return downgrade;
+    }
+
+    public BeaconPath setDowngrade(String downgrade) {
+        this.downgrade = downgrade;
+        return this;
+    }
 
     public String getGroup() {
         return group;
@@ -225,6 +242,7 @@ public class BeaconPath {
         builder.append("&generic=").append(this.isGeneric());
         builder.append("&retry=").append(this.getRetry());
         builder.append("&group=").append(this.getGroup());
+        builder.append("&downgrade=").append(this.getDowngrade());
         // 请注意side放在最后
         builder.append("&side=").append(this.getSide().name());
         return builder.toString();
@@ -264,6 +282,8 @@ public class BeaconPath {
                 bea.setCheck(Boolean.getBoolean(str.substring(6)));
             } else if (str.startsWith("tolerant")) {
                 bea.setTolerant(str.substring(9));
+            } else if (str.startsWith("downgrade")) {
+                bea.setDowngrade(str.substring(10));
             } else if (str.startsWith("side")) {
                 bea.setSide(From.fromName(str.substring(5)));
             }

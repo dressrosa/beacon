@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.xiaoyu.core.common.exception.FusedException;
 import com.xiaoyu.test.api.IHelloService;
 
 /**
@@ -23,12 +24,12 @@ public class BizController {
     // for beacon
     @RequestMapping(value = "/hello", produces = "application/json;charset=UTF-8")
     public String hello(String name) {
-        String re = this.helloService.hello(name);
-
-        this.helloService.sing(name);
-
-        int age = this.helloService.age(name);
-        System.out.println(age);
+        String re = "";
+        try {
+            re = this.helloService.hello(name);
+        } catch (FusedException e) {
+            System.out.print("熔断补偿处理....");
+        }
         return re;
     }
 }

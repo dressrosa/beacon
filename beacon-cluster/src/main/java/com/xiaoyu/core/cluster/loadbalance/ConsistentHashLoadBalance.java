@@ -46,7 +46,9 @@ public class ConsistentHashLoadBalance implements LoadBalance {
             return providers.get(0);
         }
         List<BeaconPath> pros = (List<BeaconPath>) providers;
-        doCheckRefresh(pros);
+
+        this.doCheckRefresh(pros);
+
         // 以service为key,这样保证同一个service请求同一个server
         String service = pros.get(0).getService();
         // host->BeaconPath
@@ -58,7 +60,7 @@ public class ConsistentHashLoadBalance implements LoadBalance {
         String host;
         // 说明已是环的终点
         if (nodes.isEmpty()) {
-            // 直接取第一个节点
+            // 返回开头,直接取第一个节点
             key = Circle_Sorted_Map.firstKey();
             String value = Circle_Sorted_Map.get(key);
             // 取出虚拟节点中的host
@@ -66,8 +68,7 @@ public class ConsistentHashLoadBalance implements LoadBalance {
         } else {
             // 取下一个节点
             key = hash(service);
-            int firstKey = nodes.firstKey();
-            String value = Circle_Sorted_Map.get(firstKey);
+            String value = Circle_Sorted_Map.get(nodes.firstKey());
             // 取出虚拟节点中的host
             host = value.substring(value.indexOf(Separator) + 1);
         }
@@ -105,17 +106,17 @@ public class ConsistentHashLoadBalance implements LoadBalance {
      */
     private Map<String, BeaconPath> spreadTrueProviders(List<BeaconPath> providers) {
         Map<String, BeaconPath> proMap = new HashMap<>(providers.size() << 1);
-        for (BeaconPath p : providers) {
-            proMap.put(p.getHost(), p);
-            // 这里读锁,每个线程都可以进入
-            Read_Write_Lock.readLock().lock();
-            try {
+        Read_Write_Lock.readLock().lock();
+        try {
+            for (BeaconPath p : providers) {
+                proMap.put(p.getHost(), p);
+                // 这里读锁,每个线程都可以进入
                 if (Machines.add(p.getHost())) {
                     spreadVirtualProvider(p.getHost());
                 }
-            } finally {
-                Read_Write_Lock.readLock().unlock();
             }
+        } finally {
+            Read_Write_Lock.readLock().unlock();
         }
         return proMap;
     }
