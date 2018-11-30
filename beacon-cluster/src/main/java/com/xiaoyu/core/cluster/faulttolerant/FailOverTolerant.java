@@ -12,9 +12,11 @@ import org.slf4j.LoggerFactory;
 
 import com.xiaoyu.core.cluster.FaultTolerant;
 import com.xiaoyu.core.cluster.LoadBalance;
+import com.xiaoyu.core.cluster.Strategy;
 import com.xiaoyu.core.common.bean.BeaconPath;
 import com.xiaoyu.core.common.exception.BizException;
 import com.xiaoyu.core.common.extension.SpiManager;
+import com.xiaoyu.core.common.utils.StringUtil;
 import com.xiaoyu.core.rpc.config.bean.Invocation;
 
 /**
@@ -35,7 +37,7 @@ public class FailOverTolerant implements FaultTolerant {
         BeaconPath provider = (BeaconPath) loadBalance.select(providers);
         Object result = null;
         try {
-            result = invocation.invoke(provider);
+            result = this.doInvoke(invocation, provider);
         } catch (Throwable e) {
             // 业务类异常,直接正常抛出
             if (e instanceof BizException) {
@@ -43,7 +45,7 @@ public class FailOverTolerant implements FaultTolerant {
             } else {
                 // retry
                 if (invocation.getConsumer().getRetry() > 0) {
-                    return doRetry(invocation, providers);
+                    result = doRetry(invocation, providers);
                 }
             }
         }
@@ -62,7 +64,7 @@ public class FailOverTolerant implements FaultTolerant {
             Object result = null;
             try {
                 LOG.info("Invoke failed, retry {} times", num);
-                result = invocation.invoke(provider);
+                result = this.doInvoke(invocation, provider);
             } catch (Throwable e) {
                 if (e instanceof BizException) {
                     throw e;
@@ -75,7 +77,15 @@ public class FailOverTolerant implements FaultTolerant {
         }
         // 这里不能直接返回null或result,需要再进行一次正常的调用
         provider = (BeaconPath) loadBalance.select(providers);
-        return invocation.invoke(provider);
+        return this.doInvoke(invocation, provider);
     }
 
+    private Object doInvoke(Invocation invocation, BeaconPath provider) throws Throwable {
+        if (StringUtil.isBlank(invocation.getConsumer().getDowngrade())) {
+            return invocation.invoke(provider);
+        }
+        // 熔断降级
+        Strategy strategy = SpiManager.defaultSpiExtender(Strategy.class);
+        return strategy.fuse(invocation, provider);
+    }
 }

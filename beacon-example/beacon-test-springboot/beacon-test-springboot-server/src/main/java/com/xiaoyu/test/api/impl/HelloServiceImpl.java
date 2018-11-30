@@ -20,8 +20,14 @@ public class HelloServiceImpl implements IHelloService {
 
     @Override
     public String hello(String name) {
+        int time = new Random().nextInt(500);
+        if (time > 450) {
+            int a = 0;
+            int b = 10;
+            System.out.println(b / a);
+        }
         try {
-            TimeUnit.MILLISECONDS.sleep(new Random().nextInt(500));
+            TimeUnit.MILLISECONDS.sleep(time);
         } catch (Exception e) {
             e.printStackTrace();
         }

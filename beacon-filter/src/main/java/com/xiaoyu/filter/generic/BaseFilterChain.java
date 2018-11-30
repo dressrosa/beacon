@@ -24,24 +24,23 @@ public class BaseFilterChain implements FilterChain {
 
     private static final LinkedHashSet<Filter> filterList = new LinkedHashSet<>();
 
-    @Override
-    public void invoke(Invocation invocation) {
-        if (filterList.isEmpty()) {
-            ExtenderHolder<Filter> holder = SpiManager.holder(Filter.class);
-            Collection<Filter> col = holder.values();
-            if (!col.isEmpty()) {
-                filterList.addAll(col);
-            }
-            // chain本身无需再调用了 remove chain
-            if (!filterList.isEmpty()) {
-                for (Filter f : filterList) {
-                    if (f instanceof FilterChain) {
-                        filterList.remove(f);
-                        break;
-                    }
+    // static只会在类初始化的时候执行一次,所以就不会有并发问题
+    static {
+        ExtenderHolder<Filter> holder = SpiManager.holder(Filter.class);
+        Collection<Filter> col = holder.values();
+        if (!col.isEmpty()) {
+            for (Filter f : col) {
+                // 去除BaseFilterChain
+                if (f instanceof FilterChain) {
+                    continue;
                 }
+                filterList.add(f);
             }
         }
+    }
+
+    @Override
+    public void invoke(Invocation invocation) {
         Iterator<Filter> iter = filterList.iterator();
         Filter filter = null;
         while (iter.hasNext()) {

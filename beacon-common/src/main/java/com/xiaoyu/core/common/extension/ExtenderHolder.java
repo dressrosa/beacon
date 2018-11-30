@@ -36,8 +36,8 @@ public class ExtenderHolder<T> {
         if (!holder.containsKey(name)) {
             // 在首次(首次划重点)并发加载的情况下,可能在SpiManger.holder()方法中,
             // BeaconLoader还未加载完,holder.isEmpty已经不为空,导致想取的数据还没有,这里
-            // 睡眠1ms来缓冲.不过这种情况基本不会出现
-            Thread.sleep(1);
+            // 睡眠10ms来缓冲.不过这种情况基本不会出现
+            Thread.sleep(10);
             if (!holder.containsKey(name)) {
                 throw new Exception("cannot find the spi target->" + name);
             }

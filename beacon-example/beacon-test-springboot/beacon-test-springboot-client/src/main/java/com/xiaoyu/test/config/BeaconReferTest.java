@@ -21,7 +21,8 @@ public class BeaconReferTest extends BeaconReferConfiguration {
         list.add(new BeaconReference()
                 .setInterfaceName(IHelloService.class.getName())
                 .setCheck(false)
-                .setGroup("dev"));
+                .setGroup("dev")
+                .setDowngrade("fault:5"));
         list.add(new BeaconReference()
                 .setInterfaceName(IUserService.class.getName())
                 .setCheck(false)

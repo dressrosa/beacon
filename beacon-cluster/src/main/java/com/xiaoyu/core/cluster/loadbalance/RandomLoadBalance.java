@@ -5,9 +5,9 @@
 package com.xiaoyu.core.cluster.loadbalance;
 
 import java.util.List;
-import java.util.Random;
 
 import com.xiaoyu.core.cluster.LoadBalance;
+import com.xiaoyu.core.common.utils.IdUtil;
 
 /**
  * 随机数法
@@ -18,14 +18,12 @@ import com.xiaoyu.core.cluster.LoadBalance;
  */
 public class RandomLoadBalance implements LoadBalance {
 
-    private static final Random random = new Random();
-
     @Override
     public <T> T select(final List<T> providers) {
         int size = providers.size();
         if (size == 1) {
             return providers.get(0);
         }
-        return providers.get(random.nextInt(size));
+        return providers.get(IdUtil.randomNum(size));
     }
 }

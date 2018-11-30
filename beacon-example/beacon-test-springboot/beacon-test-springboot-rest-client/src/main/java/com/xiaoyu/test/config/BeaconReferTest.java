@@ -20,7 +20,9 @@ public class BeaconReferTest extends BeaconReferConfiguration {
         list.add(new BeaconReference()
                 .setInterfaceName(IUserService.class.getName())
                 .setCheck(false)
-                .setGroup("dev"));
+                .setGroup("dev")
+                .setTolerant("failfast")
+                .setDowngrade("timeout:3"));
         return list;
     }
 

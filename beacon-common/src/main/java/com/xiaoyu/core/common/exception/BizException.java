@@ -9,7 +9,7 @@ package com.xiaoyu.core.common.exception;
  * @date 2018-05
  * @description
  */
-public class BizException extends Exception {
+public class BizException extends RuntimeException {
 
     private static final long serialVersionUID = 1L;
 

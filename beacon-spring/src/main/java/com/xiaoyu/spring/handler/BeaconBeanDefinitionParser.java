@@ -301,7 +301,9 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
                     .setRef(ref)
                     .setHost(NetUtil.localIP())
                     .setMethods(methods)
-                    .setGroup(group);
+                    .setGroup(group)
+                    .setDowngrade("")
+                    .setTolerant("");
             if (beaconRegistry != null) {
                 if (beaconProtocol != null) {
                     beaconPath.setPort(beaconProtocol.getPort());
@@ -331,7 +333,22 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
         boolean check = Boolean.getBoolean(element.getAttribute("check"));
         String tolerant = element.getAttribute("tolerant");
         String group = element.getAttribute("group");
-
+        String downgrade = element.getAttribute("downgrade");
+        if (StringUtil.isBlank(downgrade)) {
+            downgrade = "";
+        } else {
+            String[] arr = downgrade.split(":");
+            if (arr.length < 2) {
+                throw new Exception(
+                        "Cannot resolve reference in beacon-reference with downgrade:" + downgrade);
+            }
+            if (!("query".equals(arr[0]) || "fault".equals(arr[0]) || "timeout".equals(arr[0]))
+                    || !StringUtil.isNumeric(arr[1])) {
+                throw new Exception(
+                        "Cannot resolve reference in beacon-reference with wrong downgrade strategy ["
+                                + downgrade + "]");
+            }
+        }
         if (StringUtil.isBlank(interfaceName)) {
             throw new Exception("interfaceName cannot be null in xml tag->" + element.getTagName());
         }
@@ -352,7 +369,8 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
                     .setTimeout(timeout)
                     .setCheck(check)
                     .setTolerant(tolerant)
-                    .setGroup(group);
+                    .setGroup(group)
+                    .setDowngrade(downgrade);
             if (retry > 0) {
                 beaconPath.setRetry(retry);
             }

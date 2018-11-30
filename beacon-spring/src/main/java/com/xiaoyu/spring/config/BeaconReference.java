@@ -46,7 +46,26 @@ public class BeaconReference extends BeaconBean {
     /**
      * 服务分组
      */
-    private String group="";
+    private String group = "";
+
+    /**
+     * 服务降级 格式(策略:降级类)
+     * timeout:null
+     * timeout:xxx
+     * retry:xxx
+     * fault:xxx
+     * limit:xxx
+     */
+    private String downgrade;
+
+    public String getDowngrade() {
+        return downgrade;
+    }
+
+    public BeaconReference setDowngrade(String downgrade) {
+        this.downgrade = downgrade;
+        return this;
+    }
 
     public String getGroup() {
         return group;
@@ -70,8 +89,9 @@ public class BeaconReference extends BeaconBean {
         return tolerant;
     }
 
-    public void setTolerant(String tolerant) {
+    public BeaconReference setTolerant(String tolerant) {
         this.tolerant = tolerant;
+        return this;
     }
 
     public boolean getCheck() {
