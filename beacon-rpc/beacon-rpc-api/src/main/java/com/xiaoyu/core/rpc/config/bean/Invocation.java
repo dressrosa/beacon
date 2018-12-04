@@ -48,11 +48,11 @@ public class Invocation {
     }
 
     public Object invoke(BeaconPath provider) throws Throwable {
-        String methods = provider.getMethods();
-        String[] mes = methods.split(",");
+        String[] mes = provider.getMethods().split(",");
         boolean access = false;
+        String methodName = request.getMethodName();
         for (int i = 0; i < mes.length; i++) {
-            if (request.getMethodName().equals(mes[i])) {
+            if (methodName.equals(mes[i])) {
                 access = true;
                 break;
             }

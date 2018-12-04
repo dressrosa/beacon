@@ -52,15 +52,15 @@ public abstract class AbstractBeaconContext implements Context {
 
     @Override
     public Client client(String host, int port) throws Exception {
+        String key = host + ":" + port;
+        if (clientMap.containsKey(key)) {
+            return clientMap.get(key);
+        }
         /**
          * 当第一次大量请求时,可能导致client多次初始化,并覆盖掉已初始化的.
          */
         clientLock.lock();
         try {
-            String key = host + ":" + port;
-            if (clientMap.containsKey(key)) {
-                return clientMap.get(key);
-            }
             Client client = doInitClient(host, port);
             clientMap.put(key, client);
             return client;
@@ -99,22 +99,22 @@ public abstract class AbstractBeaconContext implements Context {
     private void doShutdown() {
         if (clientMap != null && !clientMap.isEmpty()) {
             Iterator<Client> iter = clientMap.values().iterator();
-            try {
-                while (iter.hasNext()) {
+            while (iter.hasNext()) {
+                try {
                     iter.next().stop();
+                } catch (Exception e) {
+                    // do nothing
                 }
-            } catch (Exception e) {
-                // do nothing
             }
         }
         if (serverMap != null && !serverMap.isEmpty()) {
             Iterator<Server> iter = serverMap.values().iterator();
-            try {
-                while (iter.hasNext()) {
+            while (iter.hasNext()) {
+                try {
                     iter.next().stop();
+                } catch (Exception e) {
+                    // do nothing
                 }
-            } catch (Exception e) {
-                // do nothing
             }
         }
     }

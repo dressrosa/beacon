@@ -31,7 +31,7 @@ public abstract class AbstractBeaconChannel implements BaseChannel {
 
     private static final Logger LOG = LoggerFactory.getLogger(AbstractBeaconChannel.class);
     /**
-     * 从server断获取的结果,用于异步获取 requestId->result
+     * 从server获取的结果,用于异步获取 requestId->result
      */
     private static final ConcurrentMap<String, CallbackListener> RESULT_MAP = new ConcurrentHashMap<>(32);
 
@@ -69,18 +69,18 @@ public abstract class AbstractBeaconChannel implements BaseChannel {
     }
 
     public static void notifyCloseTaskPool() {
-        ThreadPoolExecutor pool = TASK_POOL;
+        final ThreadPoolExecutor pool = TASK_POOL;
         pool.shutdown();
         LOG.info("Shutdown the beacon channel task pool.");
     }
 
     public Future<Object> addTask(Callable<Object> call) {
-        ThreadPoolExecutor pool = TASK_POOL;
+        final ThreadPoolExecutor pool = TASK_POOL;
         return pool.submit(call);
     }
 
     public void addTask(Runnable call) {
-        ThreadPoolExecutor pool = TASK_POOL;
+        final ThreadPoolExecutor pool = TASK_POOL;
         pool.submit(call);
     }
 
@@ -104,6 +104,12 @@ public abstract class AbstractBeaconChannel implements BaseChannel {
             listener.onSuccess(result);
             // 通知等待线程,这里只有一个线程在等待
             listener.notify();
+            try {
+                // 触发上下文切换,让唤醒的线程马上参与竞争
+                Thread.sleep(0);
+            } catch (InterruptedException e) {
+                // do nothing
+            }
             listener = null;
             RESULT_MAP.remove(requestId);
         }

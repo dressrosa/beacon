@@ -215,7 +215,6 @@ public class ZooRegistry extends AbstractRegistry {
         if (parentPath.endsWith(CONSUMERS)) {
             // 有client上线
             if (childSize > consumerSize) {
-                // LOG.info("New client online.");
                 for (String s : currentChilds) {
                     if (!consumerList.contains(s)) {
                         LOG.info("store consumer service ->{}", s);
@@ -226,7 +225,6 @@ public class ZooRegistry extends AbstractRegistry {
             }
             // 有client下线
             else if (childSize < consumerSize) {
-                // LOG.info("One client offline.");
                 for (String s : consumerList) {
                     if (!currentChilds.contains(s)) {
                         LOG.info("remove consumer service->{}", s);
@@ -240,7 +238,6 @@ public class ZooRegistry extends AbstractRegistry {
         else {
             // 有server上线
             if (childSize > providerSize) {
-                // LOG.info("New server online.");
                 for (String s : currentChilds) {
                     if (!providerList.contains(s)) {
                         LOG.info("store provider service ->{}", s);
@@ -256,7 +253,6 @@ public class ZooRegistry extends AbstractRegistry {
                 // SESSION_TIMEOUT内再次启动后,注册的节点都会因为session失效而消失.
                 // 因此导致client没收到server启动通知反而收到server关闭的通知.
                 // 这里需要考虑session timeout和server重启时差的平衡性
-                // LOG.info("One server offline.");
                 for (String s : providerList) {
                     if (!currentChilds.contains(s)) {
                         LOG.info("remove provider service->{}", s);

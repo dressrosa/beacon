@@ -76,8 +76,8 @@ public class InvocationHandlerAdapter extends AbstractInvocationHandler {
         if (!wrapper.isGeneric()) {
             return SpiManager.defaultSpiExtender(Context.class).getRegistry().getLocalConsumer(service);
         }
-        Map<String, Object> attach = wrapper.getAttach();
 
+        Map<String, Object> attach = wrapper.getAttach();
         BeaconPath con = new BeaconPath();
         con.setGeneric(true)
                 .setTolerant((String) attach.get("tolerant"))

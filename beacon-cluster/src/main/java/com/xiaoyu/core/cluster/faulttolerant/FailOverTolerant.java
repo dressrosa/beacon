@@ -59,9 +59,9 @@ public class FailOverTolerant implements FaultTolerant {
         // 当然可以在continue之前做个if判断,不过...就是为了省个if,O(∩_∩)O~
         int retry = invocation.getConsumer().getRetry();
         BeaconPath provider = null;
+        Object result = null;
         while (num++ < retry - 1) {
             provider = (BeaconPath) loadBalance.select(providers);
-            Object result = null;
             try {
                 LOG.info("Invoke failed, retry {} times", num);
                 result = this.doInvoke(invocation, provider);
