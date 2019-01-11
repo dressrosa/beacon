@@ -35,6 +35,9 @@ public class ConsistentHashLoadBalance implements LoadBalance {
      */
     private static final ReentrantReadWriteLock Read_Write_Lock = new ReentrantReadWriteLock();
 
+    /**
+     * 格式-> 12,192.168.0.0:8080
+     */
     private static final String Separator = ",";
 
     @SuppressWarnings("unchecked")
@@ -92,25 +95,37 @@ public class ConsistentHashLoadBalance implements LoadBalance {
             Service_Hash_Cache.put(service, (cacheMap = new TreeMap<>()));
         }
         if (!sets.isEmpty()) {
-            String pst = null;
-            for (BeaconPath p : pros) {
-                if (!sets.contains(pst = p.getHost() + ":" + p.getPort())) {
-                    // 这里写锁,一旦进入,其他都需要等待clear完成,这个可能影响其他service.
-                    // 不过server下线的情况是会很少出现的
-                    Read_Write_Lock.writeLock().lock();
-                    try {
-                        // 这里再判断一次,因为在读锁释放后,可能这里已经contain了
-                        if (!sets.contains(pst)) {
-                            cacheMap.clear();
-                            sets.clear();
+            // 旧server下线
+            if (sets.size() != pros.size()) {
+                Read_Write_Lock.writeLock().lock();
+                try {
+                    cacheMap.clear();
+                    sets.clear();
+                } finally {
+                    Read_Write_Lock.writeLock().unlock();
+                }
+            } else {
+                String pst = null;
+                // 新server上线
+                for (BeaconPath p : pros) {
+                    if (!sets.contains(pst = p.getHost() + ":" + p.getPort())) {
+                        // 这里写锁,一旦进入,其他都需要等待clear完成,这个可能影响其他service.
+                        // 不过server下线的情况是会很少出现的
+                        Read_Write_Lock.writeLock().lock();
+                        try {
+                            // 这里再判断一次,因为在读锁释放后,可能这里已经contain了
+                            if (!sets.contains(pst)) {
+                                cacheMap.clear();
+                                sets.clear();
+                            }
+                        } finally {
+                            Read_Write_Lock.writeLock().unlock();
                         }
-                    } finally {
-                        Read_Write_Lock.writeLock().unlock();
+                        break;
                     }
                 }
             }
         }
-
     }
 
     /**

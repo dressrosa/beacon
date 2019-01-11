@@ -36,22 +36,21 @@ public class NettyChannel implements BaseChannel {
 
     public NettyChannel(Channel channel) {
         this.channel = channel;
-
     }
 
     public static BeaconHandler getChannel(Channel ch, From side) throws Exception {
-        BeaconHandler beacon = CHANNEL_MAP.get(ch);
-        if (beacon == null) {
+        BeaconHandler beaHander = CHANNEL_MAP.get(ch);
+        if (beaHander == null) {
             NettyChannel nc = new NettyChannel(ch);
             if (From.CLIENT == side) {
                 BeaconHandler b = new BeaconClientHandler(new BeaconClientChannel(nc));
-                CHANNEL_MAP.put(ch, (beacon = b));
+                CHANNEL_MAP.put(ch, (beaHander = b));
             } else {
                 BeaconHandler b = new BeaconServerHandler(new BeaconServerChannel(nc));
-                CHANNEL_MAP.put(ch, (beacon = b));
+                CHANNEL_MAP.put(ch, (beaHander = b));
             }
         }
-        return beacon;
+        return beaHander;
     }
 
     /**
@@ -59,8 +58,9 @@ public class NettyChannel implements BaseChannel {
      */
     public static void checkUnActive() {
         Iterator<Channel> iter = CHANNEL_MAP.keySet().iterator();
+        Channel ch = null;
         while (iter.hasNext()) {
-            Channel ch = iter.next();
+            ch = iter.next();
             if (!ch.isActive()) {
                 removeChannel(ch);
             }

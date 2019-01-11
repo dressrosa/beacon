@@ -10,13 +10,8 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.xiaoyu.core.cluster.FaultTolerant;
-import com.xiaoyu.core.cluster.LoadBalance;
-import com.xiaoyu.core.cluster.Strategy;
 import com.xiaoyu.core.common.bean.BeaconPath;
 import com.xiaoyu.core.common.exception.BizException;
-import com.xiaoyu.core.common.extension.SpiManager;
-import com.xiaoyu.core.common.utils.StringUtil;
 import com.xiaoyu.core.rpc.config.bean.Invocation;
 
 /**
@@ -26,18 +21,16 @@ import com.xiaoyu.core.rpc.config.bean.Invocation;
  * @date 2018-06
  * @description 对非业务类失败,进行一定的重试
  */
-public class FailOverTolerant implements FaultTolerant {
+public class FailOverTolerant extends AbstractDefaultTolerant {
 
     private static final Logger LOG = LoggerFactory.getLogger(FailOverTolerant.class);
 
     @Override
-    public Object invoke(Invocation invocation, List<?> providers) throws Throwable {
+    public Object invoke(Invocation invocation, List<BeaconPath> providers) throws Throwable {
         // 负载均衡
-        LoadBalance loadBalance = SpiManager.defaultSpiExtender(LoadBalance.class);
-        BeaconPath provider = (BeaconPath) loadBalance.select(providers);
         Object result = null;
         try {
-            result = this.doInvoke(invocation, provider);
+            result = super.invoke(invocation, providers);
         } catch (Throwable e) {
             // 业务类异常,直接正常抛出
             if (e instanceof BizException) {
@@ -52,19 +45,16 @@ public class FailOverTolerant implements FaultTolerant {
         return result;
     }
 
-    private Object doRetry(Invocation invocation, List<?> providers) throws Throwable {
+    private Object doRetry(Invocation invocation, List<BeaconPath> providers) throws Throwable {
         int num = 0;
-        LoadBalance loadBalance = SpiManager.defaultSpiExtender(LoadBalance.class);
         // 这里少retry一次,因为如果发生异常,最后一次的catch并没有抛出异常而是while退出了
         // 当然可以在continue之前做个if判断,不过...就是为了省个if,O(∩_∩)O~
         int retry = invocation.getConsumer().getRetry();
-        BeaconPath provider = null;
         Object result = null;
         while (num++ < retry - 1) {
-            provider = (BeaconPath) loadBalance.select(providers);
             try {
                 LOG.info("Invoke failed, retry {} times", num);
-                result = this.doInvoke(invocation, provider);
+                result = super.invoke(invocation, providers);
             } catch (Throwable e) {
                 if (e instanceof BizException) {
                     throw e;
@@ -76,16 +66,7 @@ public class FailOverTolerant implements FaultTolerant {
             return result;
         }
         // 这里不能直接返回null或result,需要再进行一次正常的调用
-        provider = (BeaconPath) loadBalance.select(providers);
-        return this.doInvoke(invocation, provider);
+        return super.invoke(invocation, providers);
     }
 
-    private Object doInvoke(Invocation invocation, BeaconPath provider) throws Throwable {
-        if (StringUtil.isBlank(invocation.getConsumer().getDowngrade())) {
-            return invocation.invoke(provider);
-        }
-        // 熔断降级
-        Strategy strategy = SpiManager.defaultSpiExtender(Strategy.class);
-        return strategy.fuse(invocation, provider);
-    }
 }

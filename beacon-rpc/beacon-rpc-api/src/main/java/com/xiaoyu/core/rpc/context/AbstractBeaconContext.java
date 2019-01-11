@@ -33,8 +33,6 @@ public abstract class AbstractBeaconContext implements Context {
 
     protected Registry registry;
 
-    private static AbstractBeaconContext abstractContext;
-
     private static final ReentrantLock clientLock = new ReentrantLock();
 
     public AbstractBeaconContext() {
@@ -44,10 +42,9 @@ public abstract class AbstractBeaconContext implements Context {
                 // do something
                 LOG.info("-do something with the shutdownhook-");
                 // 等service取消注册后才关闭注册中心
-                abstractContext.closeRegistry();
+                closeRegistry();
             }
-        }, "beacon-shutdownhook"));
-        abstractContext = this;
+        }, "beacon-shutdown-hook"));
     }
 
     @Override
@@ -61,7 +58,7 @@ public abstract class AbstractBeaconContext implements Context {
          */
         clientLock.lock();
         try {
-            Client client = doInitClient(host, port);
+            Client client = this.doInitClient(host, port);
             clientMap.put(key, client);
             return client;
         } finally {
@@ -71,7 +68,7 @@ public abstract class AbstractBeaconContext implements Context {
 
     @Override
     public void server(int port) throws Exception {
-        Server server = doInitServer(port);
+        Server server = this.doInitServer(port);
         serverMap.put(port, server);
     }
 

@@ -65,6 +65,7 @@ public class BeaconPath {
      * timeout:次数
      * fault:次数
      * query:限流量
+     * 注解:降级则会抛出异常,并非停止服务,没有把请求分配给其他服务
      */
     private String downgrade;
 

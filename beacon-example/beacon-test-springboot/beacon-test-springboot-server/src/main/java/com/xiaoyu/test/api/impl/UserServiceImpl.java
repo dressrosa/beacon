@@ -17,6 +17,7 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     public int age(String name) {
+        System.out.println(name);
         return name.length();
     }
 

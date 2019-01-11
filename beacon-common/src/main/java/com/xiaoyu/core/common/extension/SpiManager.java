@@ -35,7 +35,7 @@ public class SpiManager {
     public static <T> T defaultSpiExtender(Class<T> cls) throws Exception {
         ExtenderHolder<T> holder = (ExtenderHolder<T>) SPI_MAP.get(cls);
         if (holder == null) {
-            SPI_MAP.putIfAbsent(cls, new ExtenderHolder<>());
+            SPI_MAP.put(cls, new ExtenderHolder<>());
         }
         holder = (ExtenderHolder<T>) SPI_MAP.get(cls);
         if (!holder.isEmpty()) {
@@ -55,7 +55,7 @@ public class SpiManager {
             holder.put(loader.getProtocolName(), t);
         }
         if (t == null) {
-            throw new Exception("cannot find spi of " + cls.getName());
+            throw new Exception("Cannot find spi of " + cls.getName());
         }
         return t;
     }
@@ -71,7 +71,7 @@ public class SpiManager {
         T t = null;
         ExtenderHolder<T> holder = (ExtenderHolder<T>) SPI_MAP.get(cls);
         if (holder == null) {
-            SPI_MAP.putIfAbsent(cls, new ExtenderHolder<>());
+            SPI_MAP.put(cls, new ExtenderHolder<>());
         }
         holder = (ExtenderHolder<T>) SPI_MAP.get(cls);
         if (!holder.isEmpty()) {

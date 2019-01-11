@@ -22,6 +22,7 @@ import org.springframework.beans.factory.xml.ParserContext;
 import org.w3c.dom.Element;
 
 import com.xiaoyu.core.common.bean.BeaconPath;
+import com.xiaoyu.core.common.constant.BeaconConstants;
 import com.xiaoyu.core.common.constant.From;
 import com.xiaoyu.core.common.extension.SpiManager;
 import com.xiaoyu.core.common.utils.NetUtil;
@@ -115,14 +116,14 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
         String port = element.getAttribute("port");
         element.setAttribute("id", "protocol");
         if (StringUtil.isBlank(name)) {
-            throw new Exception("name cannot be null in xml tag->" + element.getTagName());
+            throw new Exception("Name cannot be null in xml tag->" + element.getTagName());
         }
         if (name.equals("beacon")) {
             if (StringUtil.isBlank(port)) {
-                port = Integer.toString(1992);
+                port = Integer.toString(BeaconConstants.PORT);
             }
             if (!NumberUtils.isNumber(port)) {
-                throw new Exception("port should be a positive integer in xml tag beacon-protocol");
+                throw new Exception("Port should be a positive integer in xml tag beacon-protocol");
             }
         }
         try {
@@ -164,24 +165,24 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
             protocol = "zookeeper";
         }
         if (StringUtil.isBlank(address)) {
-            throw new Exception("address cannot be null in xml tag->" + element.getTagName());
+            throw new Exception("Address cannot be null in xml tag->" + element.getTagName());
         }
         String[] addr = address.split(":");
         if (addr.length != 2) {
-            throw new Exception("address->" + address + " is illegal in xml tag->" + element.getTagName());
+            throw new Exception("Address->" + address + " is illegal in xml tag->" + element.getTagName());
         }
         if (!StringUtil.isIP(addr[0]) || !NumberUtils.isParsable(addr[1])) {
-            throw new Exception("address->" + address + " is illegal in xml tag->" + element.getTagName());
+            throw new Exception("Address->" + address + " is illegal in xml tag->" + element.getTagName());
         }
         if (StringUtil.isBlank(protocol)) {
-            throw new Exception("protocol can ignore but not empty in xml tag->" + element.getTagName());
+            throw new Exception("Protocol can ignore but not empty in xml tag->" + element.getTagName());
         }
 
         try {
             String beanName = "beaconReg";
             BeanDefinitionRegistry registry = parserContext.getRegistry();
             if (registry.containsBeanDefinition(beanName)) {
-                LOG.warn("repeat tag.please check in xml tag->{}", element.getTagName());
+                LOG.warn("Repeat tag.please check in xml tag->{}", element.getTagName());
                 return;
             }
             BeaconRegistry beaconReg = new BeaconRegistry();
@@ -193,7 +194,7 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
 
             Registry reg = SpiManager.holder(Registry.class).target(protocol);
             if (reg == null) {
-                throw new Exception("cannot find protocol->" + protocol + " in xml tag->" + element.getTagName());
+                throw new Exception("Cannot find protocol->" + protocol + " in xml tag->" + element.getTagName());
             }
             reg.address(address);
 
@@ -230,7 +231,7 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
                     String referBeanName = StringUtil.lowerFirstChar(target.getSimpleName());
                     BeanDefinitionRegistry beanReg = parserContext.getRegistry();
                     if (beanReg.containsBeanDefinition(referBeanName)) {
-                        LOG.warn("repeat register.please check in xml with beacon-reference ,interface->{}",
+                        LOG.warn("Repeat register.please check in xml with beacon-reference ,interface->{}",
                                 interfaceName);
                         return;
                     }
@@ -252,10 +253,10 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
         String methods = element.getAttribute("methods");
         String group = element.getAttribute("group");
         if (StringUtil.isBlank(interfaceName)) {
-            throw new Exception(" interfaceName cannot be null in xml tag->" + element.getTagName());
+            throw new Exception(" InterfaceName cannot be null in xml tag->" + element.getTagName());
         }
         if (StringUtil.isBlank(ref)) {
-            throw new Exception(" ref cannot be null in xml tag->" + element.getTagName());
+            throw new Exception(" Reference cannot be null in xml tag->" + element.getTagName());
         }
         if (StringUtil.isBlank(group)) {
             group = "";
@@ -272,8 +273,9 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
             }
         }
         if (!isExist) {
-            throw new Exception("ref->" + ref + " is not implement of interface->" + interfaceName + " in xml tag->"
-                    + element.getTagName());
+            throw new Exception(
+                    "Reference->" + ref + " is not implement of interface->" + interfaceName + " in xml tag->"
+                            + element.getTagName());
         }
         if (StringUtil.isNotEmpty(methods)) {
             if (methods.contains("&")) {
@@ -318,7 +320,7 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
                 referenceSet.add(beaconPath);
             }
         } catch (Exception e) {
-            LOG.error("cannot resolve exporter,please check in xml tag beacon-exporter with id->{},interface->{}", id,
+            LOG.error("Cannot resolve exporter,please check in xml tag beacon-exporter with id->{},interface->{}", id,
                     interfaceName);
             return;
         }
@@ -350,13 +352,19 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
             }
         }
         if (StringUtil.isBlank(interfaceName)) {
-            throw new Exception("interfaceName cannot be null in xml tag->" + element.getTagName());
+            throw new Exception("InterfaceName cannot be null in xml tag->" + element.getTagName());
         }
         if (StringUtil.isBlank(id)) {
-            throw new Exception("id cannot be null in xml tag->" + element.getTagName());
+            throw new Exception("Id cannot be null in xml tag->" + element.getTagName());
+        }
+        if (StringUtil.isBlank(timeout)) {
+            timeout = BeaconConstants.REQUEST_TIMEOUT;
         }
         if (StringUtil.isBlank(group)) {
             group = "";
+        }
+        if (StringUtil.isBlank(tolerant)) {
+            tolerant = BeaconConstants.TOLERANT_FAILFAST;
         }
         try {
 
@@ -382,7 +390,7 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
                 String beanName = StringUtil.lowerFirstChar(target.getSimpleName());
                 BeanDefinitionRegistry beanReg = parserContext.getRegistry();
                 if (beanReg.containsBeanDefinition(beanName)) {
-                    LOG.warn("repeat register.please check in xml tag beacon-reference with id->{},interface->{}", id,
+                    LOG.warn("Repeat register.please check in xml tag beacon-reference with id->{},interface->{}", id,
                             interfaceName);
                     return;
                 }
@@ -394,7 +402,7 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
             }
 
         } catch (Exception e) {
-            LOG.error("cannot resolve reference,please check in xml tag beacon-reference with id->{},interface->{}",
+            LOG.error("Cannot resolve reference,please check in xml tag beacon-reference with id->{},interface->{}",
                     id, interfaceName);
             return;
         }

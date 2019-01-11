@@ -27,15 +27,15 @@ public class GenericRequestLauncher {
     /**
      * generateKey->proxy
      */
-    private static final ConcurrentMap<String, Object> Ref_Map = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<String, Object> Ref_Map = new ConcurrentHashMap<>(16);
 
     @SuppressWarnings("unchecked")
     public static <T> T launch(GenericReference ref) throws Exception {
         if (ref == null) {
             return null;
         }
-        if (StringUtil.isBlank(ref.getInterfaceName())) {
-            throw new Exception("interfacxeName must be provided");
+        if (StringUtil.isEmpty(ref.getInterfaceName())) {
+            throw new Exception("InterfaceName should be provided");
         }
         String key = generateKey(ref);
         if (!Ref_Map.containsKey(key)) {

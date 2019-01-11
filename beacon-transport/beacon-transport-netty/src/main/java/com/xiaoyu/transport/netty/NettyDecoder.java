@@ -46,10 +46,18 @@ public class NettyDecoder extends ByteToMessageDecoder {
             msg = SpiManager.defaultSpiExtender(Serializer.class)
                     .deserialize(bytes, RpcRequest.class);
         } else {
-            msg = SpiManager.defaultSpiExtender(Serializer.class)
-                    .deserialize(bytes, RpcResponse.class);
-        }
+            try {
+                msg = SpiManager.defaultSpiExtender(Serializer.class)
+                        .deserialize(bytes, RpcResponse.class);
+            } catch (RuntimeException e) {
+                // provider抛出的异常,在consumer里面找不到该异常类,导致无法反序列化
+                if (e.getCause() instanceof ClassNotFoundException) {
+                    msg = SpiManager.defaultSpiExtender(Serializer.class)
+                            .deserialize(bytes, RpcResponse.class, "exception");
+                }
+            }
 
+        }
         out.add(msg);
     }
 

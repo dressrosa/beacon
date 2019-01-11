@@ -1,11 +1,17 @@
+/**
+ * 唯有读书,不慵不扰
+ * 
+ */
 package com.xiaoyu.core.cluster.fusion;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
+
 import com.xiaoyu.core.cluster.Strategy;
 import com.xiaoyu.core.common.bean.BeaconPath;
-import com.xiaoyu.core.common.exception.BeaconException;
+import com.xiaoyu.core.common.constant.BeaconConstants;
+import com.xiaoyu.core.common.exception.BizException;
 import com.xiaoyu.core.common.exception.FusedException;
 import com.xiaoyu.core.rpc.config.bean.Invocation;
 
@@ -48,12 +54,13 @@ public class FuseStrategy implements Strategy {
         try {
             response = invocation.invoke(provider);
         } catch (Throwable e) {
-            // 非业务异常
-            if (e instanceof BeaconException) {
+            // 业务类异常
+            if (e instanceof BizException) {
+                this.tryFuse(consumer, false);
+                throw e;
+            } else {
                 throw e;
             }
-            this.tryFuse(consumer, false);
-            throw e;
         }
         this.tryFuse(consumer, true);
         return response;
@@ -85,9 +92,8 @@ public class FuseStrategy implements Strategy {
     public void tryFuse(BeaconPath consumer, boolean invokeSuccess) {
         String service = consumer.getService();
         InvokerCounter gradeCounter = Grade_Map.get(service);
-        long current = 0;
         String[] arr = consumer.getDowngrade().split(":");
-        if ("limit".equals(arr[0])) {
+        if (BeaconConstants.FUSE_QUERY.equals(arr[0])) {
             doQpsFuse(service, Long.valueOf(arr[1]));
             return;
         }
@@ -96,9 +102,8 @@ public class FuseStrategy implements Strategy {
             if (gradeCounter != null) {
                 // 自动升级.发生策略后,降级到10级时,可能一段时间(30s)未发生调用,下次发生调用成功,
                 // 我们认为她恢复的可能性增大,就不需要缓慢升级了
-                if ((current = System.currentTimeMillis()) - gradeCounter.getStartTime() > 30_000) {
-                    gradeCounter.decrement();
-                    gradeCounter.setStartTime(current);
+                if ((System.currentTimeMillis()) - gradeCounter.getStartTime() > 30_000) {
+                    gradeCounter.refresh(0);
                 }
                 // 调用升级
                 if (gradeCounter.decrement() <= 0) {
@@ -107,13 +112,12 @@ public class FuseStrategy implements Strategy {
                     Counter_Map.remove(service);
                 }
             }
-        } // (1.熔断未失败 2.调用失败)
+        } // 1.熔断(未失败) 2.调用失败
         else {
             // 自动降级.发生策略期间,可能一段时间(30s)未发生调用,这时候如果再次发生调用,但是策略还没降到10级
-            // 我们认为下次可能就会成功,则自动降级为10级
-            if (gradeCounter != null && (current = System.currentTimeMillis()) - gradeCounter.getStartTime() > 30_000) {
-                gradeCounter.decrement();
-                gradeCounter.setStartTime(current);
+            // 我们认为下次可能就会成功,则自动降级到接近10级
+            if (gradeCounter != null && (System.currentTimeMillis()) - gradeCounter.getStartTime() > 30_000) {
+                gradeCounter.refresh(9);
             }
             // 调用降级
             doFuse(service, Long.valueOf(arr[1]));
@@ -134,14 +138,18 @@ public class FuseStrategy implements Strategy {
         } else {
             Counter_Map.putIfAbsent(service, (counter = new InvokerCounter()));
         }
+        InvokerCounter gradeCounter = Grade_Map.get(service);
         // 超过次数,进行熔断
         if (count >= threshold) {
             counter.refresh(0);
-            InvokerCounter gradeCounter = Grade_Map.get(service);
             if (gradeCounter == null) {
                 Grade_Map.put(service, new InvokerCounter(Grade_Threshold / 2));
             } else {
                 // 降到最低级就会再重试一次
+                gradeCounter.increment();
+            }
+        } else {
+            if (gradeCounter != null) {
                 gradeCounter.increment();
             }
         }
@@ -154,24 +162,24 @@ public class FuseStrategy implements Strategy {
      * @param threshold
      */
     private void doQpsFuse(String service, long threshold) {
-        long qps = 0;
+        long qpms = 0;
         InvokerCounter qpsCounter = Counter_Map.get(service);
         if (qpsCounter != null) {
-            qps = qpsCounter.qps();
+            qpms = qpsCounter.qpms();
         } else {
             qpsCounter = new InvokerCounter();
             Counter_Map.putIfAbsent(service, qpsCounter);
         }
+        InvokerCounter gradeCounter = Grade_Map.get(service);
         // 超过限流
+        long qps = qpms * 1000;
         if (qps >= threshold) {
-            InvokerCounter gradeCounter = Grade_Map.get(service);
             if (gradeCounter == null) {
                 Grade_Map.put(service, new InvokerCounter(Grade_Threshold / 2));
             }
             // 重新计数
             qpsCounter.refresh(0);
         } else if (qps != -1 && qps < threshold) {
-            InvokerCounter gradeCounter = Grade_Map.get(service);
             if (gradeCounter != null) {
                 // 流量平稳,恢复调用
                 Grade_Map.remove(service);
@@ -196,10 +204,6 @@ public class FuseStrategy implements Strategy {
 
         public long getStartTime() {
             return startTime;
-        }
-
-        public void setStartTime(long startTime) {
-            this.startTime = startTime;
         }
 
         public InvokerCounter() {
@@ -228,13 +232,13 @@ public class FuseStrategy implements Strategy {
             return counter.decrementAndGet();
         }
 
-        public long qps() {
+        public long qpms() {
             long count = counter.incrementAndGet();
-            // 10seconds,间隔10s后统计下qps
+            // 1seconds,间隔1s后统计下qps
             long subtract = 0;
-            if ((subtract = System.currentTimeMillis() - startTime) > 10_000) {
+            if ((subtract = System.currentTimeMillis() - startTime) > 1_000) {
                 startTime = System.currentTimeMillis();
-                return count / (subtract / 1000);
+                return count / subtract;
             }
             return -1;
         }

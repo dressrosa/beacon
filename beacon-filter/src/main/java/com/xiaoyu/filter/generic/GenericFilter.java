@@ -28,7 +28,7 @@ public class GenericFilter implements Filter {
     /**
      * beanconPath.toPath->consumer beaconPath
      */
-    private static final ConcurrentMap<String, BeaconPath> Consumer_Map = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<String, BeaconPath> Consumer_Map = new ConcurrentHashMap<>(16);
 
     private static Registry registry = null;
 

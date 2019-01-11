@@ -81,7 +81,7 @@ public class NettyServer implements Server {
                     .childHandler(initializer);
             f = boot.bind(port).syncUninterruptibly();
             Channel channel = f.channel();
-            LOG.info("Start server at address->{}:{}", NetUtil.localIP(), port);
+            LOG.info("Start netty server at address->{}:{}", NetUtil.localIP(), port);
             if (this.serverChannel != null) {
                 if (!this.serverChannel.isActive()) {
                     NettyChannel.removeChannel(this.serverChannel);
@@ -103,7 +103,7 @@ public class NettyServer implements Server {
             if (!worker.isShuttingDown()) {
                 worker.shutdownGracefully();
                 boss.shutdownGracefully();
-                LOG.info("Close server at address->{}:{}", NetUtil.localIP(), port);
+                LOG.info("Close netty server at address->{}:{}", NetUtil.localIP(), port);
             }
         } finally {
             NettyChannel.removeChannel(this.serverChannel);

@@ -18,14 +18,14 @@ public class AbstractBeaconHandler implements BeaconHandler {
     @Override
     public void receive(Object message) throws Exception {
         if (message == null) {
-            throw new Exception("接受消息为空");
+            throw new Exception("Message received is null");
         }
     }
 
     @Override
     public Object send(Object message) throws Exception {
         if (message == null) {
-            throw new Exception("发送消息为空");
+            throw new Exception("Message be sent is null.");
         }
         return null;
     }
@@ -33,7 +33,7 @@ public class AbstractBeaconHandler implements BeaconHandler {
     @Override
     public Future<Object> sendFuture(Object message) throws Exception {
         if (message == null) {
-            throw new Exception("发送消息为空");
+            throw new Exception("Message be sent is null.");
         }
         return null;
     }

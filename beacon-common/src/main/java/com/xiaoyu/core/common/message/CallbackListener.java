@@ -7,15 +7,14 @@ package com.xiaoyu.core.common.message;
 /**
  * @author hongyu
  * @date 2018-02
- * @description
+ * @description 存储调用成功的结果
  */
 public class CallbackListener {
 
     private volatile Object result = null;
 
     public Object result() {
-        Object ret = result;
-        return ret;
+        return result;
     }
 
     public void onSuccess(Object result) {
