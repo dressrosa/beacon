@@ -78,8 +78,7 @@ public class NettyServerHandler extends ChannelDuplexHandler {
     public void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
         // 在client发送消息来之后,在server端返回消息前(一般在请求超时的时候client挂了),client已经关闭,这样就会
         // 造成 Connection reset by peer的错误,这里去除该channel
-        LOG.error("Exception catch in channel:");
-        cause.printStackTrace();
+        LOG.error("Exception catch in channel:{}", cause);
         if (!ctx.channel().isActive()) {
             NettyChannel.removeChannel(ctx.channel());
         }

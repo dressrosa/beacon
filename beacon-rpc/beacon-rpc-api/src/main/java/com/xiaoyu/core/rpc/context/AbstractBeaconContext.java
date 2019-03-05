@@ -27,15 +27,13 @@ public abstract class AbstractBeaconContext implements Context {
     private static final Logger LOG = LoggerFactory.getLogger(AbstractBeaconContext.class);
 
     // host+":"+port->client
-    protected static Map<String, Client> clientMap = new HashMap<>(16);
+    protected static Map<String, Client> Client_Map = new HashMap<>(16);
     // port->server
-    protected static Map<Integer, Server> serverMap = new HashMap<>(16);
+    protected static Map<Integer, Server> Server_Map = new HashMap<>(16);
 
     protected Registry registry;
 
-    private static AbstractBeaconContext abstractContext;
-
-    private static final ReentrantLock clientLock = new ReentrantLock();
+    private static final ReentrantLock Client_Lock = new ReentrantLock();
 
     public AbstractBeaconContext() {
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
@@ -44,41 +42,40 @@ public abstract class AbstractBeaconContext implements Context {
                 // do something
                 LOG.info("-do something with the shutdownhook-");
                 // 等service取消注册后才关闭注册中心
-                abstractContext.closeRegistry();
+                closeRegistry();
             }
-        }, "beacon-shutdownhook"));
-        abstractContext = this;
+        }, "beacon-shutdown-hook"));
     }
 
     @Override
     public Client client(String host, int port) throws Exception {
+        String key = host + ":" + port;
+        if (Client_Map.containsKey(key)) {
+            return Client_Map.get(key);
+        }
         /**
          * 当第一次大量请求时,可能导致client多次初始化,并覆盖掉已初始化的.
          */
-        clientLock.lock();
+        Client_Lock.lock();
         try {
-            String key = host + ":" + port;
-            if (clientMap.containsKey(key)) {
-                return clientMap.get(key);
-            }
-            Client client = doInitClient(host, port);
-            clientMap.put(key, client);
+            Client client = this.doInitClient(host, port);
+            Client_Map.put(key, client);
             return client;
         } finally {
-            clientLock.unlock();
+            Client_Lock.unlock();
         }
     }
 
     @Override
     public void server(int port) throws Exception {
-        Server server = doInitServer(port);
-        serverMap.put(port, server);
+        Server server = this.doInitServer(port);
+        Server_Map.put(port, server);
     }
 
     @Override
     public void start() {
-        if (serverMap != null && !serverMap.isEmpty()) {
-            Iterator<Server> iter = serverMap.values().iterator();
+        if (Server_Map != null && !Server_Map.isEmpty()) {
+            Iterator<Server> iter = Server_Map.values().iterator();
             try {
                 while (iter.hasNext()) {
                     iter.next().start();
@@ -92,29 +89,29 @@ public abstract class AbstractBeaconContext implements Context {
     @Override
     public void shutdown() {
         LOG.info("Begin shutdown beacon.");
-        doShutdown();
+        this.doShutdown();
         LOG.info("Completely shutdown beacon.");
     }
 
     private void doShutdown() {
-        if (clientMap != null && !clientMap.isEmpty()) {
-            Iterator<Client> iter = clientMap.values().iterator();
-            try {
-                while (iter.hasNext()) {
+        if (Client_Map != null && !Client_Map.isEmpty()) {
+            Iterator<Client> iter = Client_Map.values().iterator();
+            while (iter.hasNext()) {
+                try {
                     iter.next().stop();
+                } catch (Exception e) {
+                    // do nothing
                 }
-            } catch (Exception e) {
-                // do nothing
             }
         }
-        if (serverMap != null && !serverMap.isEmpty()) {
-            Iterator<Server> iter = serverMap.values().iterator();
-            try {
-                while (iter.hasNext()) {
+        if (Server_Map != null && !Server_Map.isEmpty()) {
+            Iterator<Server> iter = Server_Map.values().iterator();
+            while (iter.hasNext()) {
+                try {
                     iter.next().stop();
+                } catch (Exception e) {
+                    // do nothing
                 }
-            } catch (Exception e) {
-                // do nothing
             }
         }
     }

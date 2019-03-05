@@ -31,6 +31,7 @@ public class HelloServiceImpl implements IHelloService {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        System.out.println("hello " + name);
         return "hello " + name;
     }
 

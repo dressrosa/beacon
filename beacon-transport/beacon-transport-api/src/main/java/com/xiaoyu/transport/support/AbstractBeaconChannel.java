@@ -31,7 +31,7 @@ public abstract class AbstractBeaconChannel implements BaseChannel {
 
     private static final Logger LOG = LoggerFactory.getLogger(AbstractBeaconChannel.class);
     /**
-     * 从server断获取的结果,用于异步获取 requestId->result
+     * 从server获取的结果,用于异步获取 requestId->result
      */
     private static final ConcurrentMap<String, CallbackListener> RESULT_MAP = new ConcurrentHashMap<>(32);
 
@@ -47,10 +47,10 @@ public abstract class AbstractBeaconChannel implements BaseChannel {
 
     /**
      * 线程池,每一个消费请求都会放入池中执行等待结果,相当于newCachedThreadPool
-     * coresize=处理器*3 maxsize=最大内存(mb)/2
+     * coresize=处理器*2
      */
     private static final ThreadPoolExecutor TASK_POOL = new ThreadPoolExecutor(
-            Runtime.getRuntime().availableProcessors() << 3, (int) (Runtime.getRuntime().maxMemory() >> 21),
+            Runtime.getRuntime().availableProcessors() << 2, Runtime.getRuntime().availableProcessors() << 3,
             60L, TimeUnit.SECONDS,
             new LinkedBlockingQueue<>(), new ThreadFactory() {
                 @Override
@@ -69,18 +69,18 @@ public abstract class AbstractBeaconChannel implements BaseChannel {
     }
 
     public static void notifyCloseTaskPool() {
-        ThreadPoolExecutor pool = TASK_POOL;
+        final ThreadPoolExecutor pool = TASK_POOL;
         pool.shutdown();
         LOG.info("Shutdown the beacon channel task pool.");
     }
 
     public Future<Object> addTask(Callable<Object> call) {
-        ThreadPoolExecutor pool = TASK_POOL;
+        final ThreadPoolExecutor pool = TASK_POOL;
         return pool.submit(call);
     }
 
     public void addTask(Runnable call) {
-        ThreadPoolExecutor pool = TASK_POOL;
+        final ThreadPoolExecutor pool = TASK_POOL;
         pool.submit(call);
     }
 
@@ -104,6 +104,12 @@ public abstract class AbstractBeaconChannel implements BaseChannel {
             listener.onSuccess(result);
             // 通知等待线程,这里只有一个线程在等待
             listener.notify();
+            try {
+                // 睡眠当前线程,触发上下文切换,让唤醒的线程马上参与竞争
+                Thread.sleep(0);
+            } catch (InterruptedException e) {
+                // do nothing
+            }
             listener = null;
             RESULT_MAP.remove(requestId);
         }
@@ -112,7 +118,7 @@ public abstract class AbstractBeaconChannel implements BaseChannel {
     @Override
     public Future<Object> sendFuture(Object message) throws Exception {
         if (message == null) {
-            throw new Exception("message be sent is null.");
+            throw new Exception("Message be sent is null.");
         }
         return this.doSendFuture(message);
     }
@@ -120,7 +126,7 @@ public abstract class AbstractBeaconChannel implements BaseChannel {
     @Override
     public Object send(Object message) throws Exception {
         if (message == null) {
-            throw new Exception("message be sent is null.");
+            throw new Exception("Message be sent is null.");
         }
         return this.doSend(message);
     }
@@ -128,7 +134,7 @@ public abstract class AbstractBeaconChannel implements BaseChannel {
     @Override
     public void receive(Object message) throws Exception {
         if (message == null) {
-            throw new Exception("message received is null.");
+            throw new Exception("Message received is null.");
         }
         doReceive(message);
         return;

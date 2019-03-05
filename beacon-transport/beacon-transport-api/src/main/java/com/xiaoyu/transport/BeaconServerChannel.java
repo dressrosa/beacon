@@ -114,13 +114,12 @@ public class BeaconServerChannel extends AbstractBeaconChannel {
                                     }
                                 }
                             }
-
                         }
                     } catch (Exception bize) {
                         // 非rpc异常
                         throw new BizException(bize);
                     }
-                } catch (Exception e) {
+                } catch (Throwable e) {
                     resp.setException(e);
                     LOG.error("Beacon exception->", e);
                 }
@@ -128,11 +127,10 @@ public class BeaconServerChannel extends AbstractBeaconChannel {
                 try {
                     baseChannel.send(resp.setResult(result));
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    LOG.error("Beacon exception->", e);
                 }
             }
         });
-
     }
 
     @Override

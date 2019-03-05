@@ -27,4 +27,14 @@ public interface Serializer {
      * @return
      */
     public <T> T deserialize(byte[] data, Class<T> cls);
+
+    /**
+     * 反序列化,并忽略指定字段
+     * 
+     * @param data
+     * @param cls
+     * @param ignoreFields
+     * @return
+     */
+    public <T> T deserialize(byte[] data, Class<T> cls, String... ignoreFields);
 }

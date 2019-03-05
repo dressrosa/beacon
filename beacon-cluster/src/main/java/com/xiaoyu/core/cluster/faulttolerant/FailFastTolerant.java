@@ -6,12 +6,7 @@ package com.xiaoyu.core.cluster.faulttolerant;
 
 import java.util.List;
 
-import com.xiaoyu.core.cluster.FaultTolerant;
-import com.xiaoyu.core.cluster.LoadBalance;
-import com.xiaoyu.core.cluster.Strategy;
 import com.xiaoyu.core.common.bean.BeaconPath;
-import com.xiaoyu.core.common.extension.SpiManager;
-import com.xiaoyu.core.common.utils.StringUtil;
 import com.xiaoyu.core.rpc.config.bean.Invocation;
 
 /**
@@ -21,19 +16,11 @@ import com.xiaoyu.core.rpc.config.bean.Invocation;
  * @date 2018-05
  * @description 相当于正常调用,不做任何额外处理
  */
-public class FailFastTolerant implements FaultTolerant {
+public class FailFastTolerant extends AbstractDefaultTolerant {
 
     @Override
-    public Object invoke(Invocation invocation, List<?> providers) throws Throwable {
-        // 负载均衡
-        LoadBalance loadBalance = SpiManager.defaultSpiExtender(LoadBalance.class);
-        BeaconPath provider = (BeaconPath) loadBalance.select(providers);
-        // 熔断降级
-        if (StringUtil.isBlank(invocation.getConsumer().getDowngrade())) {
-            return invocation.invoke(provider);
-        }
-        Strategy strategy = SpiManager.defaultSpiExtender(Strategy.class);
-        return strategy.fuse(invocation, provider);
+    public Object invoke(Invocation invocation, List<BeaconPath> providers) throws Throwable {
+        return super.invoke(invocation, providers);
     }
 
 }

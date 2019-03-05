@@ -75,7 +75,7 @@ public class HttpChannel implements BaseChannel {
         resp.setId(req.getId());
         try {
             // netty是异步接收,这里直接触发
-            receive(resp);
+            this.receive(resp);
         } catch (Exception e) {
             e.printStackTrace();
         }

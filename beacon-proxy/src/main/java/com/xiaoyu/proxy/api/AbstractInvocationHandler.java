@@ -108,5 +108,5 @@ public abstract class AbstractInvocationHandler {
      * @return
      * @throws Throwable
      */
-    public abstract Object doInvoke(RpcRequest request) throws Throwable;
+    public abstract Object doInvoke(final RpcRequest request) throws Throwable;
 }

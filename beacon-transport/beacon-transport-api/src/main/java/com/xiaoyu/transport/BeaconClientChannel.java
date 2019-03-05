@@ -32,9 +32,9 @@ public class BeaconClientChannel extends AbstractBeaconChannel {
     /**
      * 一次wait的时间(ms)
      */
-    private static final int SLEEP_TIME = 10;
+    private static final int SLEEP_TIME = 5;
     /**
-     * 最大尝试次数 最大即100秒
+     * 最大尝试次数 最大即50秒
      */
     private static final int MAX_RETRY_NUM = 10_000;
 
@@ -91,7 +91,7 @@ public class BeaconClientChannel extends AbstractBeaconChannel {
             // client设定的超时..
             return taskFuture.get(((RpcRequest) message).getTimeout(), TimeUnit.MILLISECONDS);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOG.error("" + e);
             // 取消正在执行的thread,否则线程会执行完毕才能结束
             taskFuture.cancel(true);
             return new RpcResponse()

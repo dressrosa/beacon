@@ -11,6 +11,8 @@ package com.xiaoyu.core.common.constant;
  */
 public class BeaconConstants {
 
+    public static final int PORT = 1992;
+
     /**
      * 
      */
@@ -62,4 +64,15 @@ public class BeaconConstants {
      * 泛型方法
      */
     public static final String $_$INVOKE = "$_$invoke";
+
+    /**
+     * 容错
+     */
+    public static final String TOLERANT_FAILFAST = "failfast";
+
+    // 降级策略
+    public static final String FUSE_TIMEOUT = "timeout";
+    public static final String FUSE_FAULT = "fault";
+    public static final String FUSE_QUERY = "limit";
+    public static final String FUSE_OFFLINE = "offline";
 }

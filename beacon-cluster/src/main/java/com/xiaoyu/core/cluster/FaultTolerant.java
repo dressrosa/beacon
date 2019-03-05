@@ -6,6 +6,7 @@ package com.xiaoyu.core.cluster;
 
 import java.util.List;
 
+import com.xiaoyu.core.common.bean.BeaconPath;
 import com.xiaoyu.core.rpc.config.bean.Invocation;
 
 /**
@@ -22,6 +23,6 @@ public interface FaultTolerant {
      * @return
      * @throws Throwable
      */
-    public Object invoke(Invocation invocation, List<?> providers) throws Throwable;
+    public Object invoke(Invocation invocation, List<BeaconPath> providers) throws Throwable;
 
 }

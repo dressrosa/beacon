@@ -11,6 +11,7 @@ import com.xiaoyu.core.cluster.FaultTolerant;
 import com.xiaoyu.core.common.bean.BeaconPath;
 import com.xiaoyu.core.common.bean.ProxyWrapper;
 import com.xiaoyu.core.common.constant.BeaconConstants;
+import com.xiaoyu.core.common.exception.BeaconException;
 import com.xiaoyu.core.common.extension.SpiManager;
 import com.xiaoyu.core.common.message.RpcRequest;
 import com.xiaoyu.core.register.Registry;
@@ -42,18 +43,18 @@ public class InvocationHandlerAdapter extends AbstractInvocationHandler {
      * @throws Throwable
      */
     @Override
-    public Object doInvoke(RpcRequest request) throws Throwable {
+    public Object doInvoke(final RpcRequest request) throws Throwable {
         Registry reg = SpiManager.defaultSpiExtender(Context.class).getRegistry();
         // 判断service是否存在
         String service = request.getInterfaceName();
         boolean exist = reg.discoverService(service);
         // TODO 可能是注册中心数据丢失,并不是server掉线.这里抛异常可能会导致需要等待下次恢复检查才能继续进行.
         if (!exist) {
-            throw new Exception(
+            throw new BeaconException(
                     "Cannot find the service->" + service + ";please check whether server start or not.");
         }
         // TODO 这里需要获取本地local的consumer,来获取调用信息传入
-        BeaconPath consumer = doGetConsumer(service);
+        BeaconPath consumer = this.doGetConsumer(service);
         Invocation invocation = new Invocation(consumer, request);
         // 过滤器
         Filter filter = SpiManager.holder(Filter.class).target(BeaconConstants.FILTER_CHAIN);
@@ -63,9 +64,9 @@ public class InvocationHandlerAdapter extends AbstractInvocationHandler {
         List<BeaconPath> providers = reg.getLocalProviders(consumer.getGroup(), service);
         // 同group下无provider
         if (providers.isEmpty()) {
-            throw new Exception(
+            throw new BeaconException(
                     "Cannot find the service->" + service + " in the group->" + consumer.getGroup()
-                            + ";please check whether service belong to one group.");
+                            + ";please check whether service belong to this group.");
         }
         // 容错调用
         FaultTolerant tolerant = SpiManager.holder(FaultTolerant.class).target(consumer.getTolerant());
@@ -76,8 +77,8 @@ public class InvocationHandlerAdapter extends AbstractInvocationHandler {
         if (!wrapper.isGeneric()) {
             return SpiManager.defaultSpiExtender(Context.class).getRegistry().getLocalConsumer(service);
         }
-        Map<String, Object> attach = wrapper.getAttach();
 
+        Map<String, Object> attach = wrapper.getAttach();
         BeaconPath con = new BeaconPath();
         con.setGeneric(true)
                 .setTolerant((String) attach.get("tolerant"))

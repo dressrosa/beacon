@@ -9,9 +9,11 @@ import org.slf4j.LoggerFactory;
 
 import com.xiaoyu.core.common.bean.BeaconPath;
 import com.xiaoyu.core.common.exception.BeaconException;
+import com.xiaoyu.core.common.exception.BizException;
 import com.xiaoyu.core.common.extension.SpiManager;
 import com.xiaoyu.core.common.message.RpcRequest;
 import com.xiaoyu.core.common.message.RpcResponse;
+import com.xiaoyu.core.common.utils.StringUtil;
 import com.xiaoyu.core.rpc.api.Context;
 
 /**
@@ -48,17 +50,17 @@ public class Invocation {
     }
 
     public Object invoke(BeaconPath provider) throws Throwable {
-        String methods = provider.getMethods();
-        String[] mes = methods.split(",");
+        String[] mes = provider.getMethods().split(",");
         boolean access = false;
+        String methodName = request.getMethodName();
         for (int i = 0; i < mes.length; i++) {
-            if (request.getMethodName().equals(mes[i])) {
+            if (methodName.equals(mes[i])) {
                 access = true;
                 break;
             }
         }
         if (!access) {
-            throw new BeaconException("have no access to invoke the method " + request.getMethodName() + " in "
+            throw new BeaconException("Have no access to invoke the method " + request.getMethodName() + " in "
                     + request.getInterfaceName());
         }
         request.setInterfaceImpl(provider.getRef());
@@ -70,7 +72,14 @@ public class Invocation {
         RpcResponse result = (RpcResponse) ret;
         if (result.getException() != null) {
             LOG.error("Beacon exception->", result.getException());
+            if (result.getException() instanceof BizException) {
+                throw result.getException().getCause();
+            }
             throw result.getException();
+        }
+        // 我们忽略exception,所以直接使用errorMessage当作异常
+        else if (StringUtil.isNotEmpty(result.getErrorMessage())) {
+            throw new RuntimeException(result.getErrorMessage());
         }
         return result.getResult();
     }

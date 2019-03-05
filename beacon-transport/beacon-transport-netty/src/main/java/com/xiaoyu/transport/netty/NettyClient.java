@@ -37,7 +37,7 @@ public class NettyClient implements Client {
 
     private Channel clientChannel;
 
-    private static final Integer RETRY_TIMES = 10;
+    private static final int RETRY_TIMES = 10;
     private final String host;
     private final int port;
     private Bootstrap boot;
@@ -98,7 +98,7 @@ public class NettyClient implements Client {
             while (++num < RETRY_TIMES) {
                 try {
                     TimeUnit.MILLISECONDS.sleep(1500);
-                    LOG.warn("connect to server {} failed,retry {} times.", (host + ":" + port), num);
+                    LOG.warn("Connect to server {} failed,retry {} times.", (host + ":" + port), num);
                     f = boot.clone(worker = new NioEventLoopGroup())
                             .connect(host, port)
                             .syncUninterruptibly();
@@ -113,11 +113,11 @@ public class NettyClient implements Client {
                     }
                     break;
                 } catch (Exception e1) {
-                    LOG.error("connect to server->{} failed in end,retry {} times.", (host + ":" + port), num);
+                    LOG.error("Connect to server->{} failed in end,retry {} times.", (host + ":" + port), num);
                 }
             }
             if (f == null) {
-                throw new Exception("connect to server->" + (host + ":" + port) + " failed,please check.");
+                throw new Exception("Connect to server->" + (host + ":" + port) + " failed,please check.");
             }
         } finally {
             if (f != null && f.cause() != null) {
@@ -131,7 +131,7 @@ public class NettyClient implements Client {
         try {
             if (!worker.isShuttingDown()) {
                 worker.shutdownGracefully();
-                LOG.info("Close client which connected to address->{}:{}", host, port);
+                LOG.info("Close netty client which connected to address->{}:{}", host, port);
             }
         } finally {
             NettyChannel.shutdown();

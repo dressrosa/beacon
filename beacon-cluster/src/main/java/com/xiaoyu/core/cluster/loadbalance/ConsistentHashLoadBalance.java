@@ -21,21 +21,23 @@ import com.xiaoyu.core.common.bean.BeaconPath;
 public class ConsistentHashLoadBalance implements LoadBalance {
 
     /**
-     * hash->virtual providers
+     * service->SortedMap(hash->virtual providers)
      */
-    private SortedMap<Integer, String> Circle_Sorted_Map = new TreeMap<>();
+    private static final Map<String, SortedMap<Integer, String>> Service_Hash_Cache = new HashMap<>(32);
+    /**
+     * service->HashSet (true providers,这里用来判断是否已经加入SortedMap)
+     */
+    private static final Map<String, HashSet<String>> Service_Providers = new HashMap<>(32);
 
     /**
-     * true providers,这里用来判断是否已经加入Circle_Sorted_Map
-     */
-    private static final HashSet<String> Machines = new HashSet<>();
-
-    /**
-     * 这里读写锁,用来对server端下线后,服务不一致时候,对Circle_Sorted_Map进行clear的操作
+     * 这里读写锁,用来对server端下线后,服务不一致时候,对Sorted_Map进行clear的操作
      * clear加写锁,add加读锁
      */
     private static final ReentrantReadWriteLock Read_Write_Lock = new ReentrantReadWriteLock();
 
+    /**
+     * 格式-> 12,192.168.0.0:8080
+     */
     private static final String Separator = ",";
 
     @SuppressWarnings("unchecked")
@@ -54,21 +56,22 @@ public class ConsistentHashLoadBalance implements LoadBalance {
         // host->BeaconPath
         Map<String, BeaconPath> proMap = this.spreadTrueProviders(pros);
 
+        SortedMap<Integer, String> cacheMap = Service_Hash_Cache.get(service);
         // 找比她大的所有节点
-        SortedMap<Integer, String> nodes = Circle_Sorted_Map.tailMap(hash(service));
+        SortedMap<Integer, String> nodes = cacheMap.tailMap(hash(service));
         int key;
-        String host;
+        String host = null;
         // 说明已是环的终点
         if (nodes.isEmpty()) {
             // 返回开头,直接取第一个节点
-            key = Circle_Sorted_Map.firstKey();
-            String value = Circle_Sorted_Map.get(key);
+            key = Service_Hash_Cache.get(service).firstKey();
+            String value = cacheMap.get(key);
             // 取出虚拟节点中的host
             host = value.substring(value.indexOf(Separator) + 1);
         } else {
             // 取下一个节点
             key = hash(service);
-            String value = Circle_Sorted_Map.get(nodes.firstKey());
+            String value = cacheMap.get(nodes.firstKey());
             // 取出虚拟节点中的host
             host = value.substring(value.indexOf(Separator) + 1);
         }
@@ -76,23 +79,50 @@ public class ConsistentHashLoadBalance implements LoadBalance {
     }
 
     /**
-     * 检查是否server已经不一致,需清空Circle_Sorted_Map和Machines
+     * 检查是否server已经不一致,需清空sorted_Map和providers
      * 
      * @param pros
      */
     private void doCheckRefresh(List<BeaconPath> pros) {
-        for (BeaconPath p : pros) {
-            if (!Machines.contains(p.getHost())) {
-                // 这里写锁,一旦进入,其他都需要等待clear完成
+        String service = pros.get(0).getService();
+        // 这里在首次并发的时候也不影响
+        HashSet<String> sets = Service_Providers.get(service);
+        if (sets == null) {
+            Service_Providers.put(service, (sets = new HashSet<>()));
+        }
+        SortedMap<Integer, String> cacheMap = Service_Hash_Cache.get(service);
+        if (cacheMap == null) {
+            Service_Hash_Cache.put(service, (cacheMap = new TreeMap<>()));
+        }
+        if (!sets.isEmpty()) {
+            // 旧server下线
+            if (sets.size() != pros.size()) {
                 Read_Write_Lock.writeLock().lock();
                 try {
-                    // 这里再判断一次,因为在读锁释放后,可能这里已经contain了
-                    if (!Machines.contains(p.getHost())) {
-                        Circle_Sorted_Map.clear();
-                        Machines.clear();
-                    }
+                    cacheMap.clear();
+                    sets.clear();
                 } finally {
                     Read_Write_Lock.writeLock().unlock();
+                }
+            } else {
+                String pst = null;
+                // 新server上线
+                for (BeaconPath p : pros) {
+                    if (!sets.contains(pst = p.getHost() + ":" + p.getPort())) {
+                        // 这里写锁,一旦进入,其他都需要等待clear完成,这个可能影响其他service.
+                        // 不过server下线的情况是会很少出现的
+                        Read_Write_Lock.writeLock().lock();
+                        try {
+                            // 这里再判断一次,因为在读锁释放后,可能这里已经contain了
+                            if (!sets.contains(pst)) {
+                                cacheMap.clear();
+                                sets.clear();
+                            }
+                        } finally {
+                            Read_Write_Lock.writeLock().unlock();
+                        }
+                        break;
+                    }
                 }
             }
         }
@@ -105,14 +135,17 @@ public class ConsistentHashLoadBalance implements LoadBalance {
      * @return
      */
     private Map<String, BeaconPath> spreadTrueProviders(List<BeaconPath> providers) {
-        Map<String, BeaconPath> proMap = new HashMap<>(providers.size() << 1);
+        Map<String, BeaconPath> proMap = new HashMap<>(providers.size());
+        String service = providers.get(0).getService();
         Read_Write_Lock.readLock().lock();
+        // 这里读锁,每个线程都可以进入
+        HashSet<String> sets = Service_Providers.get(service);
         try {
+            String pst = null;
             for (BeaconPath p : providers) {
-                proMap.put(p.getHost(), p);
-                // 这里读锁,每个线程都可以进入
-                if (Machines.add(p.getHost())) {
-                    spreadVirtualProvider(p.getHost());
+                proMap.put((pst = p.getHost() + ":" + p.getPort()), p);
+                if (sets.add(pst)) {
+                    spreadVirtualProvider(p);
                 }
             }
         } finally {
@@ -122,18 +155,19 @@ public class ConsistentHashLoadBalance implements LoadBalance {
     }
 
     /**
-     * 初始化虚拟节点
+     * 初始化虚拟节点(格式-> 12,127.0.0.1:8080)
      * 
      * @param host
      */
-    private void spreadVirtualProvider(String host) {
+    private void spreadVirtualProvider(BeaconPath p) {
         String virtual = null;
-        String appendStr = Separator + host;
+        String appendStr = Separator.concat(p.getHost()).concat(":").concat(p.getPort());
         // 1:32
         int size = 32;
+        SortedMap<Integer, String> cacheMap = Service_Hash_Cache.get(p.getService());
         for (int i = 0; i < size; i++) {
             virtual = String.valueOf(i).concat(appendStr);
-            Circle_Sorted_Map.put(hash(virtual), virtual);
+            cacheMap.put(hash(virtual), virtual);
         }
     }
 

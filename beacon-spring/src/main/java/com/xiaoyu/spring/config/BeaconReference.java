@@ -21,7 +21,7 @@ public class BeaconReference extends BeaconBean {
     /**
      * 请求超时
      */
-    private String timeout = "3000";
+    private String timeout;
 
     /**
      * 重试次数
@@ -36,7 +36,7 @@ public class BeaconReference extends BeaconBean {
     /**
      * 容错策略
      */
-    private String tolerant = "failfast";
+    private String tolerant;
 
     /**
      * 是否泛型接口
@@ -46,7 +46,7 @@ public class BeaconReference extends BeaconBean {
     /**
      * 服务分组
      */
-    private String group = "";
+    private String group;
 
     /**
      * 服务降级 格式(策略:降级类)

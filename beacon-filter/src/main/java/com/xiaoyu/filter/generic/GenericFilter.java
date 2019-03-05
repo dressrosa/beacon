@@ -28,9 +28,17 @@ public class GenericFilter implements Filter {
     /**
      * beanconPath.toPath->consumer beaconPath
      */
-    private static final ConcurrentMap<String, BeaconPath> Consumer_Map = new ConcurrentHashMap<>();
+    private static final ConcurrentMap<String, BeaconPath> Consumer_Map = new ConcurrentHashMap<>(16);
 
-    private Registry registry = null;
+    private static Registry registry = null;
+
+    static {
+        try {
+            registry = SpiManager.defaultSpiExtender(Registry.class);
+        } catch (Exception e) {
+            // do nothing
+        }
+    }
 
     @Override
     public void invoke(Invocation invocation) {
@@ -41,13 +49,6 @@ public class GenericFilter implements Filter {
         RpcRequest req = invocation.getRequest();
         if (!BeaconConstants.$_$INVOKE.equals(req.getMethodName())) {
             return;
-        }
-        try {
-            if (registry == null) {
-                registry = SpiManager.defaultSpiExtender(Registry.class);
-            }
-        } catch (Exception e) {
-            // do nothing
         }
         con.setService(req.getInterfaceName())
                 .setCheck(false)
