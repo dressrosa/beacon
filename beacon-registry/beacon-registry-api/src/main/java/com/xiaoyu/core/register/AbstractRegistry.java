@@ -5,11 +5,8 @@
 package com.xiaoyu.core.register;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -24,48 +21,36 @@ import com.xiaoyu.core.common.constant.From;
  */
 public abstract class AbstractRegistry implements Registry {
 
-    //
     /**
-     * service->BeaconPath(serviceDetail)
+     * provider service->BeaconPath(serviceDetail)
      */
-    protected static final ConcurrentMap<String, Set<BeaconPath>> SERVICE_MAP = new ConcurrentHashMap<>(32);
-
+    protected static final ConcurrentMap<String, Set<BeaconPath>> Provider_Service_Map = new ConcurrentHashMap<>(32);
     /**
-     * service->proxyBean
+     * consumer service->BeaconPath(serviceDetail)
      */
-    private static final Map<String, Object> BEAN_MAP = new HashMap<>(32);
-
-    protected void addProxyBean(BeaconPath beaconPath) {
-        if (beaconPath.getProxy() != null) {
-            BEAN_MAP.put(beaconPath.getService(), beaconPath.getProxy());
-        }
-    }
+    protected static final ConcurrentMap<String, Set<BeaconPath>> Consumer_Service_Map = new ConcurrentHashMap<>(32);
 
     @Override
     public Object getProxyBean(String service) {
-        return BEAN_MAP.get(service);
+        // provider端的service对应的provider只有一个
+        return Provider_Service_Map.get(service).iterator().next().getProxy();
     }
 
     @Override
     public boolean discoverService(String service) {
-        Set<BeaconPath> sets = SERVICE_MAP.get(service);
+        Set<BeaconPath> sets = Provider_Service_Map.get(service);
         if (sets != null) {
-            Iterator<BeaconPath> iter = sets.iterator();
-            while(iter.hasNext()) {
-                if (iter.next().getSide() == From.SERVER) {
-                    return true;
-                }
-            }
+            return true;
         }
         return this.doDiscoverService(service);
     }
 
     @Override
     public List<BeaconPath> getLocalProviders(String group, String service) {
-        Set<BeaconPath> providers = SERVICE_MAP.get(service);
+        Set<BeaconPath> providers = Provider_Service_Map.get(service);
         List<BeaconPath> list = new ArrayList<>();
         for (BeaconPath p : providers) {
-            if (p.getSide() == From.SERVER && p.getGroup().equals(group)) {
+            if (p.getGroup().equals(group)) {
                 list.add(p);
             }
         }
@@ -74,38 +59,30 @@ public abstract class AbstractRegistry implements Registry {
 
     @Override
     public BeaconPath getLocalConsumer(String service) {
-        Set<BeaconPath> paths = SERVICE_MAP.get(service);
-        if (paths != null) {
-            for (BeaconPath p : paths) {
-                if (p.getSide() == From.CLIENT) {
-                    return p;
-                }
-            }
-        }
-        return null;
+        // 在consumer端set里面只有一个
+        return Consumer_Service_Map.get(service).iterator().next();
     }
 
     protected void initProviders(String service) {
-        if (!SERVICE_MAP.containsKey(service)) {
-            SERVICE_MAP.put(service, new HashSet<>());
+        if (!Provider_Service_Map.containsKey(service)) {
+            Provider_Service_Map.put(service, new HashSet<>());
         }
         doInitProviders(service);
     }
 
     protected void storeLocalService(String service, BeaconPath path) {
-        if (!SERVICE_MAP.containsKey(service)) {
-            SERVICE_MAP.put(service, new HashSet<>());
+        if (path.getSide() == From.CLIENT) {
+            if (!Consumer_Service_Map.containsKey(service)) {
+                Consumer_Service_Map.put(service, new HashSet<>());
+            }
+            Consumer_Service_Map.get(service).add(path);
+        } else {
+            if (!Provider_Service_Map.containsKey(service)) {
+                Provider_Service_Map.put(service, new HashSet<>());
+            }
+            Provider_Service_Map.get(service).add(path);
         }
-        doStoreLocalService(service, path);
     }
-
-    /**
-     * service存储在本地
-     * 
-     * @param service
-     * @param path
-     */
-    public abstract void doStoreLocalService(String service, BeaconPath path);
 
     /**
      * 是否存在注册service

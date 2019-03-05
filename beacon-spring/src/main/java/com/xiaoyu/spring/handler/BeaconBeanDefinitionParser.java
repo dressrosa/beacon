@@ -344,7 +344,7 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
                 throw new Exception(
                         "Cannot resolve reference in beacon-reference with downgrade:" + downgrade);
             }
-            if (!("query".equals(arr[0]) || "fault".equals(arr[0]) || "timeout".equals(arr[0]))
+            if (!("limit".equals(arr[0]) || "fault".equals(arr[0]) || "timeout".equals(arr[0]))
                     || !StringUtil.isNumeric(arr[1])) {
                 throw new Exception(
                         "Cannot resolve reference in beacon-reference with wrong downgrade strategy ["

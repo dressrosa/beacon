@@ -31,7 +31,7 @@ public class BizController {
         try {
             re = this.helloService.hello(name);
         } catch (FusedException e) {
-            System.out.print("熔断补偿处理....");
+            System.out.println("熔断补偿处理....");
         }
         return re;
     }
@@ -42,7 +42,7 @@ public class BizController {
         try {
             re = this.userService.age(name);
         } catch (FusedException e) {
-            System.out.print("熔断补偿处理....");
+           // System.out.println("熔断补偿处理....");
         }
         return re + "";
     }

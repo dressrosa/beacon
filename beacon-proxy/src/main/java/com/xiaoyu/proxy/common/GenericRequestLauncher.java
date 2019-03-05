@@ -35,7 +35,7 @@ public class GenericRequestLauncher {
             return null;
         }
         if (StringUtil.isEmpty(ref.getInterfaceName())) {
-            throw new Exception("InterfaceName should be provided");
+            throw new RuntimeException("InterfaceName should be provided");
         }
         String key = generateKey(ref);
         if (!Ref_Map.containsKey(key)) {

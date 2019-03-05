@@ -73,6 +73,6 @@ public class BeaconConstants {
     // 降级策略
     public static final String FUSE_TIMEOUT = "timeout";
     public static final String FUSE_FAULT = "fault";
-    public static final String FUSE_QUERY = "query";
+    public static final String FUSE_QUERY = "limit";
     public static final String FUSE_OFFLINE = "offline";
 }

@@ -6,7 +6,7 @@ package com.xiaoyu.core.cluster.fusion;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.LongAdder;
 
 import com.xiaoyu.core.cluster.Strategy;
 import com.xiaoyu.core.common.bean.BeaconPath;
@@ -57,10 +57,8 @@ public class FuseStrategy implements Strategy {
             // 业务类异常
             if (e instanceof BizException) {
                 this.tryFuse(consumer, false);
-                throw e;
-            } else {
-                throw e;
             }
+            throw e;
         }
         this.tryFuse(consumer, true);
         return response;
@@ -136,8 +134,9 @@ public class FuseStrategy implements Strategy {
         if (counter != null) {
             count = counter.increment();
         } else {
-            Counter_Map.putIfAbsent(service, (counter = new InvokerCounter()));
+            Counter_Map.putIfAbsent(service, new InvokerCounter());
         }
+        counter = Counter_Map.get(service);
         InvokerCounter gradeCounter = Grade_Map.get(service);
         // 超过次数,进行熔断
         if (count >= threshold) {
@@ -162,24 +161,25 @@ public class FuseStrategy implements Strategy {
      * @param threshold
      */
     private void doQpsFuse(String service, long threshold) {
-        long qpms = 0;
+        long qps = 0;
         InvokerCounter qpsCounter = Counter_Map.get(service);
         if (qpsCounter != null) {
-            qpms = qpsCounter.qpms();
+            qps = qpsCounter.qps();
         } else {
-            qpsCounter = new InvokerCounter();
-            Counter_Map.putIfAbsent(service, qpsCounter);
+            Counter_Map.putIfAbsent(service, new InvokerCounter());
         }
+        qpsCounter = Counter_Map.get(service);
         InvokerCounter gradeCounter = Grade_Map.get(service);
         // 超过限流
-        long qps = qpms * 1000;
         if (qps >= threshold) {
             if (gradeCounter == null) {
                 Grade_Map.put(service, new InvokerCounter(Grade_Threshold / 2));
             }
             // 重新计数
             qpsCounter.refresh(0);
-        } else if (qps != -1 && qps < threshold) {
+        }
+        // 流量下降并保持30s以上
+        else if (qps != -1 && qps < threshold && (System.currentTimeMillis() - qpsCounter.getStartTime()) > 30_000) {
             if (gradeCounter != null) {
                 // 流量平稳,恢复调用
                 Grade_Map.remove(service);
@@ -196,7 +196,7 @@ public class FuseStrategy implements Strategy {
         /**
          * 1.累积计数 2.级数计数
          */
-        private final AtomicLong counter = new AtomicLong(0);
+        private final LongAdder counter = new LongAdder();
         /**
          * 1.记录QPS统计的开始时间 2.记录策略发生的时间
          */
@@ -211,34 +211,37 @@ public class FuseStrategy implements Strategy {
         }
 
         public InvokerCounter(int count) {
-            counter.set(count);
+            counter.add(count);
             startTime = System.currentTimeMillis();
         }
 
         public long increment() {
-            return counter.incrementAndGet();
+            counter.increment();
+            return counter.longValue();
         }
 
         public void refresh(int count) {
-            counter.set(count);
+            counter.reset();
+            counter.add(count);
             startTime = System.currentTimeMillis();
         }
 
         public long getCount() {
-            return counter.get();
+            return counter.longValue();
         }
 
         public long decrement() {
-            return counter.decrementAndGet();
+            counter.decrement();
+            return counter.longValue();
         }
 
-        public long qpms() {
-            long count = counter.incrementAndGet();
+        public synchronized long qps() {
+            counter.increment();
+            long count = counter.longValue();
             // 1seconds,间隔1s后统计下qps
-            long subtract = 0;
-            if ((subtract = System.currentTimeMillis() - startTime) > 1_000) {
+            if ((System.currentTimeMillis() - startTime) > 1_000) {
                 startTime = System.currentTimeMillis();
-                return count / subtract;
+                return count;
             }
             return -1;
         }

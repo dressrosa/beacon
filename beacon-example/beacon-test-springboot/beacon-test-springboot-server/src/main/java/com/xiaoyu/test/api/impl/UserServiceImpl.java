@@ -3,6 +3,9 @@
  */
 package com.xiaoyu.test.api.impl;
 
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
+
 import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Service;
@@ -17,6 +20,12 @@ public class UserServiceImpl implements IUserService {
 
     @Override
     public int age(String name) {
+        int time = new Random().nextInt(200);
+        try {
+            TimeUnit.MILLISECONDS.sleep(time);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
         System.out.println(name);
         return name.length();
     }

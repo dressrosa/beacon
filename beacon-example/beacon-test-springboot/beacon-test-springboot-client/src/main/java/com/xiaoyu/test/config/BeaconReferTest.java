@@ -26,7 +26,8 @@ public class BeaconReferTest extends BeaconReferConfiguration {
         list.add(new BeaconReference()
                 .setInterfaceName(IUserService.class.getName())
                 .setCheck(false)
-                .setGroup("dev"));
+                .setGroup("dev")
+                .setDowngrade("limit:300"));
         return list;
     }
 

@@ -43,7 +43,7 @@ public class InvocationHandlerAdapter extends AbstractInvocationHandler {
      * @throws Throwable
      */
     @Override
-    public Object doInvoke(RpcRequest request) throws Throwable {
+    public Object doInvoke(final RpcRequest request) throws Throwable {
         Registry reg = SpiManager.defaultSpiExtender(Context.class).getRegistry();
         // 判断service是否存在
         String service = request.getInterfaceName();
@@ -54,7 +54,7 @@ public class InvocationHandlerAdapter extends AbstractInvocationHandler {
                     "Cannot find the service->" + service + ";please check whether server start or not.");
         }
         // TODO 这里需要获取本地local的consumer,来获取调用信息传入
-        BeaconPath consumer = doGetConsumer(service);
+        BeaconPath consumer = this.doGetConsumer(service);
         Invocation invocation = new Invocation(consumer, request);
         // 过滤器
         Filter filter = SpiManager.holder(Filter.class).target(BeaconConstants.FILTER_CHAIN);
