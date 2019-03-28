@@ -10,14 +10,14 @@
 
     <beacon:registry address="127.0.0.1:2181" protocol="zookeeper" />
 
-    <beacon:exporter id="helloService1"
+    <beacon:exporter id="helloService1" group="dev"
         interfaceName="com.xiaoyu.test.api.IHelloService" ref="com.xiaoyu.test.api.impl.HelloServiceImpl" />
 
-    <beacon:exporter id="userService1"
+  <!--   <beacon:exporter id="userService1"
         interfaceName="com.xiaoyu.test.api.IUserService" ref="com.xiaoyu.test.api.impl.UserServiceImpl" />
-
+ -->
     <!--spring相关配置  -->
     <bean class="org.springframework.beans.factory.annotation.AutowiredAnnotationBeanPostProcessor" />  
     <bean id="helloService" class="com.xiaoyu.test.api.impl.HelloServiceImpl" />
-    <bean id="userService" class="com.xiaoyu.test.api.impl.UserServiceImpl" />
+    <!--  <bean id="userService" class="com.xiaoyu.test.api.impl.UserServiceImpl" />  --> 
 </beans>

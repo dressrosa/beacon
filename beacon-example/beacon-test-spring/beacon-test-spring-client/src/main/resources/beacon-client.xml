@@ -5,6 +5,7 @@
     xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
     http://www.iwouldbe.com/schema/beacon http://www.iwouldbe.com/schema/beacon.xsd">
 
+    <beacon:protocol name="beacon" port="1992" />
 
     <beacon:registry address="127.0.0.1:2181" protocol="zookeeper" />
 
