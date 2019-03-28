@@ -6,9 +6,9 @@ package com.xiaoyu.test.config;
 import java.util.ArrayList;
 import java.util.List;
 
-import com.xiaoyu.beacon.autoconfigure.BeaconReferConfiguration;
-import com.xiaoyu.beacon.autoconfigure.anno.BeaconRefer;
-import com.xiaoyu.spring.config.BeaconReference;
+import com.xiaoyu.beacon.starter.BeaconReferConfiguration;
+import com.xiaoyu.beacon.starter.anno.BeaconRefer;
+import com.xiaoyu.beacon.spring.config.BeaconReference;
 import com.xiaoyu.test.api.IUserService;
 
 @BeaconRefer

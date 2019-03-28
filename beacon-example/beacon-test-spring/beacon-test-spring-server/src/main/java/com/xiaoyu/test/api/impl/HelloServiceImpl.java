@@ -18,8 +18,8 @@ import com.xiaoyu.test.api.IUserService;
  */
 public class HelloServiceImpl implements IHelloService {
 
-    @Autowired
-    private IUserService userService;
+//    @Autowired
+//    private IUserService userService;
 
     @Override
     public String hello(String name) {
@@ -28,7 +28,7 @@ public class HelloServiceImpl implements IHelloService {
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return "hello " + userService.age(name);
+        return "hello " + name;
     }
 
     @Override

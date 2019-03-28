@@ -1,1 +1,1 @@
-http\://www.iwouldbe.com/schema/beacon=com.xiaoyu.spring.handler.BeaconNamespaceHandler
+http\://www.iwouldbe.com/schema/beacon=com.xiaoyu.beacon.spring.handler.BeaconNamespaceHandler

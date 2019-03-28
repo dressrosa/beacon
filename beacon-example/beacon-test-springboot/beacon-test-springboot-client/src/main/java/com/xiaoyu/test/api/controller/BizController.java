@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.xiaoyu.core.common.exception.FusedException;
+import com.xiaoyu.beacon.common.exception.FusedException;
 import com.xiaoyu.test.api.IHelloService;
 import com.xiaoyu.test.api.IUserService;
 

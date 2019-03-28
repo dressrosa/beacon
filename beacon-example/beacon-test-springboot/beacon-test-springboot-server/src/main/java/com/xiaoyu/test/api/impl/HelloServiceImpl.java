@@ -10,7 +10,7 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.context.annotation.ScopedProxyMode;
 import org.springframework.stereotype.Service;
 
-import com.xiaoyu.beacon.autoconfigure.anno.BeaconExporter;
+import com.xiaoyu.beacon.starter.anno.BeaconExporter;
 import com.xiaoyu.test.api.IHelloService;
 
 @Service

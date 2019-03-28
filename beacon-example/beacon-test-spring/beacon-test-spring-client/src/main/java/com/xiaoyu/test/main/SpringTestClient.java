@@ -8,9 +8,9 @@ import java.util.concurrent.CountDownLatch;
 import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
 
-import com.xiaoyu.core.common.generic.GenericReference;
-import com.xiaoyu.core.rpc.service.GenericService;
-import com.xiaoyu.proxy.common.GenericRequestLauncher;
+import com.xiaoyu.beacon.common.generic.GenericReference;
+import com.xiaoyu.beacon.proxy.common.GenericRequestLauncher;
+import com.xiaoyu.beacon.rpc.service.GenericService;
 import com.xiaoyu.test.api.IHelloService;
 
 /**
@@ -29,12 +29,12 @@ public class SpringTestClient {
             System.out.println(service.hello("xiaoming"));
             // 泛型调用
             GenericReference refer = new GenericReference();
-            refer.setInterfaceName("com.xiaoyu.test.api.IUserService")
+            refer.setInterfaceName("com.xiaoyu.test.api.IHelloService")
                     .setTimeout("3000")
-                    .setGroup("produce");
+                    .setGroup("dev");
             for (int i = 0; i < 10; i++) {
                 GenericService generic = GenericRequestLauncher.launch(refer);
-                Object result = generic.$_$invoke("name", String.class, new Object[] { "cat" });
+                Object result = generic.$_$invoke("hello", String.class, new Object[] { "cat" });
                 System.out.println("re:" + result);
             }
             

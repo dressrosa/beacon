@@ -7,7 +7,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.ComponentScan;
 
-import com.xiaoyu.beacon.autoconfigure.EnableBeacon;
+import com.xiaoyu.beacon.starter.EnableBeacon;
 
 @SpringBootApplication
 @ComponentScan(basePackages = { "com.xiaoyu.test" })

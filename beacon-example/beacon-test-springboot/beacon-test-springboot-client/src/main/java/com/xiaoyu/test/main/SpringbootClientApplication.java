@@ -9,7 +9,7 @@ import org.springframework.context.ConfigurableApplicationContext;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
-import com.xiaoyu.beacon.autoconfigure.EnableBeacon;
+import com.xiaoyu.beacon.starter.EnableBeacon;
 
 @SpringBootApplication
 @ComponentScan(basePackages = { "com.xiaoyu.test" })
