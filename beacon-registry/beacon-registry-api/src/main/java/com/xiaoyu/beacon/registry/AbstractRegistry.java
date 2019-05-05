@@ -48,6 +48,10 @@ public abstract class AbstractRegistry implements Registry {
     @Override
     public List<BeaconPath> getLocalProviders(String group, String service) {
         Set<BeaconPath> providers = Provider_Service_Map.get(service);
+        if (providers == null) {
+            initProviders(service);
+        }
+        providers = Provider_Service_Map.get(service);
         List<BeaconPath> list = new ArrayList<>();
         for (BeaconPath p : providers) {
             if (p.getGroup().equals(group)) {
