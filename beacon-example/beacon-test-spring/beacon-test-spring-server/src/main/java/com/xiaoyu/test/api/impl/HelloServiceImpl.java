@@ -7,6 +7,7 @@ import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 import com.xiaoyu.test.api.IHelloService;
 import com.xiaoyu.test.api.IUserService;
@@ -16,6 +17,7 @@ import com.xiaoyu.test.api.IUserService;
  * @date 2018-08
  * @description
  */
+@Service
 public class HelloServiceImpl implements IHelloService {
 
 //    @Autowired

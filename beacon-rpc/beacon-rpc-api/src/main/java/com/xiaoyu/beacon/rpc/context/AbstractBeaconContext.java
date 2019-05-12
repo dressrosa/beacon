@@ -7,6 +7,7 @@ package com.xiaoyu.beacon.rpc.context;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.slf4j.Logger;
@@ -32,6 +33,8 @@ public abstract class AbstractBeaconContext implements Context {
     protected static Map<Integer, Server> Server_Map = new HashMap<>(16);
 
     protected Registry registry;
+
+    private AtomicBoolean Started = new AtomicBoolean(false);
 
     private static final ReentrantLock Client_Lock = new ReentrantLock();
 
@@ -75,13 +78,15 @@ public abstract class AbstractBeaconContext implements Context {
     @Override
     public void start() {
         if (Server_Map != null && !Server_Map.isEmpty()) {
-            Iterator<Server> iter = Server_Map.values().iterator();
-            try {
-                while (iter.hasNext()) {
-                    iter.next().start();
+            if (Started.compareAndSet(false, true)) {
+                Iterator<Server> iter = Server_Map.values().iterator();
+                try {
+                    while (iter.hasNext()) {
+                        iter.next().start();
+                    }
+                } catch (Exception e) {
+                    // do nothing
                 }
-            } catch (Exception e) {
-                // do nothing
             }
         }
     }
@@ -114,6 +119,7 @@ public abstract class AbstractBeaconContext implements Context {
                 }
             }
         }
+        Started.set(false);
     }
 
     @Override
@@ -127,7 +133,9 @@ public abstract class AbstractBeaconContext implements Context {
     }
 
     private void closeRegistry() {
-        this.registry.close();
+        if (this.registry != null) {
+            this.registry.close();
+        }
     }
 
     public abstract Client doInitClient(String host, int port) throws Exception;
