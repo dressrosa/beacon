@@ -17,7 +17,8 @@
         </dependency>
         <dependency>
             <groupId>com.xiaoyu</groupId>
-            <artifactId>beacon-spring</artifactId>
+            <artifactId>beacon</artifactId>
+            <version>0.0.1</version>
         </dependency>
         <dependency>
             <groupId>commons-logging</groupId>

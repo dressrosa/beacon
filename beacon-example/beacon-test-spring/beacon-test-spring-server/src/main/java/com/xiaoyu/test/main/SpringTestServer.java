@@ -15,7 +15,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 public class SpringTestServer {
 
     public static void main(String[] args) throws Exception {
-        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("classpath:beacon-server.xml");
+        ClassPathXmlApplicationContext context = new ClassPathXmlApplicationContext("classpath:spring-application.xml");
         try {
             CountDownLatch latch = new CountDownLatch(1);
             context.start();
