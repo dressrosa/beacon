@@ -30,6 +30,11 @@ public class InvocationHandlerAdapter extends AbstractInvocationHandler {
         super(ref);
     }
 
+    /**
+     * 用于泛型调用
+     * 
+     * @param wrapper
+     */
     public InvocationHandlerAdapter(ProxyWrapper wrapper) {
         super(wrapper);
     }

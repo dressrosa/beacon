@@ -41,18 +41,15 @@ public abstract class AbstractBeaconChannel implements BaseChannel {
     private String side;
 
     /**
-     * 用于线程池中线程的计数
-     */
-    private static final AtomicInteger COUNT = new AtomicInteger(0);
-
-    /**
      * 线程池,每一个消费请求都会放入池中执行等待结果,相当于newCachedThreadPool
-     * coresize=处理器*2
+     * coresize=处理器+1
      */
     private static final ThreadPoolExecutor TASK_POOL = new ThreadPoolExecutor(
-            Runtime.getRuntime().availableProcessors() << 2, Runtime.getRuntime().availableProcessors() << 3,
+            Runtime.getRuntime().availableProcessors() + 1, Runtime.getRuntime().availableProcessors() << 1,
             60L, TimeUnit.SECONDS,
             new LinkedBlockingQueue<>(), new ThreadFactory() {
+                private final AtomicInteger COUNT = new AtomicInteger(0);
+
                 @Override
                 public Thread newThread(Runnable r) {
                     return new Thread(r, "BeaconTaskHandler-" + COUNT.getAndIncrement());

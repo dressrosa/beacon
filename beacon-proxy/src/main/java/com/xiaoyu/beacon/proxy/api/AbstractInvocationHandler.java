@@ -33,6 +33,9 @@ public abstract class AbstractInvocationHandler {
      */
     private String actualService;
 
+    /**
+     * 泛型代理对象
+     */
     protected ProxyWrapper wrapper;
 
     public AbstractInvocationHandler(Class<?> ref) {
@@ -40,6 +43,11 @@ public abstract class AbstractInvocationHandler {
         actualService = ref.getName();
     }
 
+    /**
+     * 用于泛型调用
+     * 
+     * @param wrapper
+     */
     public AbstractInvocationHandler(ProxyWrapper wrapper) {
         this.ref = (Class<?>) wrapper.getTarget();
         this.wrapper = wrapper;

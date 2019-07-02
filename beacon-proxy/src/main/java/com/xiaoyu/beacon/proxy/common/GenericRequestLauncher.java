@@ -38,7 +38,8 @@ public class GenericRequestLauncher {
             throw new RuntimeException("InterfaceName should be provided");
         }
         String key = generateKey(ref);
-        if (!Ref_Map.containsKey(key)) {
+        final ConcurrentMap<String, Object> refMap = Ref_Map;
+        if (!refMap.containsKey(key)) {
             IProxy proxy = SpiManager.defaultSpiExtender(IProxy.class);
             ProxyWrapper wrapper = new ProxyWrapper(GenericService.class)
                     .setGeneric(true)
@@ -49,9 +50,9 @@ public class GenericRequestLauncher {
             attach.put("group", ref.getGroup() == null ? "" : ref.getGroup());
             wrapper.setAttach(attach);
             // safe concurrent
-            Ref_Map.put(key, proxy.getProxy(wrapper));
+            refMap.put(key, proxy.getProxy(wrapper));
         }
-        return (T) Ref_Map.get(key);
+        return (T) refMap.get(key);
     }
 
     private static String generateKey(GenericReference ref) {

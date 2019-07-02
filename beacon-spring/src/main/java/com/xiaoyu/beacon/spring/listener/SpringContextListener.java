@@ -54,54 +54,54 @@ public class SpringContextListener implements ApplicationListener<ApplicationEve
         }
     }
 
-    /**
-     * 注册exporter
-     */
-    private void doInitExporter() {
-        Registry registry = this.beaconContext.getRegistry();
-        final Set<BeaconPath> sets = BeaconBeanDefinitionParser.getBeaconPathSet();
-        try {
-            for (BeaconPath p : sets) {
-                if (p.getSide() == From.SERVER) {
-                    Class<?> cls = Class.forName(p.getService());
-                    Map<String, ?> proxyBeans = springContext.getBeansOfType(cls, true, true);
-                    if (proxyBeans.isEmpty()) {
-                        String key = StringUtil.lowerFirstChar(cls.getSimpleName());
-                        if (springContext.containsBean(key)) {
-                            p.setProxy(BeaconUtil.getOriginBean(springContext.getBean(key)));
-                        } else {
-                            throw new Exception(
-                                    "cannot find spring bean with name '" + cls.getName() + "'");
-                        }
-                    } else {
-                        // 设置spring bean
-                        Iterator<?> iter = proxyBeans.values().iterator();
-                        if (proxyBeans.size() == 1) {
-                            p.setProxy(iter.next());
-                        } else {
-                            while (iter.hasNext()) {
-                                Object bean = iter.next();
-                                if (cls.isInstance(bean)) {
-                                    p.setProxy(bean);
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                    registry.registerService(p);
-                }
-            }
-            // 使命完成
-            BeaconBeanDefinitionParser.removeBeaconPathSet();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-    }
-
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.springContext = applicationContext;
     }
 
+    /**
+     * 注册exporter
+     */
+    private void doInitExporter() {
+        Registry registry = this.beaconContext.getRegistry();
+        final Set<BeaconPath> lazySets = BeaconBeanDefinitionParser.getBeaconPathSet();
+        try {
+            for (BeaconPath p : lazySets) {
+                if (p.getSide() != From.SERVER) {
+                    continue;
+                }
+                Class<?> cls = Class.forName(p.getService());
+                Map<String, ?> proxyBeans = springContext.getBeansOfType(cls, true, true);
+                if (proxyBeans.isEmpty()) {
+                    String key = StringUtil.lowerFirstChar(cls.getSimpleName());
+                    if (springContext.containsBean(key)) {
+                        p.setProxy(BeaconUtil.getOriginBean(springContext.getBean(key)));
+                    } else {
+                        throw new Exception(
+                                "Cannot find spring bean with name '" + cls.getName() + "'");
+                    }
+                } else {
+                    // 设置spring bean
+                    Iterator<?> iter = proxyBeans.values().iterator();
+                    if (proxyBeans.size() == 1) {
+                        p.setProxy(iter.next());
+                    } else {
+                        while (iter.hasNext()) {
+                            Object bean = iter.next();
+                            if (cls.isInstance(bean)) {
+                                p.setProxy(bean);
+                                break;
+                            }
+                        }
+                    }
+                }
+                // do register
+                registry.registerService(p);
+            }
+            // 使命完成
+            BeaconBeanDefinitionParser.removeBeaconPathSet();
+        } catch (Exception e) {
+            LOG.error("" + e);
+        }
+    }
 }
