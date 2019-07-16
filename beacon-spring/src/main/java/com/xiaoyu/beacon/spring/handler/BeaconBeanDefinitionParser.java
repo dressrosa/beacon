@@ -45,29 +45,30 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
 
     private static final Logger LOG = LoggerFactory.getLogger(BeaconBeanDefinitionParser.class);
 
-    private static Set<BeaconPath> referenceSet = new HashSet<>();
+    private static Set<BeaconPath> Lazy_Reference_Set = new HashSet<>();
 
-    private static final String Listener_Event = "beaconCloseEvent";
-    private Class<?> cls;
+    private static final String Listener_Spring_Event = "beaconSpringEvent";
 
+    private Class<?> beanClass;
+    // 用来判断是否已经解析完成
     private static BeaconProtocol beaconProtocol = null;
 
     private static BeaconRegistry beaconRegistry = null;
 
     public static Set<BeaconPath> getBeaconPathSet() {
-        return referenceSet;
+        return Lazy_Reference_Set;
     }
 
     public static void removeBeaconPathSet() {
-        referenceSet = null;
+        Lazy_Reference_Set = null;
     }
 
     public static BeaconProtocol getBeaconProtocol() {
         return beaconProtocol;
     }
 
-    public BeaconBeanDefinitionParser(Class<?> cls) {
-        this.cls = cls;
+    public BeaconBeanDefinitionParser(Class<?> beanClass) {
+        this.beanClass = beanClass;
     }
 
     private static void setBeaconRegistry(String registryProtocol) {
@@ -83,35 +84,35 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
 
     @Override
     protected Class<?> getBeanClass(Element element) {
-        return cls;
+        return beanClass;
     }
 
     @Override
     protected void doParse(Element element, ParserContext parserContext, BeanDefinitionBuilder builder) {
         try {
-            if (cls == BeaconReference.class) {
+            if (beanClass == BeaconReference.class) {
                 doParseReference(element, parserContext);
-            } else if (cls == BeaconRegistry.class) {
+            } else if (beanClass == BeaconRegistry.class) {
                 doParseRegistry(element, parserContext, builder);
-            } else if (cls == BeaconProtocol.class) {
+            } else if (beanClass == BeaconProtocol.class) {
                 doParseProtocol(element, parserContext, builder);
-            } else if (cls == BeaconExporter.class) {
+            } else if (beanClass == BeaconExporter.class) {
                 doParseExporter(element, parserContext, builder);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LOG.error("" + e);
         }
     }
 
-    private void doRegisterBeaconListenerEvent(ParserContext parserContext, Context context) {
-        if (!parserContext.getRegistry().containsBeanDefinition(Listener_Event)) {
+    private void doRegisterBeaconSpringListenerEvent(ParserContext parserContext, Context context) {
+        if (!parserContext.getRegistry().containsBeanDefinition(Listener_Spring_Event)) {
             GenericBeanDefinition event = new GenericBeanDefinition();
             ConstructorArgumentValues val = new ConstructorArgumentValues();
             val.addGenericArgumentValue(context);
             event.setConstructorArgumentValues(val);
             event.setBeanClass(SpringContextListener.class);
             event.setLazyInit(false);
-            parserContext.getRegistry().registerBeanDefinition(Listener_Event, event);
+            parserContext.getRegistry().registerBeanDefinition(Listener_Spring_Event, event);
         }
     }
 
@@ -123,7 +124,7 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
         if (StringUtil.isBlank(name)) {
             throw new Exception("Name cannot be null in xml tag->" + element.getTagName());
         }
-        if (name.equals("beacon")) {
+        if ("beacon".equals(name)) {
             if (StringUtil.isBlank(port)) {
                 port = Integer.toString(BeaconConstants.PORT);
             }
@@ -137,26 +138,19 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
             setBeaconProtocol(name, port);
             context.server(Integer.valueOf(port));
             // 处理exporter
-            for (BeaconPath p : referenceSet) {
+            for (BeaconPath p : Lazy_Reference_Set) {
                 if (p.getSide() == From.SERVER) {
-                    // 注册中心还没好的话,一部分放到doParseRegistry里注册
-                    if (beaconRegistry != null) {
-                        p.setPort(port);
-                        // context.getRegistry().registerService(p);
-                    } else {
-                        p.setPort(port);
-                    }
+                    p.setPort(port);
                 }
             }
             // server端这个和doParseRegistry里面的只有一个会执行
             if (beaconRegistry != null) {
                 context.registry(SpiManager.holder(Registry.class).target(beaconRegistry.getProtocol()));
-                // 监听spring的close
-                doRegisterBeaconListenerEvent(parserContext, context);
+                // 监听spring
+                doRegisterBeaconSpringListenerEvent(parserContext, context);
             }
-
         } catch (Exception e) {
-            e.printStackTrace();
+            LOG.error("" + e);
             return;
         }
     }
@@ -184,52 +178,33 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
         }
 
         try {
-            // String beanName = "beaconReg";
-            // BeanDefinitionRegistry registry = parserContext.getRegistry();
-            // if (registry.containsBeanDefinition(beanName)) {
-            // LOG.warn("Repeat tag.please check in xml tag->{}", element.getTagName());
-            // return;
-            // }
-            // BeaconRegistry beaconReg = new BeaconRegistry();
-            // beaconReg.setAddress(addr[0]).setPort(addr[1]).setProtocol(protocol);
-            // GenericBeanDefinition def = new GenericBeanDefinition();
-            // def.setBeanClass(beaconReg.getClass());
-            // def.setLazyInit(false);
-            // parserContext.getRegistry().registerBeanDefinition(beanName, def);
-
-            Registry reg = SpiManager.holder(Registry.class).target(protocol);
-            if (reg == null) {
+            Registry beaconRegistry = SpiManager.holder(Registry.class).target(protocol);
+            if (beaconRegistry == null) {
                 throw new Exception("Cannot find protocol->" + protocol + " in xml tag->" + element.getTagName());
             }
-            reg.address(address);
+            beaconRegistry.address(address);
 
             // server端这个和doParseProtocol里面的只有一个会执行
             Context context = null;
             if (beaconProtocol != null) {
                 context = SpiManager.holder(Context.class).target(beaconProtocol.getName());
-                context.registry(reg);
-                // 监听spring的close
-                doRegisterBeaconListenerEvent(parserContext, context);
             } else {
                 // client端没有的话就取默认的beaconProtocol
                 context = SpiManager.defaultSpiExtender(Context.class);
-                context.registry(reg);
-                // 监听spring的close
-                doRegisterBeaconListenerEvent(parserContext, context);
             }
-
+            context.registry(beaconRegistry);
+            // 监听spring
+            doRegisterBeaconSpringListenerEvent(parserContext, context);
             // 设置beaconRegistry
             BeaconBeanDefinitionParser.setBeaconRegistry(protocol);
             // 将之前未注册的refer进行注册
-            for (BeaconPath p : referenceSet) {
+            for (BeaconPath p : Lazy_Reference_Set) {
                 if (p.getSide() == From.SERVER) {
-                    // protocol还没好的话,一部分放到doParseProtocol里面注册
+                    // protocol还没好的话,一部分放到doParseProtocol
                     if (beaconProtocol != null) {
                         p.setPort(beaconProtocol.getPort());
-                        // reg.registerService(p);
                     }
                 } else if (p.getSide() == From.CLIENT) {
-                    reg.registerService(p);
                     // 注册referbean
                     String interfaceName = p.getService();
                     Class<?> target = Class.forName(interfaceName);
@@ -240,12 +215,13 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
                                 interfaceName);
                         return;
                     }
-                    BeanDefinition facDef = this.generateFactoryBean(target, reg);
+                    beaconRegistry.registerService(p);
+                    BeanDefinition facDef = this.generateFactoryBean(target, beaconRegistry);
                     springRegistry.registerBeanDefinition(referBeanName, facDef);
                 }
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            LOG.error("" + e);
             return;
         }
     }
@@ -316,14 +292,14 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
                 if (beaconProtocol != null) {
                     beaconPath.setPort(beaconProtocol.getPort());
                     // 检查bean是否是spring中已有了
-                    referenceSet.add(beaconPath);
+                    Lazy_Reference_Set.add(beaconPath);
                 } else {
                     // protocol还未解析到 ,导致这里没有port
-                    referenceSet.add(beaconPath);
+                    Lazy_Reference_Set.add(beaconPath);
                 }
             } else {
                 // registry还未解析到,导致这里没有registry
-                referenceSet.add(beaconPath);
+                Lazy_Reference_Set.add(beaconPath);
             }
         } catch (Exception e) {
             LOG.error("Cannot resolve exporter,please check in xml tag beacon-exporter with id->{},interface->{}", id,
@@ -403,7 +379,7 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
                 springRegistry.registerBeanDefinition(beanName, facDef);
             } else {
                 // registry还未解析到,导致这里没有registry
-                referenceSet.add(beaconPath);
+                Lazy_Reference_Set.add(beaconPath);
             }
 
         } catch (Exception e) {

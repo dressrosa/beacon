@@ -16,7 +16,9 @@ public interface GenericService {
      *            返回类型
      * @param args
      *            参数
+     * @param paramTypes
+     *            参数类型
      * @return
      */
-    public Object $_$invoke(String method, Object returnType, Object[] args);
+    public <T> T $_$invoke(String method, Class<T> returnType, Object[] args, Class<?>[] paramTypes);
 }

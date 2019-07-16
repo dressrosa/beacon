@@ -47,11 +47,12 @@ public abstract class AbstractRegistry implements Registry {
 
     @Override
     public List<BeaconPath> getLocalProviders(String group, String service) {
-        Set<BeaconPath> providers = Provider_Service_Map.get(service);
+        final ConcurrentMap<String, Set<BeaconPath>> pmap = Provider_Service_Map;
+        Set<BeaconPath> providers = pmap.get(service);
         if (providers == null) {
             initProviders(service);
         }
-        providers = Provider_Service_Map.get(service);
+        providers = pmap.get(service);
         List<BeaconPath> list = new ArrayList<>();
         for (BeaconPath p : providers) {
             if (p.getGroup().equals(group)) {
@@ -68,23 +69,26 @@ public abstract class AbstractRegistry implements Registry {
     }
 
     protected void initProviders(String service) {
-        if (!Provider_Service_Map.containsKey(service)) {
-            Provider_Service_Map.put(service, new HashSet<>());
+        final ConcurrentMap<String, Set<BeaconPath>> pmap = Provider_Service_Map;
+        if (!pmap.containsKey(service)) {
+            pmap.put(service, new HashSet<>());
         }
         doInitProviders(service);
     }
 
     protected void storeLocalService(String service, BeaconPath path) {
         if (path.getSide() == From.CLIENT) {
-            if (!Consumer_Service_Map.containsKey(service)) {
-                Consumer_Service_Map.put(service, new HashSet<>());
+            final ConcurrentMap<String, Set<BeaconPath>> cmap = Consumer_Service_Map;
+            if (!cmap.containsKey(service)) {
+                cmap.put(service, new HashSet<>());
             }
-            Consumer_Service_Map.get(service).add(path);
+            cmap.get(service).add(path);
         } else {
-            if (!Provider_Service_Map.containsKey(service)) {
-                Provider_Service_Map.put(service, new HashSet<>());
+            final ConcurrentMap<String, Set<BeaconPath>> pmap = Provider_Service_Map;
+            if (!pmap.containsKey(service)) {
+                pmap.put(service, new HashSet<>());
             }
-            Provider_Service_Map.get(service).add(path);
+            pmap.get(service).add(path);
         }
     }
 

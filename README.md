@@ -6,6 +6,25 @@
 [![996.icu](https://img.shields.io/badge/link-996.icu-red.svg)](https://996.icu)
 ## 基本原理:  
 ![基本原理](https://dressrosa.github.io/resources/beacon-principle.jpg)
+## 调用流程:
+### consumer:
+spring factory bean,基于接口生成  
+->proxy,生成代理类(cglib/jdk)  
+ ->registry,注册接口  
+->filter 自定义过滤器,对接口进行过滤  
+->tolerant,容错机制(failfast等)  
+->loadBalance(负载均衡,random等)  
+->strategy(熔断降级)  
+->invocation(生成调用者)  
+->serialize(进行消息序列化)  
+->tranporter to pro ,wait result(通讯层传输给provider端)
+
+### provider:
+ ->transporter接收消息  
+ ->deserialize 反序列化消息  
+ ->local invoke  
+ ->serialize 进行消息序列化  
+ ->transporter to con,send result(通讯层传输给consumer端)
 ## 快速开始:
 ### provider端:
 1. 在pom文件中引入:

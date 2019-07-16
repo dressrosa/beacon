@@ -6,7 +6,7 @@ package com.xiaoyu.beacon.common.bean;
 import java.util.Map;
 
 /**
- * 需代理对象
+ * 需代理对象,用于泛型调用
  * 
  * @author hongyu
  * @date 2018-07

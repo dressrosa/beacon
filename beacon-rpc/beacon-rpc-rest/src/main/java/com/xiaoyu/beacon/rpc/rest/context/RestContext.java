@@ -17,7 +17,7 @@ public class RestContext extends AbstractBeaconContext {
 
     @Override
     public Client doInitClient(String host, int port) throws Exception {
-        Client client = new HttpClient(host, port);
+        final Client client = new HttpClient(host, port);
         return client;
     }
 

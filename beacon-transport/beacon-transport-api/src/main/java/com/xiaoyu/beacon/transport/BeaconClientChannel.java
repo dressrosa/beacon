@@ -34,10 +34,13 @@ public class BeaconClientChannel extends AbstractBeaconChannel {
      */
     private static final int SLEEP_TIME = 5;
     /**
-     * 最大尝试次数 最大即50秒
+     * 最大尝试次数 最大即5*10秒
      */
     private static final int MAX_RETRY_NUM = 10_000;
 
+    /**
+     * 具体的发送channel,比如nettychannel和httpchannel
+     */
     protected BaseChannel baseChannel;
 
     public BeaconClientChannel(BaseChannel baseChannel) {

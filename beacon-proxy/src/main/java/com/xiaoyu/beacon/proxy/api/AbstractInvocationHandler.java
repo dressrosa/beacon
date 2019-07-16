@@ -33,6 +33,9 @@ public abstract class AbstractInvocationHandler {
      */
     private String actualService;
 
+    /**
+     * 泛型代理对象
+     */
     protected ProxyWrapper wrapper;
 
     public AbstractInvocationHandler(Class<?> ref) {
@@ -40,6 +43,11 @@ public abstract class AbstractInvocationHandler {
         actualService = ref.getName();
     }
 
+    /**
+     * 用于泛型调用
+     * 
+     * @param wrapper
+     */
     public AbstractInvocationHandler(ProxyWrapper wrapper) {
         this.ref = (Class<?>) wrapper.getTarget();
         this.wrapper = wrapper;
@@ -75,12 +83,23 @@ public abstract class AbstractInvocationHandler {
      */
     private Object preInvoke(Method method, Object[] args) throws Throwable {
         String methodName = method.getName();
-        final RpcRequest req = new RpcRequest()
-                .setInterfaceName(actualService)
-                .setParams(args)
-                .setMethodName(methodName)
-                .setReturnType(method.getReturnType())
-                .setParamTypes(method.getParameterTypes());
+        final RpcRequest req = new RpcRequest();
+        req.setInterfaceName(actualService);
+        // public Object $_$invoke(String method, Object returnType, Object[] args,
+        // Class<?>[] paramTypes);
+        if (wrapper != null && wrapper.isGeneric()) {
+            req.setInterfaceName(actualService)
+                    .setMethodName((String) args[0])
+                    .setReturnType(args[1])
+                    .setParams((Object[]) args[2])
+                    .setParamTypes((Class<?>[]) args[3]);
+        } else {
+            req.setInterfaceName(actualService)
+                    .setMethodName(methodName)
+                    .setParams(args)
+                    .setReturnType(method.getReturnType())
+                    .setParamTypes(method.getParameterTypes());
+        }
         req.setHeartbeat(false);
         // void不能反序列化
         if ("void".equals(method.getReturnType().getName())) {

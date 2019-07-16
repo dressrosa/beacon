@@ -20,6 +20,7 @@ public class BeaconNamespaceHandler extends NamespaceHandlerSupport {
 
     @Override
     public void init() {
+        // 这里实际上是非顺序化执行
         this.registerBeanDefinitionParser("protocol", new BeaconBeanDefinitionParser(BeaconProtocol.class));
         this.registerBeanDefinitionParser("registry", new BeaconBeanDefinitionParser(BeaconRegistry.class));
         this.registerBeanDefinitionParser("reference", new BeaconBeanDefinitionParser(BeaconReference.class));

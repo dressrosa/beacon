@@ -10,7 +10,6 @@
 
     <groupId>com.xiaoyu</groupId>
     <artifactId>beacon</artifactId>
-    <version>0.0.1</version>
 
     <packaging>jar</packaging>
 
@@ -45,9 +44,6 @@
             <version>${project.version}</version>
         </dependency>
 
-        <!-- <dependency> <groupId>com.xiaoyu</groupId> <artifactId>beacon-registry</artifactId> <version>${project.version}</version> 
-            <type>pom</type> </dependency> -->
-
         <dependency>
             <groupId>com.xiaoyu</groupId>
             <artifactId>beacon-registry-api</artifactId>
@@ -65,9 +61,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-
-        <!-- <dependency> <groupId>com.xiaoyu</groupId> <artifactId>beacon-rpc</artifactId> <version>${project.version}</version> 
-            <type>pom</type> </dependency> -->
 
         <dependency>
             <groupId>com.xiaoyu</groupId>
@@ -98,8 +91,6 @@
             <artifactId>beacon-spring</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <!-- <dependency> <groupId>com.xiaoyu</groupId> <artifactId>beacon-transport</artifactId> <version>${project.version}</version> 
-            <type>pom</type> </dependency> -->
 
         <dependency>
             <groupId>com.xiaoyu</groupId>

@@ -1,7 +1,6 @@
 package com.xiaoyu.beacon.cluster.loadbalance;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
@@ -25,9 +24,9 @@ public class ConsistentHashLoadBalance implements LoadBalance {
      */
     private static final Map<String, SortedMap<Integer, String>> Service_Hash_Cache = new HashMap<>(32);
     /**
-     * service->HashSet (true providers,这里用来判断是否已经加入SortedMap)
+     * service->HashMap (true providers,这里用来判断是否已经加入SortedMap)
      */
-    private static final Map<String, HashSet<String>> Service_Providers = new HashMap<>(32);
+    private static final Map<String, Map<String, BeaconPath>> Service_Providers = new HashMap<>(32);
 
     /**
      * 这里读写锁,用来对server端下线后,服务不一致时候,对Sorted_Map进行clear的操作
@@ -49,32 +48,29 @@ public class ConsistentHashLoadBalance implements LoadBalance {
         }
         List<BeaconPath> pros = (List<BeaconPath>) providers;
 
-        this.doCheckRefresh(pros);
-
+        boolean refreshed = this.doCheckRefresh(pros);
+        if (refreshed) {
+            this.spreadTrueProviders(pros);
+        }
         // 以service为key,这样保证同一个service请求同一个server
         String service = pros.get(0).getService();
         // host->BeaconPath
-        Map<String, BeaconPath> proMap = this.spreadTrueProviders(pros);
+        final Map<String, BeaconPath> proMap = Service_Providers.get(service);
+        final SortedMap<Integer, String> cacheMap = Service_Hash_Cache.get(service);
 
-        SortedMap<Integer, String> cacheMap = Service_Hash_Cache.get(service);
         // 找比她大的所有节点
         SortedMap<Integer, String> nodes = cacheMap.tailMap(hash(service));
-        int key;
         String host = null;
         // 说明已是环的终点
+        String value = null;
         if (nodes.isEmpty()) {
             // 返回开头,直接取第一个节点
-            key = Service_Hash_Cache.get(service).firstKey();
-            String value = cacheMap.get(key);
-            // 取出虚拟节点中的host
-            host = value.substring(value.indexOf(Separator) + 1);
+            value = cacheMap.get(cacheMap.firstKey());
         } else {
-            // 取下一个节点
-            key = hash(service);
-            String value = cacheMap.get(nodes.firstKey());
-            // 取出虚拟节点中的host
-            host = value.substring(value.indexOf(Separator) + 1);
+            value = cacheMap.get(nodes.firstKey());
         }
+        // 取出虚拟节点中的host
+        host = value.substring(value.indexOf(Separator) + 1);
         return (T) proMap.get(host);
     }
 
@@ -83,49 +79,55 @@ public class ConsistentHashLoadBalance implements LoadBalance {
      * 
      * @param pros
      */
-    private void doCheckRefresh(List<BeaconPath> pros) {
+    private boolean doCheckRefresh(List<BeaconPath> pros) {
         String service = pros.get(0).getService();
         // 这里在首次并发的时候也不影响
-        HashSet<String> sets = Service_Providers.get(service);
-        if (sets == null) {
-            Service_Providers.put(service, (sets = new HashSet<>()));
+        Map<String, BeaconPath> trueMap = Service_Providers.get(service);
+        if (trueMap == null) {
+            Service_Providers.put(service, (trueMap = new HashMap<>(pros.size())));
         }
         SortedMap<Integer, String> cacheMap = Service_Hash_Cache.get(service);
         if (cacheMap == null) {
             Service_Hash_Cache.put(service, (cacheMap = new TreeMap<>()));
         }
-        if (!sets.isEmpty()) {
-            // 旧server下线
-            if (sets.size() != pros.size()) {
-                Read_Write_Lock.writeLock().lock();
-                try {
-                    cacheMap.clear();
-                    sets.clear();
-                } finally {
-                    Read_Write_Lock.writeLock().unlock();
-                }
-            } else {
-                String pst = null;
+        boolean refreshed = false;
+        if (trueMap.isEmpty()) {
+            return true;
+        }
+        final ReentrantReadWriteLock lock = Read_Write_Lock;
+        // 旧server下线
+        if (trueMap.size() != pros.size()) {
+            lock.writeLock().lock();
+            try {
+                cacheMap.clear();
+                trueMap.clear();
+                refreshed = true;
+            } finally {
+                lock.writeLock().unlock();
+            }
+        } else {
+            String pst = null;
+            for (BeaconPath p : pros) {
                 // 新server上线
-                for (BeaconPath p : pros) {
-                    if (!sets.contains(pst = p.getHost() + ":" + p.getPort())) {
-                        // 这里写锁,一旦进入,其他都需要等待clear完成,这个可能影响其他service.
-                        // 不过server下线的情况是会很少出现的
-                        Read_Write_Lock.writeLock().lock();
-                        try {
-                            // 这里再判断一次,因为在读锁释放后,可能这里已经contain了
-                            if (!sets.contains(pst)) {
-                                cacheMap.clear();
-                                sets.clear();
-                            }
-                        } finally {
-                            Read_Write_Lock.writeLock().unlock();
+                if (!trueMap.containsKey(pst = p.getHost() + ":" + p.getPort())) {
+                    // 这里写锁,一旦进入,其他都需要等待clear完成,这个可能影响其他service.
+                    // 不过server下线的情况是会很少出现的
+                    lock.writeLock().lock();
+                    try {
+                        // 这里再判断一次,因为在读锁释放后,可能这里已经contain了
+                        if (!trueMap.containsKey(pst)) {
+                            cacheMap.clear();
+                            trueMap.clear();
+                            refreshed = true;
                         }
-                        break;
+                    } finally {
+                        lock.writeLock().unlock();
                     }
+                    break;
                 }
             }
         }
+        return refreshed;
     }
 
     /**
@@ -134,24 +136,23 @@ public class ConsistentHashLoadBalance implements LoadBalance {
      * @param providers
      * @return
      */
-    private Map<String, BeaconPath> spreadTrueProviders(List<BeaconPath> providers) {
-        Map<String, BeaconPath> proMap = new HashMap<>(providers.size());
+    private void spreadTrueProviders(List<BeaconPath> providers) {
         String service = providers.get(0).getService();
-        Read_Write_Lock.readLock().lock();
+        final ReentrantReadWriteLock lock = Read_Write_Lock;
+        lock.readLock().lock();
         // 这里读锁,每个线程都可以进入
-        HashSet<String> sets = Service_Providers.get(service);
+        final Map<String, BeaconPath> trueMap = Service_Providers.get(service);
         try {
             String pst = null;
             for (BeaconPath p : providers) {
-                proMap.put((pst = p.getHost() + ":" + p.getPort()), p);
-                if (sets.add(pst)) {
+                trueMap.put(pst = p.getHost() + ":" + p.getPort(), p);
+                if (trueMap.containsKey(pst)) {
                     spreadVirtualProvider(p);
                 }
             }
         } finally {
-            Read_Write_Lock.readLock().unlock();
+            lock.readLock().unlock();
         }
-        return proMap;
     }
 
     /**
@@ -164,7 +165,7 @@ public class ConsistentHashLoadBalance implements LoadBalance {
         String appendStr = Separator.concat(p.getHost()).concat(":").concat(p.getPort());
         // 1:32
         int size = 32;
-        SortedMap<Integer, String> cacheMap = Service_Hash_Cache.get(p.getService());
+        final SortedMap<Integer, String> cacheMap = Service_Hash_Cache.get(p.getService());
         for (int i = 0; i < size; i++) {
             virtual = String.valueOf(i).concat(appendStr);
             cacheMap.put(hash(virtual), virtual);

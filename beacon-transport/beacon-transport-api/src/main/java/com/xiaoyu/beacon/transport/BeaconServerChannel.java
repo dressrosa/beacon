@@ -29,7 +29,9 @@ import com.xiaoyu.beacon.transport.support.AbstractBeaconChannel;
 public class BeaconServerChannel extends AbstractBeaconChannel {
 
     private static final Logger LOG = LoggerFactory.getLogger(BeaconServerChannel.class);
-
+    /**
+     * 具体的发送channel,比如nettychannel和httpchannel
+     */
     protected BaseChannel baseChannel;
 
     public BeaconServerChannel(BaseChannel baseChannel) {
@@ -44,7 +46,7 @@ public class BeaconServerChannel extends AbstractBeaconChannel {
                 try {
                     baseChannel.send(message);
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    LOG.error("" + e);
                 }
             }
         });
@@ -90,29 +92,27 @@ public class BeaconServerChannel extends AbstractBeaconChannel {
                             // 根据信息,找到实现类 declareMethods是不包含toString,hashCode的
                             if (proxy != null) {
                                 Class<?> cl1 = proxy.getClass();
-                                Method[] methods = null;
+                                Method d = null;
                                 // spring java原生代理
                                 if (cl1.getName().equals(req.getInterfaceImpl())) {
-                                    methods = cl1.getDeclaredMethods();
+                                    d = cl1.getDeclaredMethod(req.getMethodName(), req.getParamTypes());
                                 } else {
                                     // spring cglib代理
-                                    methods = cl1.getSuperclass().getDeclaredMethods();
+                                    d = cl1.getSuperclass().getDeclaredMethod(req.getMethodName(), req.getParamTypes());
                                 }
-                                for (Method d : methods) {
-                                    if (d.getName().equals(req.getMethodName())) {
-                                        result = d.invoke(proxy, req.getParams());
-                                        break;
-                                    }
+                                if (d.getReturnType() != (Class<?>) req.getReturnType()) {
+                                    throw new Exception("Cannot find method with the retrunType->"
+                                            + ((Class<?>) req.getReturnType()).getName());
                                 }
+                                result = d.invoke(proxy, req.getParams());
                             } else {
                                 Class<?> target = Class.forName(req.getInterfaceImpl());
-                                Method[] methods = target.getDeclaredMethods();
-                                for (Method d : methods) {
-                                    if (d.getName().equals(req.getMethodName())) {
-                                        result = d.invoke(target.newInstance(), req.getParams());
-                                        break;
-                                    }
+                                Method d = target.getDeclaredMethod(req.getMethodName(), req.getParamTypes());
+                                if (d.getReturnType() != (Class<?>) req.getReturnType()) {
+                                    throw new Exception("Cannot find method with the retrunType->"
+                                            + ((Class<?>) req.getReturnType()).getName());
                                 }
+                                result = d.invoke(target.newInstance(), req.getParams());
                             }
                         }
                     } catch (Exception bize) {
