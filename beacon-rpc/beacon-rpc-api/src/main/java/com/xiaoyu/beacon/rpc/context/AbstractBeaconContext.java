@@ -59,13 +59,14 @@ public abstract class AbstractBeaconContext implements Context {
         /**
          * 当第一次大量请求时,可能导致client多次初始化,并覆盖掉已初始化的.
          */
-        Client_Lock.lock();
+        final ReentrantLock lock = Client_Lock;
+        lock.lock();
         try {
             Client client = this.doInitClient(host, port);
             Client_Map.put(key, client);
             return client;
         } finally {
-            Client_Lock.unlock();
+            lock.unlock();
         }
     }
 
@@ -77,9 +78,10 @@ public abstract class AbstractBeaconContext implements Context {
 
     @Override
     public void start() {
-        if (Server_Map != null && !Server_Map.isEmpty()) {
+        final Map<Integer, Server> smap = Server_Map;
+        if (smap != null && !smap.isEmpty()) {
             if (Started.compareAndSet(false, true)) {
-                Iterator<Server> iter = Server_Map.values().iterator();
+                Iterator<Server> iter = smap.values().iterator();
                 try {
                     while (iter.hasNext()) {
                         iter.next().start();

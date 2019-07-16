@@ -32,6 +32,9 @@ public class NettyChannel implements BaseChannel {
      */
     public static final ConcurrentMap<Channel, BeaconHandler> CHANNEL_MAP = new ConcurrentHashMap<>(16);
 
+    /**
+     * 收发信息的netty channel
+     */
     private Channel channel;
 
     public NettyChannel(Channel channel) {
@@ -39,15 +42,16 @@ public class NettyChannel implements BaseChannel {
     }
 
     public static BeaconHandler getChannel(Channel ch, From side) throws Exception {
-        BeaconHandler beaHander = CHANNEL_MAP.get(ch);
+        final ConcurrentMap<Channel, BeaconHandler> chmap = CHANNEL_MAP;
+        BeaconHandler beaHander = chmap.get(ch);
         if (beaHander == null) {
             NettyChannel nc = new NettyChannel(ch);
             if (From.CLIENT == side) {
                 BeaconHandler b = new BeaconClientHandler(new BeaconClientChannel(nc));
-                CHANNEL_MAP.put(ch, (beaHander = b));
+                chmap.put(ch, (beaHander = b));
             } else {
                 BeaconHandler b = new BeaconServerHandler(new BeaconServerChannel(nc));
-                CHANNEL_MAP.put(ch, (beaHander = b));
+                chmap.put(ch, (beaHander = b));
             }
         }
         return beaHander;
@@ -57,7 +61,8 @@ public class NettyChannel implements BaseChannel {
      * 这里 1检查是否有失效的channel
      */
     public static void checkUnActive() {
-        Iterator<Channel> iter = CHANNEL_MAP.keySet().iterator();
+        final ConcurrentMap<Channel, BeaconHandler> chmap = CHANNEL_MAP;
+        Iterator<Channel> iter = chmap.keySet().iterator();
         Channel ch = null;
         while (iter.hasNext()) {
             ch = iter.next();
@@ -83,9 +88,10 @@ public class NettyChannel implements BaseChannel {
      * @param channel
      */
     public static void removeChannel(Channel channel) {
-        BeaconHandler handler = CHANNEL_MAP.get(channel);
+        final ConcurrentMap<Channel, BeaconHandler> chmap = CHANNEL_MAP;
+        BeaconHandler handler = chmap.get(channel);
         if (handler != null) {
-            CHANNEL_MAP.remove(channel);
+            chmap.remove(channel);
         }
         channel.close();
     }

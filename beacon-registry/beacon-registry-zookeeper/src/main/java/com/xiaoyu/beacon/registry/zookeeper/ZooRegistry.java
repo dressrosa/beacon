@@ -13,8 +13,11 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.I0Itec.zkclient.IZkChildListener;
@@ -74,7 +77,9 @@ public class ZooRegistry extends AbstractRegistry {
         IZkChildListener listener = new IZkChildListener() {
             @Override
             public void handleChildChange(String parentPath, List<String> currentChilds) throws Exception {
-                LOG.info("Service changed:parentPath->{},currentChilds->{}", parentPath, currentChilds);
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Service changed:parentPath->{},currentChilds->{}", parentPath, currentChilds);
+                }
                 if (currentChilds == null) {
                     return;
                 }
@@ -85,7 +90,7 @@ public class ZooRegistry extends AbstractRegistry {
         if (beaconPath.getSide() == From.CLIENT) {
             // reference(client)
             // 启动时检查
-            if (beaconPath.isCheck() && !this.discoverService(service)) {
+            if (beaconPath.isCheck() && !super.discoverService(service)) {
                 LOG.error("Cannot find providers of the service->{} in zookeeper,please check.", service);
                 try {
                     throw new BeaconException(
@@ -282,20 +287,21 @@ public class ZooRegistry extends AbstractRegistry {
         String path = null;
         String sidePath = null;
         String detailInfo = beaconPath.toPath();
-
+        final ConcurrentMap<String, Set<BeaconPath>> pmap = Provider_Service_Map;
         if (beaconPath.getSide() == From.CLIENT) {
             path = this.consumerPath(beaconPath.getService());
             // client取消对server端的监听
             sidePath = this.providerPath(beaconPath.getService());
         } else if (beaconPath.getSide() == From.SERVER) {
             path = this.providerPath(beaconPath.getService());
-            Provider_Service_Map.get(beaconPath.getService()).remove(beaconPath);
+            pmap.get(beaconPath.getService()).remove(beaconPath);
             // server端取消对client的监听
             sidePath = this.consumerPath(beaconPath.getService());
         }
+        final ConcurrentMap<String, IZkChildListener> lmap = CHILD_LISTENER_MAP;
         LOG.info("Unsubscribe service in zookeeper->{}", sidePath);
-        zoo.unsubscribeChildChanges(sidePath, CHILD_LISTENER_MAP.get(sidePath));
-        CHILD_LISTENER_MAP.remove(sidePath);
+        zoo.unsubscribeChildChanges(sidePath, lmap.get(sidePath));
+        lmap.remove(sidePath);
         LOG.info("Unregister service in zookeeper->{}", this.fullPath(path, detailInfo));
         zoo.remove(this.fullPath(path, detailInfo));
     }
@@ -307,12 +313,16 @@ public class ZooRegistry extends AbstractRegistry {
             IZkStateListener listener = new IZkStateListener() {
                 @Override
                 public void handleStateChanged(KeeperState state) throws Exception {
-                    LOG.info("Get zookeeper state->" + state.name());
+                    if (LOG.isDebugEnabled()) {
+                        LOG.debug("Get zookeeper state->" + state.name());
+                    }
                 }
 
                 @Override
                 public void handleSessionEstablishmentError(Throwable error) throws Exception {
-                    LOG.error("handleSessionEstablishmentError->", error);
+                    if (LOG.isDebugEnabled()) {
+                        LOG.error("HandleSessionEstablishmentError->", error);
+                    }
                 }
 
                 @Override
@@ -322,7 +332,7 @@ public class ZooRegistry extends AbstractRegistry {
             };
             zoo.subscribeStateChanges(listener);
         } catch (Exception e) {
-            e.printStackTrace();
+            LOG.error("" + e);
         }
         zoo.createPersistent(ROOT);
     }
@@ -383,9 +393,10 @@ public class ZooRegistry extends AbstractRegistry {
             providerMonitor.shutdown();
         }
         ZooUtil tzoo = zoo;
+        final ConcurrentMap<String, Set<BeaconPath>> cmap = Consumer_Service_Map;
         // TODO 关闭可能未处理的beaconPath,比如泛型的
-        if (!Consumer_Service_Map.isEmpty()) {
-            Iterator<Set<BeaconPath>> setsIter = Consumer_Service_Map.values().iterator();
+        if (!cmap.isEmpty()) {
+            Iterator<Set<BeaconPath>> setsIter = cmap.values().iterator();
             Set<BeaconPath> allSet = new HashSet<>();
             while (setsIter.hasNext()) {
                 allSet.addAll(setsIter.next());

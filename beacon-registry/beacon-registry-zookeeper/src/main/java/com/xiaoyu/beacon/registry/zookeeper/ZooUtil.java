@@ -27,16 +27,16 @@ public class ZooUtil {
 
     private static final ZkSerializer SERIALIZER = new JsonSerializer();
 
-    private static final Integer RETRY_TIMES = 10;
+    private static final int RETRY_TIMES = 10;
 
     /**
      * 临时节点消失的时间
      */
-    private static final Integer SESSION_TIMEOUT = 2_000;
+    private static final int SESSION_TIMEOUT = 2_000;
     /**
      * 连接超时 3s
      */
-    private static final Integer CONNECTION_TIMEOUT = 3_000;
+    private static final int CONNECTION_TIMEOUT = 3_000;
     private ZkClient client;
 
     private ZooUtil(String host) {

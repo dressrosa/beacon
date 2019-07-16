@@ -70,12 +70,13 @@ public class Invocation {
                 .client(provider.getHost(), Integer.valueOf(provider.getPort()))
                 .send(request);
         RpcResponse result = (RpcResponse) ret;
-        if (result.getException() != null) {
-            LOG.error("Beacon exception->", result.getException());
-            if (result.getException() instanceof BizException) {
-                throw result.getException().getCause();
+        Throwable ex = result.getException();
+        if (ex != null) {
+            LOG.error("Beacon exception->", ex);
+            if (ex instanceof BizException) {
+                throw ex.getCause();
             }
-            throw result.getException();
+            throw ex;
         }
         // 我们忽略exception,所以直接使用errorMessage当作异常
         else if (StringUtil.isNotEmpty(result.getErrorMessage())) {

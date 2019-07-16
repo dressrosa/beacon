@@ -38,6 +38,9 @@ public class BeaconClientChannel extends AbstractBeaconChannel {
      */
     private static final int MAX_RETRY_NUM = 10_000;
 
+    /**
+     * 具体的发送channel,比如nettychannel和httpchannel
+     */
     protected BaseChannel baseChannel;
 
     public BeaconClientChannel(BaseChannel baseChannel) {

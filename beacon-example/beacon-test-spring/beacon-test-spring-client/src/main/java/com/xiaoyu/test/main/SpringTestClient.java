@@ -34,10 +34,11 @@ public class SpringTestClient {
                     .setGroup("dev");
             for (int i = 0; i < 10; i++) {
                 GenericService generic = GenericRequestLauncher.launch(refer);
-                Object result = generic.$_$invoke("hello", String.class, new Object[] { "cat" });
+                Object result = generic.$_$invoke("hello", String.class, new Object[] { "cat" },
+                        new Class<?>[] { String.class });
                 System.out.println("re:" + result);
             }
-            
+
             latch.await();
         } finally {
             context.stop();

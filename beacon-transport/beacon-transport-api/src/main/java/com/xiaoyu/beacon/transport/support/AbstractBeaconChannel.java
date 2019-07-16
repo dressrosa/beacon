@@ -76,9 +76,9 @@ public abstract class AbstractBeaconChannel implements BaseChannel {
         return pool.submit(call);
     }
 
-    public void addTask(Runnable call) {
+    public void addTask(Runnable r) {
         final ThreadPoolExecutor pool = TASK_POOL;
-        pool.submit(call);
+        pool.submit(r);
     }
 
     /**

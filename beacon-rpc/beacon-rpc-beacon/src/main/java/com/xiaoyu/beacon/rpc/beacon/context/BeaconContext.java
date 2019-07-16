@@ -19,14 +19,14 @@ public class BeaconContext extends AbstractBeaconContext {
 
     @Override
     public Client doInitClient(String host, int port) throws Exception {
-        Client client = new NettyClient(host, port);
+        final Client client = new NettyClient(host, port);
         client.start();
         return client;
     }
 
     @Override
     public Server doInitServer(Integer port) throws Exception {
-        Server server = new NettyServer(port);
+        final Server server = new NettyServer(port);
         return server;
     }
 
