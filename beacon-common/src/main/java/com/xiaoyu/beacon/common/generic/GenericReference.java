@@ -22,7 +22,7 @@ public class GenericReference {
     private String interfaceName;
 
     /**
-     * 请求超时
+     * 请求超时(ms)
      */
     private String timeout = "3000";
 

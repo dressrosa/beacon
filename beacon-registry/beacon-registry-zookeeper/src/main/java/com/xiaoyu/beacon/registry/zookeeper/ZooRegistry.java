@@ -13,11 +13,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.Executors;
-import java.util.concurrent.FutureTask;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadFactory;
-import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
 import org.I0Itec.zkclient.IZkChildListener;
@@ -272,7 +269,7 @@ public class ZooRegistry extends AbstractRegistry {
                 for (String s : providerList) {
                     if (!currentChilds.contains(s)) {
                         LOG.info("remove provider service->{}", s);
-                        Provider_Service_Map.get(service).remove(BeaconPath.toEntity(s));
+                        removeLocalService(service, BeaconPath.toEntity(s));
                         // TODO 是否关闭对应的client
                         break;
                     }
@@ -287,14 +284,13 @@ public class ZooRegistry extends AbstractRegistry {
         String path = null;
         String sidePath = null;
         String detailInfo = beaconPath.toPath();
-        final ConcurrentMap<String, Set<BeaconPath>> pmap = Provider_Service_Map;
         if (beaconPath.getSide() == From.CLIENT) {
             path = this.consumerPath(beaconPath.getService());
             // client取消对server端的监听
             sidePath = this.providerPath(beaconPath.getService());
         } else if (beaconPath.getSide() == From.SERVER) {
             path = this.providerPath(beaconPath.getService());
-            pmap.get(beaconPath.getService()).remove(beaconPath);
+            super.removeLocalService(beaconPath.getService(), beaconPath);
             // server端取消对client的监听
             sidePath = this.consumerPath(beaconPath.getService());
         }
@@ -444,7 +440,7 @@ public class ZooRegistry extends AbstractRegistry {
         ZooUtil tzoo = zoo;
         List<String> childList = tzoo.children(this.providerPath(service));
         for (String detail : childList) {
-            Provider_Service_Map.get(service).add(BeaconPath.toEntity(detail));
+            super.storeLocalService(service, BeaconPath.toEntity(detail));
         }
     }
 

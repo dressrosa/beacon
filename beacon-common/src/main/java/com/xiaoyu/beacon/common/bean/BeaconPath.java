@@ -214,15 +214,13 @@ public class BeaconPath {
             return false;
         }
         BeaconPath p = (BeaconPath) obj;
-        if (this.toPath().equals(p.toPath())) {
-            return true;
-        }
-        return false;
+        return this.toPath().equals(p.toPath());
     }
 
     public String toPath() {
         final StringBuilder builder = new StringBuilder();
-        if (this.getSide() == From.SERVER) {
+        boolean isServer = (this.getSide() == From.SERVER);
+        if (isServer) {
             builder.append("host=").append(this.getHost() + ":" + this.getPort());
         } else {
             builder.append("host=").append(this.getHost());
@@ -230,20 +228,21 @@ public class BeaconPath {
 
         builder.append("&service=").append(this.getService())
                 .append("&ref=").append(this.getRef());
-        if (this.getSide() == From.SERVER) {
-            builder.append("&timeout=").append("");
-            builder.append("&methods=").append(this.getMethods());
+        if (isServer) {
+            builder.append("&check=").append("")
+                    .append("&tolerant=").append("")
+                    .append("&timeout=").append("")
+                    .append("&methods=").append(this.getMethods());
         } else {
-            builder.append("&check=").append(this.isCheck());
-            builder.append("&tolerant=").append(this.getTolerant());
-            builder.append("&timeout=").append(this.getTimeout());
-            builder.append("&methods=").append("");
-
+            builder.append("&check=").append(this.isCheck())
+                    .append("&tolerant=").append(this.getTolerant())
+                    .append("&timeout=").append(this.getTimeout())
+                    .append("&methods=").append("");
         }
-        builder.append("&generic=").append(this.isGeneric());
-        builder.append("&retry=").append(this.getRetry());
-        builder.append("&group=").append(this.getGroup());
-        builder.append("&downgrade=").append(this.getDowngrade());
+        builder.append("&generic=").append(this.isGeneric())
+                .append("&retry=").append(this.getRetry())
+                .append("&group=").append(this.getGroup())
+                .append("&downgrade=").append(this.getDowngrade());
         // 请注意side放在最后
         builder.append("&side=").append(this.getSide().name());
         return builder.toString();
@@ -252,44 +251,99 @@ public class BeaconPath {
     public static BeaconPath toEntity(String path) {
         // [host=192.168.61.239:1992&service=com.xxx.IHelloService&ref=com.xxx.HelloServiceImpl&side=SERVER]
         BeaconPath bea = new BeaconPath();
-        String[] arr1 = path.split("&");
-        for (String str : arr1) {
-            if (str.startsWith("host")) {
-                String[] arr = str.substring(5).split(":");
-                if (arr.length == 1) {
-                    bea.setHost(arr[0]);
-                } else {
-                    bea.setHost(arr[0]);
-                    bea.setPort(arr[1]);
-                }
-            } else if (str.startsWith("service")) {
-                bea.setService(str.substring(8));
-            } else if (str.startsWith("ref")) {
-                bea.setRef(str.substring(4));
-            } else if (str.startsWith("timeout")) {
-                bea.setTimeout(str.substring(8));
-            } else if (str.startsWith("methods")) {
-                String ms = str.substring(8);
-                if (StringUtil.isNotEmpty(ms)) {
-                    bea.setMethods(ms);
-                }
-            } else if (str.startsWith("generic")) {
-                bea.setGeneric(Boolean.valueOf(str.substring(8)));
-            } else if (str.startsWith("retry")) {
-                bea.setRetry(Integer.valueOf(str.substring(6)));
-            } else if (str.startsWith("group")) {
-                bea.setGroup(str.substring(6));
-            } else if (str.startsWith("check")) {
-                bea.setCheck(Boolean.getBoolean(str.substring(6)));
-            } else if (str.startsWith("tolerant")) {
-                bea.setTolerant(str.substring(9));
-            } else if (str.startsWith("downgrade")) {
-                bea.setDowngrade(str.substring(10));
-            } else if (str.startsWith("side")) {
-                bea.setSide(From.fromName(str.substring(5)));
-            }
+        String[] arr = path.split("&");
+        // host
+        String str = arr[0];
+        String[] tarr = str.substring(5).split(":");
+        if (tarr.length == 1) {
+            bea.setHost(tarr[0]);
+        } else {
+            bea.setHost(tarr[0]);
+            bea.setPort(tarr[1]);
         }
+        // service
+        str = arr[1];
+        bea.setService(str.substring(8));
+        // ref
+        str = arr[2];
+        bea.setRef(str.substring(4));
+        // check
+        str = arr[3];
+        bea.setCheck(Boolean.getBoolean(str.substring(6)));
+        // tolerant
+        str = arr[4];
+        bea.setTolerant(str.substring(9));
+        // timeout
+        str = arr[5];
+        bea.setTimeout(str.substring(8));
+        // methods
+        str = arr[6];
+        String ms = str.substring(8);
+        if (StringUtil.isNotEmpty(ms)) {
+            bea.setMethods(ms);
+        }
+        // generic
+        str = arr[7];
+        bea.setGeneric(Boolean.valueOf(str.substring(8)));
+        // retry
+        str = arr[8];
+        bea.setRetry(Integer.valueOf(str.substring(6)));
+        // group
+        str = arr[9];
+        bea.setGroup(str.substring(6));
+        // downgrade
+        str = arr[10];
+        bea.setDowngrade(str.substring(10));
+        // side
+        str = arr[11];
+        bea.setSide(From.fromName(str.substring(5)));
         return bea;
     }
 
+    // public static BeaconPath toEntity(String path) {
+    // //
+    // [host=192.168.61.239:1992&service=com.xxx.IHelloService&ref=com.xxx.HelloServiceImpl&side=SERVER]
+    // BeaconPath bea = new BeaconPath();
+    // String[] arr1 = path.split("&");
+    // int len = arr1.length;
+    // String str = null;
+    // for (int i = 0; i < len; i++) {
+    // str = arr1[i];
+    // if (str.startsWith("host")) {
+    // String[] arr = str.substring(5).split(":");
+    // if (arr.length == 1) {
+    // bea.setHost(arr[0]);
+    // } else {
+    // bea.setHost(arr[0]);
+    // bea.setPort(arr[1]);
+    // }
+    // } else if (str.startsWith("service")) {
+    // bea.setService(str.substring(8));
+    // } else if (str.startsWith("ref")) {
+    // bea.setRef(str.substring(4));
+    // } else if (str.startsWith("timeout")) {
+    // bea.setTimeout(str.substring(8));
+    // } else if (str.startsWith("methods")) {
+    // String ms = str.substring(8);
+    // if (StringUtil.isNotEmpty(ms)) {
+    // bea.setMethods(ms);
+    // }
+    // } else if (str.startsWith("generic")) {
+    // bea.setGeneric(Boolean.valueOf(str.substring(8)));
+    // } else if (str.startsWith("retry")) {
+    // bea.setRetry(Integer.valueOf(str.substring(6)));
+    // } else if (str.startsWith("group")) {
+    // bea.setGroup(str.substring(6));
+    // } else if (str.startsWith("check")) {
+    // bea.setCheck(Boolean.getBoolean(str.substring(6)));
+    // } else if (str.startsWith("tolerant")) {
+    // bea.setTolerant(str.substring(9));
+    // } else if (str.startsWith("downgrade")) {
+    // bea.setDowngrade(str.substring(10));
+    // } else if (str.startsWith("side")) {
+    // bea.setSide(From.fromName(str.substring(5)));
+    // }
+    // }
+    // return bea;
+    // }
 }

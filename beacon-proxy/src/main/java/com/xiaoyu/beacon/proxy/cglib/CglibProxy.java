@@ -21,7 +21,7 @@ import net.sf.cglib.proxy.MethodProxy;
 public class CglibProxy implements IProxy {
 
     @Override
-    public Object getProxy(ProxyWrapper wrapper) {
+    public Object getProxy(final ProxyWrapper wrapper) {
         final Enhancer hancer = new Enhancer();
         Class<?> cls = null;
         Object target = wrapper.getTarget();

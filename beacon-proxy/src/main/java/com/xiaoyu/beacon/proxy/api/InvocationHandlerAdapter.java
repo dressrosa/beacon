@@ -26,10 +26,6 @@ import com.xiaoyu.beacon.rpc.config.bean.Invocation;
  */
 public class InvocationHandlerAdapter extends AbstractInvocationHandler {
 
-    public InvocationHandlerAdapter(Class<?> ref) {
-        super(ref);
-    }
-
     /**
      * 用于泛型调用
      * 

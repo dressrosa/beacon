@@ -14,7 +14,6 @@ import com.xiaoyu.beacon.common.utils.NetUtil;
 import com.xiaoyu.beacon.common.utils.StringUtil;
 import com.xiaoyu.beacon.registry.Registry;
 import com.xiaoyu.beacon.rpc.api.Context;
-import com.xiaoyu.beacon.spring.handler.BeaconBeanDefinitionParser;
 
 /**
  * @author hongyu
@@ -123,6 +122,7 @@ public class BeaconExporter extends BeaconBean {
         }
         try {
             Context context = SpiManager.defaultSpiExtender(Context.class);
+            context.server();
             // 注册服务
             BeaconPath beaconPath = new BeaconPath();
             beaconPath
@@ -134,12 +134,13 @@ public class BeaconExporter extends BeaconBean {
                     .setGroup(group)
                     .setDowngrade("")
                     .setTolerant("")
-                    .setPort(BeaconBeanDefinitionParser.getBeaconProtocol().getPort());
+                    .setPort("" + context.getPort());
             Registry beaconRegistry = context.getRegistry();
             if (beaconRegistry == null || !beaconRegistry.isInit()) {
                 throw new Exception(" No registry is init");
             }
             beaconRegistry.registerService(beaconPath);
+            context.start();
         } catch (Exception e) {
             e.printStackTrace();
             return;
