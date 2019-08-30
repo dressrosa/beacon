@@ -66,7 +66,6 @@ public class ZooRegistry extends AbstractRegistry {
     @Override
     public void registerService(BeaconPath beaconPath) {
         // 找到需要暴漏的service,然后写入providers信息,或者客户端启动写入consumers信息
-        String detailInfo = beaconPath.toPath();
         String service = beaconPath.getService();
         zoo.createPersistent(ROOT + "/" + service);
         String path = null;
@@ -83,6 +82,7 @@ public class ZooRegistry extends AbstractRegistry {
                 doResolveInfo(parentPath, currentChilds);
             }
         };
+        String detailInfo = beaconPath.toPath();
         // 初始化service父节点
         if (beaconPath.getSide() == From.CLIENT) {
             // reference(client)

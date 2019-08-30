@@ -20,12 +20,12 @@ public interface Registry {
      * 
      * @param addr
      */
-    public void address(String addr);
+    void address(String addr);
 
     /**
      * 关闭注册中心
      */
-    public void close();
+    void close();
 
     /**
      * 是否连接
@@ -33,7 +33,7 @@ public interface Registry {
      * @param addr
      * @return
      */
-    public boolean isInit();
+    boolean isInit();
 
     /**
      * 发现服务
@@ -41,21 +41,21 @@ public interface Registry {
      * @param service
      * @return
      */
-    public boolean discoverService(String service);
+    boolean discoverService(String service);
 
     /**
      * 注册服务
      * 
      * @param beaconPath
      */
-    public void registerService(BeaconPath beaconPath);
+    void registerService(BeaconPath beaconPath);
 
     /**
      * 取消注册服务
      * 
      * @param beaconPath
      */
-    public void unregisterService(BeaconPath beaconPath);
+    void unregisterService(BeaconPath beaconPath);
 
     /**
      * 获取对应的provider
@@ -64,7 +64,7 @@ public interface Registry {
      * @param service
      * @return
      */
-    public List<BeaconPath> getLocalProviders(String group, String service);
+    List<BeaconPath> getLocalProviders(String group, String service);
 
     /**
      * 获取本地的service信息
@@ -73,7 +73,7 @@ public interface Registry {
      * @param service
      * @return
      */
-    public BeaconPath getLocalConsumer(String service);
+    BeaconPath getLocalConsumer(String service);
 
     /**
      * 获取代理对象,用于server端调用
@@ -81,6 +81,6 @@ public interface Registry {
      * @param service
      * @return
      */
-    public Object getProxyBean(String service);
+    Object getProxyBean(String service);
 
 }

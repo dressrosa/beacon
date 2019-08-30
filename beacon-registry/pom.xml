@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.xiaoyu</groupId>
         <artifactId>beacon-parent</artifactId>
-        <version>0.0.1</version>
+        <version>0.0.2</version>
        <!--  <relativePath>../pom/pom.xml</relativePath> -->
     </parent>
     <artifactId>beacon-registry</artifactId>
@@ -13,6 +13,7 @@
     <modules>
         <module>beacon-registry-api</module>
         <module>beacon-registry-zookeeper</module>
+        <module>beacon-registry-local</module>
     </modules>
 
     <dependencyManagement>
@@ -26,6 +27,12 @@
             <dependency>
                 <groupId>com.xiaoyu</groupId>
                 <artifactId>beacon-registry-zookeeper</artifactId>
+                <version>${project.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>com.xiaoyu</groupId>
+                <artifactId>beacon-registry-local</artifactId>
                 <version>${project.version}</version>
             </dependency>
         </dependencies>
