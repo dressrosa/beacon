@@ -184,7 +184,9 @@ public abstract class AbstractBeaconContext implements Context {
 
     private void closeRegistry() {
         if (this.registry != null) {
+            LOG.info("Begin close registry.");
             this.registry.close();
+            LOG.info("Completely close registry.");
         }
     }
 

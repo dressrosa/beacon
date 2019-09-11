@@ -25,14 +25,12 @@ public class AbstractDefaultTolerant implements FaultTolerant {
     public Object invoke(Invocation invocation, List<BeaconPath> providers) throws Throwable {
         // 负载均衡
         LoadBalance loadBalance = SpiManager.defaultSpiExtender(LoadBalance.class);
-        BeaconPath provider = null;
+        BeaconPath provider = loadBalance.select(providers);
         if (StringUtil.isBlank(invocation.getConsumer().getDowngrade())) {
-            provider = loadBalance.select(providers);
             return invocation.invoke(provider);
         }
         // 熔断降级
         Strategy strategy = SpiManager.defaultSpiExtender(Strategy.class);
-        provider = loadBalance.select(providers);
         return strategy.fuse(invocation, provider);
     }
 

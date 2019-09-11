@@ -41,7 +41,7 @@ public class BeaconReference extends BeaconBean {
     /**
      * 是否泛型接口
      */
-    private boolean generic = false;
+    private boolean generic;
 
     /**
      * 服务分组

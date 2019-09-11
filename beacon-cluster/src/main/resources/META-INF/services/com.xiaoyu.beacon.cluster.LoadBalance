@@ -1,2 +1,2 @@
-random.com.xiaoyu.beacon.cluster.loadbalance.RandomLoadBalance
 consistenthash.com.xiaoyu.beacon.cluster.loadbalance.ConsistentHashLoadBalance
+random.com.xiaoyu.beacon.cluster.loadbalance.RandomLoadBalance
