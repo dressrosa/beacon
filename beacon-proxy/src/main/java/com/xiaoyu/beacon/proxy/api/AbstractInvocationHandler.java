@@ -38,11 +38,6 @@ public abstract class AbstractInvocationHandler {
      */
     protected ProxyWrapper wrapper;
 
-    public AbstractInvocationHandler(Class<?> ref) {
-        this.ref = ref;
-        actualService = ref.getName();
-    }
-
     /**
      * 用于泛型调用
      * 

@@ -63,10 +63,6 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
         Lazy_Reference_Set = null;
     }
 
-    public static BeaconProtocol getBeaconProtocol() {
-        return beaconProtocol;
-    }
-
     public BeaconBeanDefinitionParser(Class<?> beanClass) {
         this.beanClass = beanClass;
     }
@@ -136,7 +132,8 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
             Context context = SpiManager.holder(Context.class).target(name);
             // 设置beaconProtocol
             setBeaconProtocol(name, port);
-            context.server(Integer.valueOf(port));
+            context.port(Integer.valueOf(port));
+            context.server();
             // 处理exporter
             for (BeaconPath p : Lazy_Reference_Set) {
                 if (p.getSide() == From.SERVER) {

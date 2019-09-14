@@ -5,8 +5,9 @@ package com.xiaoyu.beacon.proxy.common;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
+import java.util.WeakHashMap;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import com.xiaoyu.beacon.common.bean.ProxyWrapper;
 import com.xiaoyu.beacon.common.extension.SpiManager;
@@ -25,9 +26,11 @@ import com.xiaoyu.beacon.rpc.service.GenericService;
 public class GenericRequestLauncher {
 
     /**
-     * generateKey->proxy
+     * key->proxy
      */
-    private static final ConcurrentMap<String, Object> Ref_Map = new ConcurrentHashMap<>(16);
+    private static final WeakHashMap<String, Object> Ref_Map = new WeakHashMap<>(16);
+
+    private static final Lock Put_Lock = new ReentrantLock();
 
     @SuppressWarnings("unchecked")
     public static <T> T launch(GenericReference ref) throws Exception {
@@ -37,8 +40,8 @@ public class GenericRequestLauncher {
         if (StringUtil.isEmpty(ref.getInterfaceName())) {
             throw new RuntimeException("InterfaceName should be provided");
         }
-        String key = generateKey(ref);
-        final ConcurrentMap<String, Object> refMap = Ref_Map;
+        String key = ref.toString();
+        final WeakHashMap<String, Object> refMap = Ref_Map;
         if (!refMap.containsKey(key)) {
             IProxy proxy = SpiManager.defaultSpiExtender(IProxy.class);
             ProxyWrapper wrapper = new ProxyWrapper(GenericService.class)
@@ -48,17 +51,19 @@ public class GenericRequestLauncher {
             attach.put("tolerant", ref.getTolerant());
             attach.put("timeout", ref.getTimeout());
             attach.put("group", ref.getGroup() == null ? "" : ref.getGroup());
+            attach.put("host", ref.getHost() == null ? "" : ref.getHost());
             wrapper.setAttach(attach);
             // safe concurrent
-            refMap.put(key, proxy.getProxy(wrapper));
+            final Lock lock = Put_Lock;
+            lock.lock();
+            try {
+                if (!refMap.containsKey(key)) {
+                    refMap.put(key, proxy.getProxy(wrapper));
+                }
+            } finally {
+                lock.unlock();
+            }
         }
         return (T) refMap.get(key);
-    }
-
-    private static String generateKey(GenericReference ref) {
-        String key = (ref.getGroup() == null ? "" : ref.getGroup())
-                .concat(":")
-                .concat(ref.getInterfaceName());
-        return key;
     }
 }

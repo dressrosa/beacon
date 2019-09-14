@@ -18,41 +18,44 @@ public interface Context {
      * 返回client
      * 
      * @param host
-     * @param port
+     * @param serverPort
      * @return
      * @throws Exception
      */
-    public Client client(String host, int port) throws Exception;
+    Client client(String host, int serverPort) throws Exception;
 
     /**
      * 设置server
      * 
-     * @param port
      * @throws Exception
      */
-    public void server(int port) throws Exception;
+    void server() throws Exception;
 
     /**
      * 设置registry
      * 
      * @param registry
      */
-    public void registry(Registry registry);
+    void registry(Registry registry);
 
     /**
      * 返回当前context的registry
      * 
      * @return
      */
-    public Registry getRegistry();
+    Registry getRegistry();
 
     /**
      * 停止context
      */
-    public void shutdown();
+    void shutdown();
 
     /**
      * 启动beacon
      */
-    public void start();
+    void start();
+
+    void port(int port);
+
+    int getPort();
 }

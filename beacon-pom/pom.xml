@@ -5,7 +5,7 @@
     <parent>
         <groupId>com.xiaoyu</groupId>
         <artifactId>beacon-parent</artifactId>
-        <version>0.0.1</version>
+        <version>0.0.2</version>
     </parent>
 
     <groupId>com.xiaoyu</groupId>
@@ -60,6 +60,12 @@
                     <artifactId>slf4j-log4j12</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+
+        <dependency>
+            <groupId>com.xiaoyu</groupId>
+            <artifactId>beacon-registry-local</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>

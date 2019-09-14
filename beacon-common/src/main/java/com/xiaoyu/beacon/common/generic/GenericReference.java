@@ -22,7 +22,7 @@ public class GenericReference {
     private String interfaceName;
 
     /**
-     * 请求超时
+     * 请求超时(ms)
      */
     private String timeout = "3000";
 
@@ -40,6 +40,26 @@ public class GenericReference {
      * 服务分组
      */
     private String group = "";
+
+    /**
+     * 指定provider ip地址
+     */
+    private String host;
+
+    @Override
+    public String toString() {
+        return this.getInterfaceName() + "_" + this.getTimeout() + "_" + this.getRetry()
+                + "_" + this.getTolerant() + "_" + this.getGroup() + "_" + this.getHost();
+    }
+
+    public String getHost() {
+        return host;
+    }
+
+    public GenericReference setHost(String host) {
+        this.host = host;
+        return this;
+    }
 
     public String getGroup() {
         return group;
@@ -84,5 +104,4 @@ public class GenericReference {
         this.interfaceName = interfaceName;
         return this;
     }
-
 }

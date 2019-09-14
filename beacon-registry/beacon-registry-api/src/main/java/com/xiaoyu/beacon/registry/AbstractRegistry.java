@@ -39,7 +39,7 @@ public abstract class AbstractRegistry implements Registry {
     @Override
     public boolean discoverService(String service) {
         Set<BeaconPath> sets = Provider_Service_Map.get(service);
-        if (sets != null) {
+        if (sets != null && !sets.isEmpty()) {
             return true;
         }
         return this.doDiscoverService(service);
@@ -49,8 +49,8 @@ public abstract class AbstractRegistry implements Registry {
     public List<BeaconPath> getLocalProviders(String group, String service) {
         final ConcurrentMap<String, Set<BeaconPath>> pmap = Provider_Service_Map;
         Set<BeaconPath> providers = pmap.get(service);
-        if (providers == null) {
-            initProviders(service);
+        if (providers == null || providers.isEmpty()) {
+            this.initProviders(service);
         }
         providers = pmap.get(service);
         List<BeaconPath> list = new ArrayList<>();
@@ -89,6 +89,16 @@ public abstract class AbstractRegistry implements Registry {
                 pmap.put(service, new HashSet<>());
             }
             pmap.get(service).add(path);
+        }
+    }
+
+    protected void removeLocalService(String service, BeaconPath path) {
+        if (path.getSide() == From.CLIENT) {
+            final ConcurrentMap<String, Set<BeaconPath>> cmap = Consumer_Service_Map;
+            cmap.get(service).remove(path);
+        } else {
+            final ConcurrentMap<String, Set<BeaconPath>> pmap = Provider_Service_Map;
+            pmap.get(service).remove(path);
         }
     }
 

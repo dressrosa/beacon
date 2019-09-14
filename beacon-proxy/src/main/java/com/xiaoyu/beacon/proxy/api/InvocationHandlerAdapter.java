@@ -4,6 +4,7 @@
  */
 package com.xiaoyu.beacon.proxy.api;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -14,6 +15,7 @@ import com.xiaoyu.beacon.common.constant.BeaconConstants;
 import com.xiaoyu.beacon.common.exception.BeaconException;
 import com.xiaoyu.beacon.common.extension.SpiManager;
 import com.xiaoyu.beacon.common.message.RpcRequest;
+import com.xiaoyu.beacon.common.utils.StringUtil;
 import com.xiaoyu.beacon.filter.api.Filter;
 import com.xiaoyu.beacon.registry.Registry;
 import com.xiaoyu.beacon.rpc.api.Context;
@@ -25,10 +27,6 @@ import com.xiaoyu.beacon.rpc.config.bean.Invocation;
  * @description
  */
 public class InvocationHandlerAdapter extends AbstractInvocationHandler {
-
-    public InvocationHandlerAdapter(Class<?> ref) {
-        super(ref);
-    }
 
     /**
      * 用于泛型调用
@@ -59,26 +57,21 @@ public class InvocationHandlerAdapter extends AbstractInvocationHandler {
                     "Cannot find the service->" + service + ";please check whether server start or not.");
         }
         // TODO 这里需要获取本地local的consumer,来获取调用信息传入
-        BeaconPath consumer = this.doGetConsumer(service);
+        BeaconPath consumer = this.doGetLocalConsumer(service);
         Invocation invocation = new Invocation(consumer, request);
         // 过滤器
         Filter filter = SpiManager.holder(Filter.class).target(BeaconConstants.FILTER_CHAIN);
         filter.invoke(invocation);
 
         // 获取对应的全部provider
-        List<BeaconPath> providers = reg.getLocalProviders(consumer.getGroup(), service);
-        // 同group下无provider
-        if (providers.isEmpty()) {
-            throw new BeaconException(
-                    "Cannot find the service->" + service + " in the group->" + consumer.getGroup()
-                            + ";please check whether service belong to this group.");
-        }
+        List<BeaconPath> providers = this.doGetLocalProviders(consumer.getGroup(), service);
+
         // 容错调用
         FaultTolerant tolerant = SpiManager.holder(FaultTolerant.class).target(consumer.getTolerant());
         return tolerant.invoke(invocation, providers);
     }
 
-    private BeaconPath doGetConsumer(String service) throws Exception {
+    private BeaconPath doGetLocalConsumer(String service) throws Exception {
         if (!wrapper.isGeneric()) {
             return SpiManager.defaultSpiExtender(Context.class).getRegistry().getLocalConsumer(service);
         }
@@ -90,5 +83,32 @@ public class InvocationHandlerAdapter extends AbstractInvocationHandler {
                 .setTimeout((String) attach.get("timeout"))
                 .setGroup((String) attach.get("group"));
         return con;
+    }
+
+    private List<BeaconPath> doGetLocalProviders(String group, String service) throws Exception {
+        Registry reg = SpiManager.defaultSpiExtender(Context.class).getRegistry();
+        List<BeaconPath> providers = reg.getLocalProviders(group, service);
+        if (wrapper.isGeneric()) {
+            // 指定provider调用
+            Map<String, Object> attach = wrapper.getAttach();
+            String host = (String) attach.get("host");
+            if (StringUtil.isNotBlank(host)) {
+                for (BeaconPath p : providers) {
+                    if (p.getHost().equals(host)) {
+                        List<BeaconPath> pros = new ArrayList<>(1);
+                        pros.add(p);
+                        providers = pros;
+                        break;
+                    }
+                }
+            }
+        }
+        // 同group下无provider
+        if (providers.isEmpty()) {
+            throw new BeaconException(
+                    "Cannot find the service->" + service + " in the group->" + group
+                            + ";please check whether service belong to this group.");
+        }
+        return providers;
     }
 }

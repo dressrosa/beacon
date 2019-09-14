@@ -26,7 +26,7 @@ public class JdkProxy implements IProxy {
         Object target = wrapper.getTarget();
         // 接口提供给client
         if (target instanceof Class && (cls = (Class<?>) target).isInterface()) {
-            invocationHandler = new InvocationHandlerAdapter(cls).getHandler(InvocationHandler.class);
+            invocationHandler = new InvocationHandlerAdapter(wrapper).getHandler(InvocationHandler.class);
             return Proxy.newProxyInstance(cls.getClassLoader(), new Class<?>[] { cls },
                     invocationHandler);
         } else {

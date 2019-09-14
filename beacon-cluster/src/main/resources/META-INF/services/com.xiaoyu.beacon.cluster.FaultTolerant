@@ -1,2 +1,3 @@
 failfast.com.xiaoyu.beacon.cluster.faulttolerant.FailFastTolerant
 failover.com.xiaoyu.beacon.cluster.faulttolerant.FailOverTolerant
+failretry.com.xiaoyu.beacon.cluster.faulttolerant.FailRetryTolerant

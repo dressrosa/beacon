@@ -36,7 +36,9 @@ public abstract class AbstractBeaconContext implements Context {
 
     private AtomicBoolean Started = new AtomicBoolean(false);
 
-    private static final ReentrantLock Client_Lock = new ReentrantLock();
+    private static final ReentrantLock Lock = new ReentrantLock();
+
+    private volatile int protocolPort = 0;
 
     public AbstractBeaconContext() {
         Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
@@ -51,19 +53,24 @@ public abstract class AbstractBeaconContext implements Context {
     }
 
     @Override
-    public Client client(String host, int port) throws Exception {
-        String key = host + ":" + port;
+    public Client client(String host, int serverPort) throws Exception {
+        String key = host + ":" + serverPort;
         if (Client_Map.containsKey(key)) {
             return Client_Map.get(key);
         }
         /**
          * 当第一次大量请求时,可能导致client多次初始化,并覆盖掉已初始化的.
          */
-        final ReentrantLock lock = Client_Lock;
+        final ReentrantLock lock = Lock;
         lock.lock();
         try {
-            Client client = this.doInitClient(host, port);
-            Client_Map.put(key, client);
+            Client client = null;
+            if (!Client_Map.containsKey(key)) {
+                client = this.doInitClient(host, serverPort);
+                Client_Map.put(key, client);
+            } else {
+                client = Client_Map.get(key);
+            }
             return client;
         } finally {
             lock.unlock();
@@ -71,25 +78,56 @@ public abstract class AbstractBeaconContext implements Context {
     }
 
     @Override
-    public void server(int port) throws Exception {
-        Server server = this.doInitServer(port);
-        Server_Map.put(port, server);
+    public void server() throws Exception {
+        if (isStarted()) {
+            return;
+        }
+        final ReentrantLock lock = Lock;
+        lock.lock();
+        try {
+            if (isStarted()) {
+                return;
+            }
+            int port = this.getPort();
+            if (!Server_Map.containsKey(port)) {
+                Server server = this.doInitServer(port);
+                Server_Map.put(port, server);
+            }
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    private boolean isStarted() {
+        return Started.get();
     }
 
     @Override
     public void start() {
-        final Map<Integer, Server> smap = Server_Map;
-        if (smap != null && !smap.isEmpty()) {
-            if (Started.compareAndSet(false, true)) {
-                Iterator<Server> iter = smap.values().iterator();
-                try {
-                    while (iter.hasNext()) {
-                        iter.next().start();
+        if (this.isStarted()) {
+            return;
+        }
+        final ReentrantLock lock = Lock;
+        lock.lock();
+        try {
+            if (this.isStarted()) {
+                return;
+            }
+            final Map<Integer, Server> smap = Server_Map;
+            if (smap != null && !smap.isEmpty()) {
+                if (Started.compareAndSet(false, true)) {
+                    Iterator<Server> iter = smap.values().iterator();
+                    try {
+                        while (iter.hasNext()) {
+                            iter.next().start();
+                        }
+                    } catch (Exception e) {
+                        // do nothing
                     }
-                } catch (Exception e) {
-                    // do nothing
                 }
             }
+        } finally {
+            lock.unlock();
         }
     }
 
@@ -134,9 +172,21 @@ public abstract class AbstractBeaconContext implements Context {
         return this.registry;
     }
 
+    @Override
+    public void port(int port) {
+        this.protocolPort = port;
+    }
+
+    @Override
+    public int getPort() {
+        return this.protocolPort;
+    }
+
     private void closeRegistry() {
         if (this.registry != null) {
+            LOG.info("Begin close registry.");
             this.registry.close();
+            LOG.info("Completely close registry.");
         }
     }
 

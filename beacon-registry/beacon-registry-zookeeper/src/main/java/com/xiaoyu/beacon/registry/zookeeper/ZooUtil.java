@@ -64,7 +64,7 @@ public class ZooUtil {
             }
         }
         if (zoo == null) {
-            throw new Exception("Connect to zookeep->" + host + " failed,please start zookeeper first");
+            throw new Exception("Connect to zookeeper->" + host + " failed,please start zookeeper first");
         }
         return zoo;
     }

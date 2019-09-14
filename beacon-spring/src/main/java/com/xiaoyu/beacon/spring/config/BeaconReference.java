@@ -41,7 +41,7 @@ public class BeaconReference extends BeaconBean {
     /**
      * 是否泛型接口
      */
-    private boolean generic = false;
+    private boolean generic;
 
     /**
      * 服务分组
@@ -50,13 +50,29 @@ public class BeaconReference extends BeaconBean {
 
     /**
      * 服务降级 格式(策略:降级类)
-     * timeout:null
-     * timeout:xxx
-     * retry:xxx
-     * fault:xxx
-     * limit:xxx
+     * timeout:2000
+     * retry:3
+     * fault:4
+     * limit:100
      */
     private String downgrade;
+
+    /**
+     * TODO
+     * 服务降级后返回值
+     * 不填则默认抛出降级异常
+     * 可选 null或基本类型值(string,int,long,short,byte)
+     */
+    private String downValue;
+
+    public String getDownValue() {
+        return downValue;
+    }
+
+    public BeaconReference setDownValue(String downValue) {
+        this.downValue = downValue;
+        return this;
+    }
 
     public String getDowngrade() {
         return downgrade;
