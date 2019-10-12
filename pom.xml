@@ -32,7 +32,7 @@
         <protostuff.version>1.5.3</protostuff.version>
         <objenesis.version>2.5.1</objenesis.version>
         <feign.version>9.7.0</feign.version>
-        <netty.version>4.1.6.Final</netty.version>
+        <netty.version>4.1.42.Final</netty.version>
         <javassist.version>3.22.0-GA</javassist.version>
     </properties>
 
