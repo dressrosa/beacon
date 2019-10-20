@@ -4,9 +4,12 @@
  */
 package com.xiaoyu.beacon.rpc.config.bean;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.xiaoyu.beacon.common.bean.BeaconMethod;
 import com.xiaoyu.beacon.common.bean.BeaconPath;
 import com.xiaoyu.beacon.common.exception.BeaconException;
 import com.xiaoyu.beacon.common.exception.BizException;
@@ -34,6 +37,17 @@ public class Invocation {
     public Invocation(BeaconPath consumer, RpcRequest request) {
         this.consumer = consumer;
         this.request = request;
+        request.setTimeout(Long.valueOf(consumer.getTimeout()));
+        // 检查是否有方法级别的信息配置
+        List<BeaconMethod> beaconMethods = this.consumer.getBeaconMethods();
+        if (beaconMethods != null) {
+            for (BeaconMethod m : beaconMethods) {
+                if (request.getMethodName().equals(m.getMethodName())) {
+                    request.setTimeout(m.getTimeout());
+                    break;
+                }
+            }
+        }
     }
 
     public BeaconPath getConsumer() {
@@ -50,6 +64,7 @@ public class Invocation {
     }
 
     public Object invoke(BeaconPath provider) throws Throwable {
+        request.setInterfaceImpl(provider.getRef());
         String[] mes = provider.getMethods().split(",");
         boolean access = false;
         String methodName = request.getMethodName();
@@ -63,8 +78,7 @@ public class Invocation {
             throw new BeaconException("Have no access to invoke the method " + request.getMethodName() + " in "
                     + request.getInterfaceName());
         }
-        request.setInterfaceImpl(provider.getRef());
-        request.setTimeout(Long.valueOf(consumer.getTimeout()));
+
         // 发送消息
         Object ret = SpiManager.defaultSpiExtender(Context.class)
                 .client(provider.getHost(), Integer.valueOf(provider.getPort()))

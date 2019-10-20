@@ -5,7 +5,9 @@
 package com.xiaoyu.beacon.spring.handler;
 
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.math.NumberUtils;
@@ -20,7 +22,9 @@ import org.springframework.beans.factory.support.GenericBeanDefinition;
 import org.springframework.beans.factory.xml.AbstractSimpleBeanDefinitionParser;
 import org.springframework.beans.factory.xml.ParserContext;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
+import com.xiaoyu.beacon.common.bean.BeaconMethod;
 import com.xiaoyu.beacon.common.bean.BeaconPath;
 import com.xiaoyu.beacon.common.constant.BeaconConstants;
 import com.xiaoyu.beacon.common.constant.From;
@@ -96,7 +100,7 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
                 doParseExporter(element, parserContext, builder);
             }
         } catch (Exception e) {
-            LOG.error("" + e);
+            LOG.error("", e);
         }
     }
 
@@ -147,7 +151,7 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
                 doRegisterBeaconSpringListenerEvent(parserContext, context);
             }
         } catch (Exception e) {
-            LOG.error("" + e);
+            LOG.error("", e);
             return;
         }
     }
@@ -218,7 +222,7 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
                 }
             }
         } catch (Exception e) {
-            LOG.error("" + e);
+            LOG.error("", e);
             return;
         }
     }
@@ -336,6 +340,22 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
         if (StringUtil.isBlank(id)) {
             throw new Exception("Id cannot be null in xml tag->" + element.getTagName());
         }
+        // 解析方法级别的配置
+        NodeList childs = element.getElementsByTagName("beacon:method");
+        int len = childs.getLength();
+        List<BeaconMethod> beaconMethods = new ArrayList<>(len);
+        for (int i = 0; i < len; i++) {
+            Element node = (Element) childs.item(i);
+            String m_name = node.getAttribute("methodName");
+            int m_timeout = Integer.valueOf(node.getAttribute("timeout"));
+            if (StringUtil.isBlank(m_name)) {
+                throw new Exception("MethodName cannot be null in xml tag->" + node.getTagName());
+            }
+            BeaconMethod me = new BeaconMethod();
+            me.setMethodName(m_name);
+            me.setTimeout(m_timeout);
+            beaconMethods.add(me);
+        }
         if (StringUtil.isBlank(timeout)) {
             timeout = BeaconConstants.REQUEST_TIMEOUT;
         }
@@ -359,6 +379,9 @@ public class BeaconBeanDefinitionParser extends AbstractSimpleBeanDefinitionPars
                     .setDowngrade(downgrade);
             if (retry > 0) {
                 beaconPath.setRetry(retry);
+            }
+            if (!beaconMethods.isEmpty()) {
+                beaconPath.setBeaconMethods(beaconMethods);
             }
 
             if (beaconRegistry != null) {

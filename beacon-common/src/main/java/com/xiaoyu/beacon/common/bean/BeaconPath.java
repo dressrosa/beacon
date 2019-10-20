@@ -4,6 +4,8 @@
  */
 package com.xiaoyu.beacon.common.bean;
 
+import java.util.List;
+
 import com.xiaoyu.beacon.common.constant.From;
 import com.xiaoyu.beacon.common.utils.StringUtil;
 
@@ -68,6 +70,20 @@ public class BeaconPath {
      * 注解:降级则会抛出异常,并非停止服务,没有把请求分配给其他服务
      */
     private String downgrade;
+
+    /**
+     * 用于按方法级别配置信息,不参与转化
+     */
+    private List<BeaconMethod> beaconMethods;
+
+    public List<BeaconMethod> getBeaconMethods() {
+        return beaconMethods;
+    }
+
+    public BeaconPath setBeaconMethods(List<BeaconMethod> beaconMethods) {
+        this.beaconMethods = beaconMethods;
+        return this;
+    }
 
     public String getDowngrade() {
         return downgrade;

@@ -11,6 +11,10 @@
 
     <beacon:reference id="helloService"
         interfaceName="com.xiaoyu.test.api.IHelloService" timeout="3000" retry="0"
-        tolerant="failfast" group="dev" />
+        tolerant="failfast" group="dev">
+        <beacon:method methodName="hello" timeout="499" />
+        <beacon:method methodName="sing" timeout="3000" />
+    </beacon:reference>
+
 
 </beans>

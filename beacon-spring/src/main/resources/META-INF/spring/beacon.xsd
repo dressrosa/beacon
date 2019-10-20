@@ -9,8 +9,8 @@
     <!--协议beacon-protocol -->
     <xsd:element name="protocol">
         <xsd:complexType>
-            <xsd:attribute name="name" type="string" use="required"/>
-            <xsd:attribute name="port" type="positiveInteger" use="optional"/>
+            <xsd:attribute name="name" type="string" use="required" />
+            <xsd:attribute name="port" type="positiveInteger" use="optional" />
         </xsd:complexType>
     </xsd:element>
 
@@ -24,13 +24,25 @@
 
     <!--引用接口beacon-reference -->
     <xsd:element name="reference">
-        <xsd:complexType>
+        <xsd:complexType mixed="true">
+            <xsd:sequence minOccurs="0" maxOccurs="999">
+                <xsd:element name="method">
+                    <xsd:complexType>
+                        <xsd:attribute name="methodName" type="string" use="required" />
+                        <xsd:attribute name="timeout" type="positiveInteger"
+                            default="3000" use="optional" />
+                    </xsd:complexType>
+                </xsd:element>
+            </xsd:sequence>
             <xsd:attribute name="id" type="string" />
             <xsd:attribute name="interfaceName" type="string" />
-            <xsd:attribute name="timeout" type="positiveInteger" default="3000" use="optional" />
-            <xsd:attribute name="retry" type="nonNegativeInteger" default="0" use="optional" />
+            <xsd:attribute name="timeout" type="positiveInteger" default="3000"
+                use="optional" />
+            <xsd:attribute name="retry" type="nonNegativeInteger" default="0"
+                use="optional" />
             <xsd:attribute name="check" type="boolean" default="false" use="optional" />
-            <xsd:attribute name="tolerant" type="string" default="failfast" use="optional" />
+            <xsd:attribute name="tolerant" type="string" default="failfast"
+                use="optional" />
             <xsd:attribute name="group" type="string" use="optional" />
         </xsd:complexType>
     </xsd:element>
@@ -41,8 +53,8 @@
             <xsd:attribute name="id" type="string" />
             <xsd:attribute name="interfaceName" type="string" use="required" />
             <xsd:attribute name="ref" type="string" use="required" />
-            <xsd:attribute name="methods" type="string" use="optional"/>
-            <xsd:attribute name="group" type="string" use="optional"/>
+            <xsd:attribute name="methods" type="string" use="optional" />
+            <xsd:attribute name="group" type="string" use="optional" />
         </xsd:complexType>
     </xsd:element>
 

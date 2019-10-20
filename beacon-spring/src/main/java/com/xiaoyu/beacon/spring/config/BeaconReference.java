@@ -145,5 +145,4 @@ public class BeaconReference extends BeaconBean {
         this.interfaceName = interfaceName;
         return this;
     }
-
 }
